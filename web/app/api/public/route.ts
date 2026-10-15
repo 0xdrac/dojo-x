@@ -1,12 +1,10 @@
 import { T } from "@/lib/server/tables";
-import { ensureClasses } from "@/lib/server/seed";
 import { today } from "@/lib/server/guard";
 import { json } from "@/lib/server/util";
 
 /** Data the public pages need: the weekly timetable, live coupons and upcoming events. No auth. */
 export async function GET() {
   try {
-    await ensureClasses();
     const [classes, coupons, events] = await Promise.all([
       T.list("classes", { eq: { active: true }, order: ["start_time"] }),
       T.list("coupons", { eq: { status: "active" } }),

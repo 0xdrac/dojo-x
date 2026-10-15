@@ -262,6 +262,13 @@ function Schedule({ owner }: { owner: boolean }) {
   const date = nextDateFor(day);
   const isCancelled = (c: any) => cancels.some((x) => x.class_id === c.id && x.on_date === date);
 
+  const clearAll = async () => {
+    if (!confirm(`Delete all ${classes.length} classes from the weekly schedule? This can't be undone.`)) return;
+    const r = await http("DELETE", "/api/staff/classes"); if (!r.ok) return toast(r.error!);
+    toast("Schedule cleared"); reload();
+  };
+  const loadSample = async () => { const r = await http("POST", "/api/staff/classes/sample"); if (!r.ok) return toast(r.error!); toast("Sample timetable loaded"); reload(); };
+
   const toggleCancel = async (c: any) => {
     const r = await http("POST", `/api/staff/classes/${c.id}/cancel`, { date, cancelled: !isCancelled(c) });
     if (!r.ok) return toast(r.error!);
@@ -270,14 +277,17 @@ function Schedule({ owner }: { owner: boolean }) {
 
   return (
     <>
-      <Head title="Schedule">{owner && <button className="st-btn p" onClick={() => setForm(blankClass(day))}>+ Add class</button>}</Head>
+      <Head title="Schedule">
+        {owner && classes.length > 0 && <button className="st-btn d" onClick={clearAll}>Clear all classes</button>}
+        {owner && <button className="st-btn p" onClick={() => setForm(blankClass(day))}>+ Add class</button>}
+      </Head>
       {!owner && <ReadOnly />}
       <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 16 }}>
         {DAYS.map((d, i) => <button key={d} className={"st-day" + (day === i ? " on" : "")} onClick={() => setDay(i)} style={i === wd() && day !== i ? { borderColor: "var(--red)" } : undefined}><small>{d.toUpperCase()}</small><b>{classes.filter((c) => c.day === i && c.active).length}</b></button>)}
       </div>
       <div className="st-sec">{DAYS_LONG[day].toUpperCase()} · NEXT {fmtDay(date).toUpperCase()}</div>
       <div className="st-card">
-        {loading ? <Loading /> : !list.length ? <div className="st-empty">No classes on {DAYS_LONG[day]}.{owner ? " Use “+ Add class”." : ""}</div> : list.map((c) => {
+        {loading ? <Loading /> : !list.length ? <div className="st-empty">No classes on {DAYS_LONG[day]}.{owner ? " Use “+ Add class”." : ""}{owner && !classes.length && <div style={{ marginTop: 14 }}><button className="st-btn" onClick={loadSample}>Or load the sample timetable</button></div>}</div> : list.map((c) => {
           const off = isCancelled(c) || !c.active;
           return (
             <div className="st-row" key={c.id} style={{ opacity: off ? 0.55 : 1, flexWrap: "wrap" }}>
