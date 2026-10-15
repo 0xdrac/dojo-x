@@ -4,6 +4,8 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { usingSupabase } from "./store";
 
+const needSupabase = () => { if (process.env.NODE_ENV === "production" && !usingSupabase()) throw new Error("Supabase is not configured: set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."); };
+
 /**
  * Generic row access for the schedule/events/coupons/attendance tables (snake_case columns, same names in both backends).
  * Supabase when configured, otherwise a local JSON file (.data/tables.json, dev only).
@@ -21,6 +23,7 @@ const must = <T,>(r: { data: T | null; error: { message: string } | null }): T =
 
 export const T = {
   async list(table: string, o: ListOpts = {}): Promise<Row[]> {
+    needSupabase();
     if (usingSupabase()) {
       let q = sb().from(table).select("*");
       for (const [k, v] of Object.entries(o.eq ?? {})) q = q.eq(k, v);
@@ -38,10 +41,12 @@ export const T = {
   },
   async get(table: string, eq: Eq): Promise<Row | null> { return (await T.list(table, { eq, limit: 1 }))[0] ?? null; },
   async insert(table: string, row: Row): Promise<Row> {
+    needSupabase();
     if (usingSupabase()) return must(await sb().from(table).insert(row).select().single());
     const db = load(); const r = { id: row.id ?? randomUUID(), created_at: new Date().toISOString(), ...row }; (db[table] ??= []).push(r); save(db); return r;
   },
   async update(table: string, eq: Eq, patch: Row): Promise<Row | null> {
+    needSupabase();
     if (usingSupabase()) {
       let q = sb().from(table).update(patch); for (const [k, v] of Object.entries(eq)) q = q.eq(k, v);
       return must(await q.select()).at(0) ?? null;
@@ -49,6 +54,7 @@ export const T = {
     const db = load(); const r = (db[table] ?? []).find((x) => match(x, eq)); if (!r) return null; Object.assign(r, patch); save(db); return r;
   },
   async delete(table: string, eq: Eq): Promise<number> {
+    needSupabase();
     if (usingSupabase()) { let q = sb().from(table).delete(); for (const [k, v] of Object.entries(eq)) q = q.eq(k, v); return must(await q.select()).length; }
     const db = load(); const n = (db[table] ?? []).length; db[table] = (db[table] ?? []).filter((r) => !match(r, eq)); save(db); return n - db[table].length;
   },
