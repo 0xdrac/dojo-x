@@ -7,6 +7,9 @@ import DXA from "./admin";
 import POSTS from "./posts";
 import { DojoMotion } from "./motion";
 import { DojoAPI } from "./api";
+import { normalizeClasses } from "./classes";
+
+normalizeClasses(DOJO.classes, DOJO);
 
 if (typeof window !== "undefined") {
   const w = window as any;

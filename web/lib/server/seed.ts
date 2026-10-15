@@ -5,7 +5,7 @@ import { T } from "./tables";
 export async function ensureClasses() {
   if ((await T.list("classes", { limit: 1 })).length) return;
   const rows = (DOJO.classes as any[]).map((c) => ({
-    day: c.d, start_time: c.t, duration_min: c.dur, discipline: c.disc, title: c.title, coach: c.coach,
+    day: c.d, start_time: c.t, duration_min: c.dur, discipline: c.disc, disciplines: [c.disc], title: c.title, coach: c.coach, coaches: [c.coach],
     level: c.level, age_group: c.age, capacity: c.cap, active: true,
   }));
   for (const r of rows) await T.insert("classes", r);

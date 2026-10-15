@@ -66,6 +66,12 @@ create table if not exists classes (
   created_at   timestamptz not null default now()
 );
 
+-- A class can cover several disciplines and have several coaches. `discipline` / `coach` hold the first of each for older readers.
+alter table classes add column if not exists disciplines text[];
+alter table classes add column if not exists coaches     text[];
+update classes set disciplines = array[discipline] where disciplines is null;
+update classes set coaches     = array[coach]      where coaches is null;
+
 -- A single cancelled occurrence of a weekly class.
 create table if not exists class_cancellations (
   id         uuid primary key default gen_random_uuid(),

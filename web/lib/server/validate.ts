@@ -14,9 +14,17 @@ export function classRow(b: any, partial = false): { row?: Record<string, any>; 
   if (!partial || has("day")) { const d = Number(b.day); if (!Number.isInteger(d) || d < 0 || d > 6) return { error: "Pick a day." }; row.day = d; }
   if (!partial || has("startTime")) { const t = str(b.startTime, 5); if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)) return { error: "Enter a start time like 18:30." }; row.start_time = t; }
   if (!partial || has("durationMin")) { const n = Number(b.durationMin); if (!Number.isInteger(n) || n < 15 || n > 240) return { error: "Duration must be 15–240 minutes." }; row.duration_min = n; }
-  if (!partial || has("discipline")) { if (!DISCS.includes(b.discipline)) return { error: "Pick a discipline." }; row.discipline = b.discipline; }
+  if (!partial || has("disciplines")) {
+    const d = Array.isArray(b.disciplines) ? [...new Set<string>(b.disciplines)] : [];
+    if (!d.length || d.some((k) => !DISCS.includes(k))) return { error: "Pick at least one discipline." };
+    row.disciplines = d; row.discipline = d[0];
+  }
   if (!partial || has("title")) { const t = str(b.title, 80); if (!t) return { error: "Give the class a title." }; row.title = t; }
-  if (!partial || has("coach")) { if (!COACHES.includes(b.coach)) return { error: "Pick a coach." }; row.coach = b.coach; }
+  if (!partial || has("coaches")) {
+    const c = Array.isArray(b.coaches) ? [...new Set<string>(b.coaches)] : [];
+    if (!c.length || c.some((k) => !COACHES.includes(k))) return { error: "Pick at least one coach." };
+    row.coaches = c; row.coach = c[0];
+  }
   if (!partial || has("level")) { if (!LEVELS.includes(b.level)) return { error: "Pick a level." }; row.level = b.level; }
   if (!partial || has("ageGroup")) { if (!AGES.includes(b.ageGroup)) return { error: "Pick an age group." }; row.age_group = b.ageGroup; }
   if (!partial || has("capacity")) { const n = Number(b.capacity); if (!Number.isInteger(n) || n < 1 || n > 200) return { error: "Capacity must be 1–200." }; row.capacity = n; }

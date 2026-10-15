@@ -39,7 +39,7 @@ class Screen extends DCLogic {
     if (this.lastTot !== undefined && this.lastTot !== this.tot) M.pop(this.rTotRef.current);
     this.lastTot = this.tot;
   }
-  ok(m, c) { return m.plan.disc.includes(c.disc) && (m.age < 13 ? c.age === 'Kids' : c.age !== 'Kids'); }
+  ok(m, c) { return c.discs.some(k => m.plan.disc.includes(k)) && (m.age < 13 ? c.age === 'Kids' : c.age !== 'Kids'); }
   past(c) { return c.d < 3 || (c.d === 3 && c.t < '14:30'); }
   when(c) { return (c.d === 3 ? 'Today' : c.d === 4 ? 'Tomorrow' : DOJO.days[c.d] + ' ' + (12 + c.d) + ' Oct') + ' · ' + DOJO.time12(c.t); }
   cutoff(c) { let [h, mm] = c.t.split(':').map(Number); h -= 2; return (c.d === 3 ? 'today ' : DOJO.days[c.d] + ' ') + DOJO.time12(String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0')); }
@@ -68,7 +68,7 @@ class Screen extends DCLogic {
     const ST = { active: ['ACTIVE', 'oklch(0.78 0.14 150)'], expiring: [`EXPIRES IN ${p0.daysLeft} DAYS`, 'oklch(0.82 0.14 75)'], none: ['NO ACTIVE PLAN', '#9A9A9A'], frozen: [s.frozen[id] ? `FROZEN · ${s.frozen[id].range.toUpperCase()}` : 'FROZEN · 12–18 OCT', 'oklch(0.78 0.1 240)'] };
     const st = { t: ST[status][0], c: ST[status][1] };
     const planName = p0.disc.map(k => D.disciplines[k].name).join(' + ');
-    const nm = k => D.disciplines[k].name, coach = c => D.coaches[c.coach] ? D.coaches[c.coach].first : c.coach;
+    const nm = k => D.disciplines[k].name, coach = c => c.coachNames;
     const mine = s.bookings[id], byId = x => D.classes.find(c => c.id === x);
     const myList = mine.map(byId).filter(Boolean).sort((a, b) => a.d - b.d || a.t.localeCompare(b.t));
     const ICON = { home: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z', classes: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4', plan: 'M4 5h16v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6z', pay: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6', progress: 'M4 20V11M10 20V5M16 20v-6M2 20h20', me: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0' };
@@ -85,12 +85,12 @@ class Screen extends DCLogic {
       const left = c.cap - taken;
       let label, act = () => {}, dis = false, bg = 'transparent', bd = '#2E2E2E', fg = '#F5F5F5';
       if (past) { label = booked ? 'ATTENDED' : 'ENDED'; dis = true; fg = '#9A9A9A'; }
-      else if (!ok) { label = m.plan.disc.includes(c.disc) ? 'NOT FOR AGE' : 'ADD TO PLAN'; act = () => m.plan.disc.includes(c.disc) ? null : (this.setState({ rSel: [...p0.disc, c.disc] }), this.go('plan')); fg = '#C9C9C9'; dis = m.plan.disc.includes(c.disc); }
+      else if (!ok) { label = c.discs.some(k => m.plan.disc.includes(k)) ? 'NOT FOR AGE' : 'ADD TO PLAN'; act = () => c.discs.some(k => m.plan.disc.includes(k)) ? null : (this.setState({ rSel: [...p0.disc, c.disc] }), this.go('plan')); fg = '#C9C9C9'; dis = c.discs.some(k => m.plan.disc.includes(k)); }
       else if (frozen) { label = 'FROZEN'; dis = true; fg = '#9A9A9A'; }
       else if (booked) { label = 'BOOKED ✓'; bg = 'oklch(0.74 0.15 150 / .15)'; bd = 'oklch(0.74 0.15 150)'; act = () => this.setState({ sheet: 'cancel', cx: c.id }); }
       else if (full) { label = onWait ? 'ON WAITLIST' : 'JOIN WAITLIST'; bd = onWait ? 'oklch(0.82 0.14 75)' : '#2E2E2E'; act = () => this.book(c); }
       else { label = 'BOOK'; bg = '#C8102E'; bd = '#C8102E'; act = () => this.book(c); }
-      return { id: c.id, time: D.time12(c.t), dur: c.dur, title: c.title, disc: nm(c.disc), color: D.color(c.disc), coach: coach(c), level: c.level, age: c.age, spots: past ? '—' : full ? 'FULL' : `${left} SPOT${left > 1 ? 'S' : ''} LEFT`, spotsC: full ? 'oklch(0.80 0.14 45)' : left <= 3 ? 'oklch(0.82 0.14 75)' : '#9A9A9A', fill: Math.min(100, taken / c.cap * 100) + '%', fillC: full ? 'oklch(0.70 0.19 45)' : '#C9C9C9', label, act, dis, bg, bd, fg, cur: dis ? 'default' : 'pointer', op: ok && !past ? 1 : .55, rowBg: booked ? '#1A1A1A' : '#161616', rowBd: booked ? 'oklch(0.74 0.15 150 / .5)' : '#262626' };
+      return { id: c.id, time: D.time12(c.t), dur: c.dur, title: c.title, disc: c.discNames, color: D.color(c.disc), coach: coach(c), level: c.level, age: c.age, spots: past ? '—' : full ? 'FULL' : `${left} SPOT${left > 1 ? 'S' : ''} LEFT`, spotsC: full ? 'oklch(0.80 0.14 45)' : left <= 3 ? 'oklch(0.82 0.14 75)' : '#9A9A9A', fill: Math.min(100, taken / c.cap * 100) + '%', fillC: full ? 'oklch(0.70 0.19 45)' : '#C9C9C9', label, act, dis, bg, bd, fg, cur: dis ? 'default' : 'pointer', op: ok && !past ? 1 : .55, rowBg: booked ? '#1A1A1A' : '#161616', rowBd: booked ? 'oklch(0.74 0.15 150 / .5)' : '#262626' };
     };
     const nx = myList.find(c => !this.past(c));
     const todayList = D.classes.filter(c => c.d === 3 && this.ok(m, c) && !this.past(c)).sort((a, b) => a.t.localeCompare(b.t)).slice(0, 4).map(classRow).map(r => ({ ...r, label: r.label === 'BOOKED ✓' ? 'BOOKED' : r.label.replace('JOIN ', '') }));

@@ -27,8 +27,8 @@ class Screen extends DCLogic {
     if (!D) return base;
     const ageOk = c => s.age === 'Kids' ? c.age === 'Kids' : s.age === 'Teens' ? (c.age === 'Teens' || c.age === 'All ages') : c.age !== 'Kids';
     const upcoming = c => c.d > 3 || (c.d === 3 && c.t >= '16:00');
-    const avail = k => D.classes.filter(c => c.disc === k && ageOk(c) && upcoming(c) && c.level !== 'Advanced');
-    const coach = c => D.coaches[c.coach] ? D.coaches[c.coach].first : c.coach;
+    const avail = k => D.classes.filter(c => c.discs.includes(k) && ageOk(c) && upcoming(c) && c.level !== 'Advanced');
+    const coach = c => c.coachNames;
     const when = c => (c.d === 3 ? 'Today' : c.d === 4 ? 'Tomorrow' : D.daysLong[c.d]) + ', ' + (12 + c.d) + ' Oct · ' + D.time12(c.t);
     const sl = s.slot ? D.classes.find(c => c.id === s.slot) : null;
     const dk = s.disc && D.disciplines[s.disc] ? s.disc : null;

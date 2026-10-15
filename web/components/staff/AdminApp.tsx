@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useShell } from "@/components/Shell";
 import { describeRepeat, istWeekday, totalSessions } from "@/lib/recur";
-import { Chips, DAYS, DAYS_LONG, Field, Sheet, D, api, coachName, fmtDay, fmtWhen, hueColor, http, initials, nextDateFor, time12, toLocalInput, useLoad, wd, ymd } from "./ui";
+import { Chips, Multi, coachNames, coachesOf, discNames, discsOf, DAYS, DAYS_LONG, Field, Sheet, D, api, coachName, fmtDay, fmtWhen, hueColor, http, initials, nextDateFor, time12, toLocalInput, useLoad, wd, ymd } from "./ui";
 
 type View = "dash" | "members" | "checkin" | "schedule" | "events" | "coupons" | "trials";
 const NAV: [View, string, string][] = [
@@ -100,10 +100,10 @@ function Dashboard({ go }: { go: (v: View) => void }) {
           <div className="st-card">
             {classes.loading ? <Loading /> : !todays.length ? <div className="st-empty">No classes scheduled today.</div> : todays.map((c) => (
               <div className="st-row" key={c.id} style={{ opacity: cancelled.has(c.id) ? 0.5 : 1 }}>
-                <span style={{ width: 8, height: 8, background: hueColor(c.discipline), flex: "none" }} />
+                <span style={{ width: 8, height: 8, background: hueColor(discsOf(c)[0]), flex: "none" }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="st-t" style={{ textDecoration: cancelled.has(c.id) ? "line-through" : "none" }}>{c.title}</div>
-                  <div className="st-s">{time12(c.start_time)} · {c.duration_min} MIN · {coachName(c.coach).toUpperCase()}</div>
+                  <div className="st-s">{time12(c.start_time)} · {c.duration_min} MIN · {coachNames(c).toUpperCase()}</div>
                 </div>
                 {cancelled.has(c.id) ? <span className="st-pill">CANCELLED</span> : <span className="st-pill">{attBy(c.id)} / {c.capacity} IN</span>}
               </div>
@@ -250,7 +250,7 @@ function Checkin() {
 
 /* ---------------- Schedule ---------------- */
 const LEVELS = ["All levels", "Beginner", "Intermediate", "Advanced"], AGES = ["Kids", "Teens", "Adults"];
-const blankClass = (day: number) => ({ day, startTime: "18:30", durationMin: 60, discipline: "mma", title: "", coach: "arjun", level: "All levels", ageGroup: "Adults", capacity: 20 });
+const blankClass = (day: number) => ({ day, startTime: "18:30", durationMin: 60, disciplines: ["mma"], title: "", coaches: ["arjun"], level: "All levels", ageGroup: "Adults", capacity: 20 });
 
 function Schedule({ owner }: { owner: boolean }) {
   const { toast } = useShell();
@@ -292,16 +292,16 @@ function Schedule({ owner }: { owner: boolean }) {
           const off = isCancelled(c) || !c.active;
           return (
             <div className="st-row" key={c.id} style={{ opacity: off ? 0.55 : 1, flexWrap: "wrap" }}>
-              <span style={{ width: 8, alignSelf: "stretch", background: hueColor(c.discipline), flex: "none" }} />
+              <span style={{ width: 8, alignSelf: "stretch", background: hueColor(discsOf(c)[0]), flex: "none" }} />
               <div style={{ flex: "1 1 220px", minWidth: 0 }}>
                 <div className="st-t" style={{ textDecoration: off ? "line-through" : "none" }}>{c.title}</div>
-                <div className="st-s">{time12(c.start_time)} · {c.duration_min} MIN · {coachName(c.coach).toUpperCase()} · {c.level.toUpperCase()} · {c.age_group.toUpperCase()} · CAP {c.capacity}</div>
+                <div className="st-s">{discNames(c).toUpperCase()} · {time12(c.start_time)} · {c.duration_min} MIN · {coachNames(c).toUpperCase()} · {c.level.toUpperCase()} · {c.age_group.toUpperCase()} · CAP {c.capacity}</div>
               </div>
               {!c.active && <span className="st-pill">HIDDEN</span>}
               {isCancelled(c) && <span className="st-pill" style={{ color: "oklch(0.78 0.16 40)" }}>CANCELLED {fmtDay(date).toUpperCase()}</span>}
               {owner && <>
                 <button className="st-btn sm" onClick={() => toggleCancel(c)}>{isCancelled(c) ? "Restore" : "Cancel " + fmtDay(date).split(" ")[0]}</button>
-                <button className="st-btn sm" onClick={() => setForm({ id: c.id, day: c.day, startTime: c.start_time, durationMin: c.duration_min, discipline: c.discipline, title: c.title, coach: c.coach, level: c.level, ageGroup: c.age_group, capacity: c.capacity, active: c.active })}>Edit</button>
+                <button className="st-btn sm" onClick={() => setForm({ id: c.id, day: c.day, startTime: c.start_time, durationMin: c.duration_min, disciplines: discsOf(c), title: c.title, coaches: coachesOf(c), level: c.level, ageGroup: c.age_group, capacity: c.capacity, active: c.active })}>Edit</button>
               </>}
             </div>
           );
@@ -334,13 +334,13 @@ function ClassSheet({ form, onClose, onSaved }: { form: any; onClose: () => void
   return (
     <Sheet title={editing ? "Edit class" : "Add class"} onClose={onClose}>
       <Field label="TITLE"><input className="st-in" value={f.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. Muay Thai Fundamentals" /></Field>
-      <Field label="DISCIPLINE"><Chips value={f.discipline} options={D.order.map((k: string) => [k, D.disciplines[k].name])} onChange={(v) => { set("discipline", v); const c = D.coachOrder.find((k: string) => D.coaches[k].disc.includes(v)); if (c && !D.coaches[f.coach]?.disc.includes(v)) set("coach", c); }} /></Field>
+      <Field label="DISCIPLINES (PICK ANY NUMBER)"><Multi value={f.disciplines} options={D.order.map((k: string) => [k, D.disciplines[k].name])} onChange={(v) => set("disciplines", v)} /></Field>
       <Field label="DAY"><Chips value={f.day} options={DAYS.map((d, i) => [i, d])} onChange={(v) => set("day", v)} /></Field>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Field label="START TIME"><input className="st-in" type="time" value={f.startTime} onChange={(e) => set("startTime", e.target.value)} /></Field>
         <Field label="DURATION (MIN)"><input className="st-in" type="number" min={15} max={240} step={5} value={f.durationMin} onChange={(e) => set("durationMin", +e.target.value)} /></Field>
       </div>
-      <Field label="COACH"><Chips value={f.coach} options={D.coachOrder.map((k: string) => [k, coachName(k)])} onChange={(v) => set("coach", v)} /></Field>
+      <Field label="COACHES (PICK ANY NUMBER)"><Multi value={f.coaches} options={D.coachOrder.map((k: string) => [k, coachName(k)])} onChange={(v) => set("coaches", v)} /></Field>
       <Field label="LEVEL"><Chips value={f.level} options={LEVELS.map((l) => [l, l])} onChange={(v) => set("level", v)} /></Field>
       <Field label="AGE GROUP"><Chips value={f.ageGroup} options={AGES.map((l) => [l, l])} onChange={(v) => set("ageGroup", v)} /></Field>
       <Field label="CAPACITY"><input className="st-in" type="number" min={1} max={200} value={f.capacity} onChange={(e) => set("capacity", +e.target.value)} /></Field>

@@ -42,7 +42,7 @@ class Screen extends DCLogic {
     });
     const c = slug && D.coaches[slug];
     if (c) {
-      const cls = D.classes.filter(x => x.coach === slug);
+      const cls = D.classes.filter(x => x.coaches.includes(slug));
       v.cd = {
         slot: `coach-${slug}`, ph: `${c.first.toUpperCase()} · full-length portrait, B&W`, roleU: c.role.toUpperCase(), years: c.years.toUpperCase(),
         first: c.first, firstU: c.first.toUpperCase(), last: c.last, lastU: c.last.toUpperCase(), nickU: c.nick.toUpperCase(),

@@ -3,6 +3,7 @@
 // Browser-side client for the /api routes. Exposed to the ported screens as window.DojoAPI (see bootstrap.ts).
 import DXP from "./portal";
 import DOJO from "./dojo";
+import { normalizeClasses } from "./classes";
 
 type R = { ok: boolean; status: number; error?: string; [k: string]: any };
 
@@ -84,7 +85,7 @@ export function loadPublic(): Promise<void> {
     if (!r.ok || !r.classes) return;           // keep the sample data if the API is unavailable
     const todayIdx = (new Date().getDay() + 6) % 7, d = new Date(), iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const off = new Set(r.cancelled || []);
-    DOJO.classes = r.classes.filter((c: any) => !(c.d === todayIdx && off.has(`${c.id}|${iso}`)));
+    DOJO.classes = normalizeClasses(r.classes, DOJO).filter((c: any) => !(c.d === todayIdx && off.has(`${c.id}|${iso}`)));
     DOJO.coupons = Object.fromEntries((r.coupons || []).map((c: any) => [c.code, { type: c.type, v: c.v, label: c.type === "pct" ? `${c.v}% off` : `₹${c.v} off` }]));
     DXP.announcements = (r.events || []).slice(0, 3).map((e: any) => [
       e.kind.toUpperCase(), e.title,

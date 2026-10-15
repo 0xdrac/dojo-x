@@ -50,13 +50,13 @@ class Screen extends DCLogic {
     if (!D) return v;
     const dates = [12, 13, 14, 15, 16, 17, 18];
     const chip = (on, label, pick, color) => ({ label, on, pick, color, bg: on ? 'rgba(200,16,46,.16)' : '#161616', bd: on ? '#C8102E' : '#2E2E2E', fg: on ? '#F5F5F5' : '#C9C9C9' });
-    const match = c => (!disc.length || disc.includes(c.disc)) && (level === 'All' || c.level === level || c.level === 'All levels') && (age === 'All' || c.age === age);
+    const match = c => (!disc.length || c.discs.some(x => disc.includes(x))) && (level === 'All' || c.level === level || c.level === 'All levels') && (age === 'All' || c.age === age);
     const all = D.classes.filter(match);
     const card = c => {
       const left = c.cap - c.booked - (book[c.id] === 'done' ? 1 : 0), full = left <= 0, st = book[c.id];
       return {
-        open: () => this.setState({ sel: c.id }), time: D.time12(c.t), dur: `${c.dur}M`, disc: D.disciplines[c.disc].name.toUpperCase(), color: D.color(c.disc), title: c.title,
-        coach: D.coaches[c.coach].first, level: c.level, age: c.age,
+        open: () => this.setState({ sel: c.id }), time: D.time12(c.t), dur: `${c.dur}M`, disc: c.discNames.toUpperCase(), color: D.color(c.disc), title: c.title,
+        coach: c.coachNames, level: c.level, age: c.age,
         spots: st === 'done' ? 'YOU’RE BOOKED' : full ? 'FULL · WAITLIST' : `${left} SPOTS LEFT`,
         spotFg: st === 'done' ? 'oklch(0.82 0.13 150)' : full ? '#9A9A9A' : left <= 4 ? 'oklch(0.86 0.12 80)' : '#C9C9C9',
         cta: st === 'done' ? '✓ BOOKED' : full ? 'WAITLIST' : member ? 'BOOK' : 'TRY FREE',
@@ -74,8 +74,8 @@ class Screen extends DCLogic {
     if (c) {
       const st = book[c.id], left = c.cap - c.booked - (st === 'done' ? 1 : 0), full = left <= 0 && st !== 'done';
       dt = {
-        title: c.title, disc: D.disciplines[c.disc].name.toUpperCase(), color: D.color(c.disc),
-        when: `${D.daysLong[c.d]} ${dates[c.d]} Oct · ${D.time12(c.t)} · ${c.dur} min`, coach: `${D.coaches[c.coach].first} ${D.coaches[c.coach].last}`, coachHref: `/coaches?c=${c.coach}`,
+        title: c.title, disc: c.discNames.toUpperCase(), color: D.color(c.disc),
+        when: `${D.daysLong[c.d]} ${dates[c.d]} Oct · ${D.time12(c.t)} · ${c.dur} min`, coach: c.coaches.map(k => `${D.coaches[k].first} ${D.coaches[k].last}`).join(' & '), coachHref: `/coaches?c=${c.coach}`,
         level: c.level, age: c.age === 'Kids' ? 'Kids 5–12' : c.age === 'Teens' ? 'Teens 13–17' : 'Adults 18+',
         spots: full ? 'CLASS FULL' : `${left} OF ${c.cap} SPOTS LEFT`, cap: `${c.cap - left}/${c.cap} BOOKED`, pctW: `${Math.min(100, (c.cap - left) / c.cap * 100)}%`,
         spotFg: full ? '#9A9A9A' : left <= 4 ? 'oklch(0.86 0.12 80)' : '#F5F5F5', fill: left <= 4 ? 'oklch(0.82 0.14 80)' : '#C8102E',

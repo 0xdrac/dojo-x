@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useShell } from "@/components/Shell";
-import { D, api, coachName, fmtDay, hueColor, http, initials, time12, useLoad, wd, ymd } from "./ui";
+import { D, api, coachName, coachesOf, discNames, discsOf, fmtDay, hueColor, http, initials, time12, useLoad, wd, ymd } from "./ui";
 
 type Status = "present" | "late" | "absent";
 
@@ -20,7 +20,7 @@ export default function CoachApp() {
   if (!staff) return <div className="st-main mono" style={{ color: "var(--dim)" }}>Loading…</div>;
   const day = wd(new Date(date + "T12:00:00"));
   const cancelled = new Set((((classes.data as any)?.cancellations ?? []) as any[]).filter((c) => c.on_date === date).map((c) => c.class_id));
-  const mine = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && c.day === day && (!coach || c.coach === coach)).sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const mine = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && c.day === day && (!coach || coachesOf(c).includes(coach))).sort((a, b) => a.start_time.localeCompare(b.start_time));
   const rows = (((att.data as any)?.attendance ?? []) as any[]);
   const count = (id: string, st?: Status) => rows.filter((a) => a.class_id === id && (st ? a.status === st : a.status !== "absent")).length;
   const isToday = date === ymd();
@@ -57,11 +57,11 @@ export default function CoachApp() {
               const off = cancelled.has(c.id);
               return (
                 <button className="st-row" key={c.id} disabled={off} onClick={() => setOpen(c)} style={{ opacity: off ? 0.5 : 1 }}>
-                  <span style={{ width: 8, alignSelf: "stretch", background: hueColor(c.discipline), flex: "none" }} />
+                  <span style={{ width: 8, alignSelf: "stretch", background: hueColor(discsOf(c)[0]), flex: "none" }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="mono" style={{ font: "700 12px/1 var(--mono)", letterSpacing: ".1em", color: "var(--dim)" }}>{time12(c.start_time).toUpperCase()} · {c.duration_min} MIN</div>
                     <div className="st-t" style={{ marginTop: 6, textDecoration: off ? "line-through" : "none" }}>{c.title}</div>
-                    <div className="st-s">{c.level.toUpperCase()} · {c.age_group.toUpperCase()}</div>
+                    <div className="st-s">{discNames(c).toUpperCase()} · {c.level.toUpperCase()} · {c.age_group.toUpperCase()}</div>
                   </div>
                   {off ? <span className="st-pill">CANCELLED</span> : <span className="st-pill">{count(c.id)} / {c.capacity} · OPEN →</span>}
                 </button>
@@ -111,7 +111,7 @@ function Register({ cls, date, coach, onBack }: { cls: any; date: string; coach:
   return (
     <>
       <button className="st-btn sm" onClick={onBack} style={{ marginBottom: 16 }}>← All classes</button>
-      <div className="mono" style={{ font: "700 12px/1 var(--mono)", letterSpacing: ".14em", color: "var(--dim)" }}>{(D.disciplines[cls.discipline]?.name ?? "").toUpperCase()} · {time12(cls.start_time).toUpperCase()} – {fmtDay(date).toUpperCase()}</div>
+      <div className="mono" style={{ font: "700 12px/1 var(--mono)", letterSpacing: ".14em", color: "var(--dim)" }}>{discNames(cls).toUpperCase()} · {time12(cls.start_time).toUpperCase()} – {fmtDay(date).toUpperCase()}</div>
       <h1 className="anton" style={{ margin: "10px 0 14px", fontSize: "clamp(34px,6vw,52px)", lineHeight: 0.95, color: "var(--fg)" }}>{cls.title}</h1>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
         <span className="st-pill">{present} PRESENT</span><span className="st-pill">{late} LATE</span><span className="st-pill">{absent} ABSENT</span><span className="st-pill">CAP {cls.capacity}</span>

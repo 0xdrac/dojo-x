@@ -28,7 +28,7 @@ class Screen extends DCLogic {
     if (!D) return { root: this.root };
     const k = this.slug(), d = D.disciplines[k], calm = !!d.calm, col = D.color(k);
     const accent = calm ? col : '#C8102E';
-    const classes = D.classes.filter(c => c.disc === k);
+    const classes = D.classes.filter(c => c.discs.includes(k));
     const comboTip = k === 'yoga' ? 'Yoga is monthly only. Every member gets 5% off; join with a partner and you both get 10%.' : 'Commit longer: 3 months ₹11,999 · 6 months ₹19,999 · 12 months ₹29,999. Add Yoga at ₹2,599/mo.';
     return {
       root: this.root, calm, accent, accentText: calm ? col : '#F5F5F5',
@@ -48,7 +48,7 @@ class Screen extends DCLogic {
       agegroups: d.agegroups.map(a => ({ g: a[0], r: a[1], note: a[2] })),
       weekCols: w >= 1024 ? 'repeat(7,minmax(0,1fr))' : w >= 640 ? 'repeat(4,minmax(0,1fr))' : 'repeat(2,minmax(0,1fr))',
       week: D.days.map((day, di) => {
-        const items = classes.filter(c => c.d === di).map(c => ({ time: D.time12(c.t), title: c.title, meta: `${D.coaches[c.coach].first.toUpperCase()} · ${c.level.toUpperCase()} · ${c.age.toUpperCase()}`, href: `/schedule?d=${k}&day=${di}` }));
+        const items = classes.filter(c => c.d === di).map(c => ({ time: D.time12(c.t), title: c.title, meta: `${c.coachNames.toUpperCase()} · ${c.level.toUpperCase()} · ${c.age.toUpperCase()}`, href: `/schedule?d=${k}&day=${di}` }));
         return { day, items, none: !items.length, count: items.length ? `${items.length}×` : '', bd: items.length ? accent : '#262626' };
       }),
       coaches: d.coaches.map(s => { const c = D.coaches[s]; return { href: `/coaches?c=${s}`, slot: `coach-${s}`, first: c.first, roleU: c.role.toUpperCase(), nickU: c.nick.toUpperCase(), name: `${c.first} ${c.last}`, stat: c.rec ? `${c.rec.join('-')} W-L-D` : c.rank.toUpperCase() }; }),

@@ -2,11 +2,15 @@
 import { useEffect, useState } from "react";
 import { DojoAPI, call } from "@/lib/api";
 import DOJO from "@/lib/dojo";
+import { coachesOf, discsOf } from "@/lib/classes";
+export { coachesOf, discsOf };
 
 export const D: any = DOJO;
 export const hueColor = (disc: string) => D.color(disc);
 export const time12 = (t: string) => D.time12(t);
 export const coachName = (k: string) => D.coaches[k]?.first ?? k;
+export const coachNames = (c: any) => coachesOf(c).map(coachName).join(" & ");
+export const discNames = (c: any) => discsOf(c).map((k: string) => D.disciplines[k]?.name ?? k).join(" + ");
 export const DAYS: string[] = D.days;
 export const DAYS_LONG: string[] = D.daysLong;
 export const initials = (n: string) => n.split(" ").filter(Boolean).map((x) => x[0]).join("").slice(0, 2).toUpperCase();
@@ -45,6 +49,10 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
 export const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <label className="st-fg" style={{ display: "block" }}><span className="st-lb">{label}</span>{children}</label>
 );
+/** Multi-select chips: toggle any number of options on or off. */
+export function Multi({ value, options, onChange }: { value: string[]; options: [string, string][]; onChange: (v: string[]) => void }) {
+  return <div className="st-chips">{options.map(([k, l]) => { const on = value.includes(k); return <button type="button" key={k} aria-pressed={on} className={"st-chip" + (on ? " on" : "")} onClick={() => onChange(on ? value.filter((x) => x !== k) : [...value, k])}>{on ? "✓ " : ""}{l}</button>; })}</div>;
+}
 export function Chips<T extends string | number>({ value, options, onChange }: { value: T; options: [T, string][]; onChange: (v: T) => void }) {
   return <div className="st-chips">{options.map(([k, l]) => <button type="button" key={String(k)} className={"st-chip" + (value === k ? " on" : "")} onClick={() => onChange(k)}>{l}</button>)}</div>;
 }
