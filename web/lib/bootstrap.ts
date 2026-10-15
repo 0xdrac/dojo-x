@@ -6,10 +6,11 @@ import DXP from "./portal";
 import DXA from "./admin";
 import POSTS from "./posts";
 import { DojoMotion } from "./motion";
+import { DojoAPI } from "./api";
 
 if (typeof window !== "undefined") {
   const w = window as any;
-  w.DOJO = DOJO; w.DXP = DXP; w.DXA = DXA; w.DOJO_POSTS = POSTS; w.DojoMotion = DojoMotion;
+  w.DOJO = DOJO; w.DXP = DXP; w.DXA = DXA; w.DOJO_POSTS = POSTS; w.DojoMotion = DojoMotion; w.DojoAPI = DojoAPI;
   w.DojoReady = (cb: () => void) => cb();
 }
 export {};

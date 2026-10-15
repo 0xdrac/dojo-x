@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable */
 'use client';
-// Ported from project/Free Trial.dc.html by scripts/convert (template -> JSX, logic kept as-is).
+// Ported from project/Free Trial.dc.html. HAND-EDITED: bookings are saved through /api/trials (scripts/convert.py skips this file).
 import React from 'react';
 import '@/lib/bootstrap';
 import { DCLogic } from '@/lib/dc';
@@ -49,7 +49,7 @@ class Screen extends DCLogic {
       fields: [fld('name', s.age === 'Kids' ? 'CHILD’S NAME' : 'FULL NAME', 'Your name', 'text'), fld('phone', s.age === 'Adults' ? 'MOBILE (WHATSAPP)' : 'PARENT’S MOBILE (WHATSAPP)', '98450 21734', 'numeric')],
       exps: ['None', 'Some', 'Lots'].map(x => ({ label: { None: 'Never trained', Some: 'A little', Lots: 'Experienced' }[x], on: s.exp === x, bg: s.exp === x ? 'rgba(200,16,46,.14)' : '#141414', bd: s.exp === x ? '#C8102E' : '#2E2E2E', pick: () => this.setState({ exp: x }) })),
       busy: s.busy, submitLabel: s.busy ? 'BOOKING' : 'CONFIRM FREE TRIAL →',
-      submit: e => { e.preventDefault(); if (errs.name || errs.phone) return this.setState({ tried: true }); this.setState({ busy: true }); setTimeout(() => this.setState({ busy: false, step: 4 }), 900); },
+      submit: e => { e.preventDefault(); if (errs.name || errs.phone) return this.setState({ tried: true }); this.setState({ busy: true }); DojoAPI.bookTrial({ name: s.name, phone: s.phone, discipline: s.disc, ageGroup: s.age, experience: s.exp, slot: sl ? { classId: sl.id, title: sl.title, day: when(sl).split(' · ')[0], time: D.time12(sl.t), coach: coach(sl) } : null }).then(r => { this.setState({ busy: false }); if (!r.ok) return DojoMotion.toast(r.error); this.setState({ step: 4 }); }); },
       showFoot: s.step <= 2, footText: s.step === 1 ? (dk ? D.disciplines[dk].name + ' selected' : 'Pick a discipline') : sl ? when(sl) : 'Pick a time',
       cantNext: s.step === 1 ? !dk : !sl, nextBg: (s.step === 1 ? dk : sl) ? '#C8102E' : '#333333', next: () => this.setState({ step: s.step + 1 }), bottomPad: s.step <= 2 ? '32px' : '64px',
       firstName: first,

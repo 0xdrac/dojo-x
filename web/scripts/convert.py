@@ -239,5 +239,9 @@ if __name__ == '__main__':
       ('Login.dc.html','Login'),('Invoice.dc.html','Invoice'),('SiteFooter.dc.html','SiteFooter')]
     info = {}
     for f, o in pages:
+        try:
+            if 'HAND-EDITED' in open(OUT + o + '.tsx', encoding='utf-8').read(400):
+                print('skip (hand-edited):', o); continue
+        except FileNotFoundError: pass
         info[o] = convert(f, o)
     print(json.dumps(info))
