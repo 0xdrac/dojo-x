@@ -1,6 +1,7 @@
 import TLink from "./TLink";
 import Btn from "./Btn";
 import Slot from "./Slot";
+import NextUp from "./NextUp";
 import { DISCIPLINES, STATS, GALLERY, hue, MAPS, PHONE, PHONE_TEL, WA, EMAIL } from "@/lib/data";
 
 const SH = ({ no, children }: { no: string; children?: React.ReactNode }) => <div className="eyebrow">{no}{children}</div>;
@@ -38,7 +39,7 @@ export function Hero() {
             <span style={{ width: 6, height: 6, background: "var(--fg)", borderRadius: "50%" }} />NEXT UP
           </span>
           <span className="mono" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", height: 36, padding: "0 14px", background: "rgba(20,20,20,.85)", color: "var(--fg)", font: "500 12px/1 var(--mono)", letterSpacing: ".08em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            MUAY THAI FUNDAMENTALS · 6:30 PM · COACH KAVYA · 4 SPOTS LEFT
+            <NextUp />
           </span>
           <span className="mono dk" style={{ flex: "none", alignItems: "center", gap: 10, height: 36, paddingLeft: 20, color: "var(--dim)", font: "500 11px/1 var(--mono)", letterSpacing: ".2em" }}>
             SCROLL<span style={{ width: 40, height: 1, background: "var(--dim)" }} />

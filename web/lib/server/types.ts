@@ -9,7 +9,7 @@ export type Trial = {
   id: string; accountId?: string | null; name: string; phone: string; email?: string | null; discipline: string; ageGroup?: string | null;
   experience?: string | null; slot?: { classId?: number; title: string; day: string; time: string; coach?: string } | null; status: string; createdAt: string;
 };
-export type Staff = { id: string; phone: string; name: string; role: "owner" | "coach" | "frontdesk" };
+export type Staff = { id: string; phone: string; name: string; role: "owner" | "coach" | "frontdesk"; coachKey?: string | null };
 
 export interface Store {
   accountByPhone(phone: string): Promise<Account | null>;

@@ -2,12 +2,11 @@
 // @ts-nocheck
 // Browser-side client for the /api routes. Exposed to the ported screens as window.DojoAPI (see bootstrap.ts).
 import DXP from "./portal";
-import DXA from "./admin";
 import DOJO from "./dojo";
 
 type R = { ok: boolean; status: number; error?: string; [k: string]: any };
 
-async function call(method: string, url: string, data?: any): Promise<R> {
+export async function call(method: string, url: string, data?: any): Promise<R> {
   try {
     const res = await fetch(url, { method, headers: data ? { "Content-Type": "application/json" } : undefined, body: data ? JSON.stringify(data) : undefined, credentials: "same-origin" });
     const j = await res.json().catch(() => ({}));
@@ -75,21 +74,23 @@ export const DojoAPI = {
     if (roles && !roles.includes(r.staff.role)) { (window as any).DojoMotion.go(r.staff.role === "coach" ? "/coach-app" : "/admin"); return null; }
     return r.staff;
   },
-
-  /** Merges real members and trial bookings from the database into the Admin screen's data (sample data stays below them). */
-  async syncAdmin(): Promise<void> {
-    const [mm, tt] = await Promise.all([call("GET", "/api/staff/members"), call("GET", "/api/staff/trials")]);
-    if (!DXA._sample) DXA._sample = { members: DXA.members.slice(), trials: DXA.trials.slice() };
-    const real = (mm.members || []).map((m: any) => ({
-      id: m.memberCode, name: m.name, first: m.name.split(" ")[0], phone: m.phone.length === 10 ? `${m.phone.slice(0, 5)} ${m.phone.slice(5)}` : m.phone,
-      disc: [], dur: "monthly", days: 0, status: "new", kid: age(m.dob) < 13, mode: "manual", last: 0, visits: 0, since: fmtDate(m.createdAt).replace(/^\d+ /, ""),
-    }));
-    const LABEL: any = { booked: "Booked", attended: "Attended · follow up", "no-show": "No-show", joined: "Joined" };
-    const trials = (tt.trials || []).map((t: any) => [
-      t.name, (DOJO.disciplines[t.discipline] || { name: t.discipline }).name,
-      t.slot ? `${t.slot.day} ${t.slot.time}` : fmtDate(t.createdAt), LABEL[t.status] || t.status,
-    ]);
-    DXA.members = [...real, ...DXA._sample.members];
-    DXA.trials = [...trials, ...DXA._sample.trials].slice(0, 12);
-  },
 };
+
+let publicLoad: Promise<void> | null = null;
+/** Replaces the prototype's sample timetable / coupons / announcements with the live ones from /api/public (once per page load). */
+export function loadPublic(): Promise<void> {
+  if (publicLoad) return publicLoad;
+  publicLoad = (async () => {
+    const r = await call("GET", "/api/public");
+    if (!r.ok || !r.classes) return;           // keep the sample data if the API is unavailable
+    const todayIdx = (new Date().getDay() + 6) % 7, d = new Date(), iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const off = new Set(r.cancelled || []);
+    DOJO.classes = r.classes.filter((c: any) => !(c.d === todayIdx && off.has(`${c.id}|${iso}`)));
+    DOJO.coupons = Object.fromEntries((r.coupons || []).map((c: any) => [c.code, { type: c.type, v: c.v, label: c.type === "pct" ? `${c.v}% off` : `₹${c.v} off` }]));
+    DXP.announcements = (r.events || []).slice(0, 3).map((e: any) => [
+      e.kind.toUpperCase(), e.title,
+      `${new Date(e.startsAt).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true })}${e.location ? " · " + e.location : ""}${e.price ? " · ₹" + e.price : " · Free"}`, "",
+    ]);
+  })();
+  return publicLoad;
+}

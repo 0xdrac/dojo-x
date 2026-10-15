@@ -7,7 +7,7 @@ const must = <T,>(r: { data: T | null; error: { message: string } | null }): T =
 const toAccount = (r: any): Account => ({ id: r.id, phone: r.phone, createdAt: r.created_at });
 const toMember = (r: any): Member => ({ id: r.id, accountId: r.account_id, rel: r.rel, name: r.name, dob: r.dob, email: r.email, gender: r.gender, memberCode: r.member_code, emergency: r.emergency, waiver: r.waiver, createdAt: r.created_at });
 const toTrial = (r: any): Trial => ({ id: r.id, accountId: r.account_id, name: r.name, phone: r.phone, email: r.email, discipline: r.discipline, ageGroup: r.age_group, experience: r.experience, slot: r.slot, status: r.status, createdAt: r.created_at });
-const toStaff = (r: any): Staff => ({ id: r.id, phone: r.phone, name: r.name, role: r.role });
+const toStaff = (r: any): Staff => ({ id: r.id, phone: r.phone, name: r.name, role: r.role, coachKey: r.coach_key });
 
 export const supabaseStore: Store = {
   async accountByPhone(phone) { const r = await sb().from("accounts").select("*").eq("phone", phone).maybeSingle(); return r.data ? toAccount(must(r)) : null; },

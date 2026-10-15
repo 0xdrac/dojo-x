@@ -234,8 +234,8 @@ export default {cls};
 if __name__ == '__main__':
     pages = [('About.dc.html','About'),('Programs.dc.html','Programs'),('Article.dc.html','Article'),('Blog.dc.html','Blog'),
       ('Schedule.dc.html','Schedule'),('Contact.dc.html','Contact'),('FAQs.dc.html','FAQs'),('Checkout.dc.html','Checkout'),
-      ('Discipline.dc.html','Discipline'),('Admin.dc.html','Admin'),('Pricing.dc.html','Pricing'),('Free Trial.dc.html','FreeTrial'),
-      ('Coaches.dc.html','Coaches'),('Gallery.dc.html','Gallery'),('Coach App.dc.html','CoachApp'),('Member Portal.dc.html','MemberPortal'),
+      ('Discipline.dc.html','Discipline'),('Pricing.dc.html','Pricing'),('Free Trial.dc.html','FreeTrial'),
+      ('Coaches.dc.html','Coaches'),('Gallery.dc.html','Gallery'),('Member Portal.dc.html','MemberPortal'),
       ('Login.dc.html','Login'),('Invoice.dc.html','Invoice'),('SiteFooter.dc.html','SiteFooter')]
     info = {}
     for f, o in pages:
