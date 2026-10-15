@@ -89,7 +89,7 @@ export function loadPublic(): Promise<void> {
     DOJO.coupons = Object.fromEntries((r.coupons || []).map((c: any) => [c.code, { type: c.type, v: c.v, label: c.type === "pct" ? `${c.v}% off` : `₹${c.v} off` }]));
     DXP.announcements = (r.events || []).slice(0, 3).map((e: any) => [
       e.kind.toUpperCase(), e.title,
-      `${new Date(e.startsAt).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true })}${e.location ? " · " + e.location : ""}${e.price ? " · ₹" + e.price : " · Free"}`, "",
+      `${new Date(e.startsAt).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true })}${e.repeat ? " · " + e.repeat.toLowerCase() : ""}${e.location ? " · " + e.location : ""}${e.price ? " · ₹" + e.price : " · Free"}`, "",
     ]);
   })();
   return publicLoad;

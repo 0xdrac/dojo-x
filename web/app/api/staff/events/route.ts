@@ -2,10 +2,12 @@ import { T } from "@/lib/server/tables";
 import { isRes, staffGuard } from "@/lib/server/guard";
 import { eventRow } from "@/lib/server/validate";
 import { body, fail, json } from "@/lib/server/util";
+import { nextOccurrence } from "@/lib/recur";
 
 export async function GET() {
   const g = await staffGuard(["owner", "frontdesk"]); if (isRes(g)) return g.res;
-  return json({ events: await T.list("events", { order: ["starts_at", false] }) });
+  const rows = await T.list("events", { order: ["starts_at", false] });
+  return json({ events: rows.map((e) => ({ ...e, next: nextOccurrence(e as any) })) });
 }
 export async function POST(req: Request) {
   const g = await staffGuard(["owner"]); if (isRes(g)) return g.res;

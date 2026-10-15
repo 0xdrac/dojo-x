@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useShell } from "@/components/Shell";
+import { describeRepeat, istWeekday, totalSessions } from "@/lib/recur";
 import { Chips, DAYS, DAYS_LONG, Field, Sheet, D, api, coachName, fmtDay, fmtWhen, hueColor, http, initials, nextDateFor, time12, toLocalInput, useLoad, wd, ymd } from "./ui";
 
 type View = "dash" | "members" | "checkin" | "schedule" | "events" | "coupons" | "trials";
@@ -82,7 +83,7 @@ function Dashboard({ go }: { go: (v: View) => void }) {
   const cancelled = new Set(((classes.data as any)?.cancellations ?? []).filter((c: any) => c.on_date === today).map((c: any) => c.class_id));
   const todays = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && c.day === day).sort((a, b) => a.start_time.localeCompare(b.start_time));
   const attBy = (id: string) => (((att.data as any)?.attendance ?? []) as any[]).filter((a) => a.class_id === id && a.status !== "absent").length;
-  const upcoming = (((events.data as any)?.events ?? []) as any[]).filter((e) => e.starts_at >= new Date().toISOString()).reverse().slice(0, 3);
+  const upcoming = (((events.data as any)?.events ?? []) as any[]).filter((e) => e.next).sort((a, b) => a.next.localeCompare(b.next)).slice(0, 3);
   const setStatus = async (id: string, status: string) => { const r = await api.setTrialStatus(id, status); if (!r.ok) return toast(r.error!); trials.reload(); };
 
   return (
@@ -128,7 +129,7 @@ function Dashboard({ go }: { go: (v: View) => void }) {
             <div className="st-sec" style={{ display: "flex", justifyContent: "space-between" }}>NEXT EVENTS <a href="#events" onClick={(e) => { e.preventDefault(); go("events"); }} style={{ color: "var(--mid)" }}>ALL →</a></div>
             <div className="st-card">
               {events.loading ? <Loading /> : !upcoming.length ? <div className="st-empty">No upcoming events.</div> : upcoming.map((e) => (
-                <div className="st-row" key={e.id}><div style={{ flex: 1 }}><div className="st-t">{e.title}</div><div className="st-s">{fmtWhen(e.starts_at).toUpperCase()}</div></div><span className="st-pill">{e.kind.toUpperCase()}</span></div>
+                <div className="st-row" key={e.id}><div style={{ flex: 1 }}><div className="st-t">{e.title}</div><div className="st-s">{fmtWhen(e.next).toUpperCase()}{e.repeat_days?.length ? " · REPEATS" : ""}</div></div><span className="st-pill">{e.kind.toUpperCase()}</span></div>
               ))}
             </div>
           </div>
@@ -360,10 +361,9 @@ function Events({ owner }: { owner: boolean }) {
   const { data, loading, reload } = useLoad(() => http("GET", "/api/staff/events"));
   const [form, setForm] = useState<any>(null);
   const [past, setPast] = useState(false);
-  const now = new Date().toISOString();
   const all = (((data as any)?.events ?? []) as any[]);
-  const list = all.filter((e) => (past ? e.starts_at < now : e.starts_at >= now)).sort((a, b) => (past ? b.starts_at.localeCompare(a.starts_at) : a.starts_at.localeCompare(b.starts_at)));
-  const blank = () => { const d = new Date(Date.now() + 7 * 864e5); d.setHours(18, 0, 0, 0); return { title: "", kind: "Fight Night", startsAt: toLocalInput(d.toISOString()), location: "Dojo X, Sai Complex, Vasundhara", price: 0, capacity: "", description: "", published: true }; };
+  const list = all.filter((e) => (past ? !e.next : !!e.next)).sort((a, b) => (past ? b.starts_at.localeCompare(a.starts_at) : a.next.localeCompare(b.next)));
+  const blank = () => { const d = new Date(Date.now() + 7 * 864e5); d.setHours(18, 0, 0, 0); return { title: "", kind: "Fight Night", startsAt: toLocalInput(d.toISOString()), location: "Dojo X, Sai Complex, Vasundhara", price: 0, capacity: "", description: "", published: true, repeat: false, repeatDays: [], repeatUntil: "" }; };
   const togglePub = async (e: any) => { const r = await http("PATCH", `/api/staff/events/${e.id}`, { published: !e.published }); if (!r.ok) return toast(r.error!); reload(); };
   return (
     <>
@@ -375,13 +375,14 @@ function Events({ owner }: { owner: boolean }) {
           <div className="st-row" key={e.id} style={{ flexWrap: "wrap", opacity: e.published ? 1 : 0.6 }}>
             <div style={{ flex: "1 1 240px", minWidth: 0 }}>
               <div className="st-t">{e.title}</div>
-              <div className="st-s">{fmtWhen(e.starts_at).toUpperCase()}{e.location ? ` · ${e.location.toUpperCase()}` : ""} · {e.price ? `₹${e.price}` : "FREE"}{e.capacity ? ` · ${e.capacity} SPOTS` : ""}</div>
+              {e.repeat_days?.length ? <div className="st-s" style={{ color: "var(--mid)" }}>↻ {describeRepeat(e).toUpperCase()}</div> : null}
+              <div className="st-s">{e.repeat_days?.length ? "NEXT · " : ""}{fmtWhen(e.next ?? e.starts_at).toUpperCase()}{e.location ? ` · ${e.location.toUpperCase()}` : ""} · {e.price ? `₹${e.price}` : "FREE"}{e.capacity ? ` · ${e.capacity} SPOTS` : ""}</div>
             </div>
             <span className="st-pill">{e.kind.toUpperCase()}</span>
             {!e.published && <span className="st-pill">DRAFT</span>}
             {owner && <>
               <button className="st-btn sm" onClick={() => togglePub(e)}>{e.published ? "Unpublish" : "Publish"}</button>
-              <button className="st-btn sm" onClick={() => setForm({ id: e.id, title: e.title, kind: e.kind, startsAt: toLocalInput(e.starts_at), location: e.location ?? "", price: e.price, capacity: e.capacity ?? "", description: e.description ?? "", published: e.published })}>Edit</button>
+              <button className="st-btn sm" onClick={() => setForm({ id: e.id, title: e.title, kind: e.kind, startsAt: toLocalInput(e.starts_at), location: e.location ?? "", price: e.price, capacity: e.capacity ?? "", description: e.description ?? "", published: e.published, repeat: !!e.repeat_days?.length, repeatDays: e.repeat_days ?? [], repeatUntil: e.repeat_until ?? "" })}>Edit</button>
             </>}
           </div>
         ))}
@@ -397,7 +398,8 @@ function EventSheet({ form, onClose, onSaved }: { form: any; onClose: () => void
   const editing = !!f.id;
   const save = async () => {
     setBusy(true); setErr("");
-    const payload = { ...f, startsAt: f.startsAt ? new Date(f.startsAt).toISOString() : "", price: Number(f.price || 0), capacity: f.capacity === "" ? null : Number(f.capacity) };
+    const { repeat, repeatDays, repeatUntil, ...rest } = f;
+    const payload = { ...rest, startsAt: f.startsAt ? new Date(f.startsAt).toISOString() : "", price: Number(f.price || 0), capacity: f.capacity === "" ? null : Number(f.capacity), repeatDays: repeat ? repeatDays : [], repeatUntil: repeat ? repeatUntil : null };
     const r = editing ? await http("PATCH", `/api/staff/events/${f.id}`, payload) : await http("POST", "/api/staff/events", payload);
     setBusy(false); if (!r.ok) return setErr(r.error!);
     toast(editing ? "Event updated" : "Event created"); onSaved();
@@ -408,6 +410,8 @@ function EventSheet({ form, onClose, onSaved }: { form: any; onClose: () => void
       <Field label="TITLE"><input className="st-in" value={f.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. Fight Night 10" /></Field>
       <Field label="TYPE"><Chips value={f.kind} options={KINDS.map((k) => [k, k])} onChange={(v) => set("kind", v)} /></Field>
       <Field label="DATE & TIME"><input className="st-in" type="datetime-local" value={f.startsAt} onChange={(e) => set("startsAt", e.target.value)} /></Field>
+      <Field label="REPEAT"><Chips value={f.repeat ? "on" : "off"} options={[["off", "Does not repeat"], ["on", "Repeats weekly"]]} onChange={(v) => set("repeat", v === "on")} /></Field>
+      {f.repeat && <RepeatFields f={f} set={set} />}
       <Field label="LOCATION"><input className="st-in" value={f.location} onChange={(e) => set("location", e.target.value)} /></Field>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Field label="PRICE (₹, 0 = FREE)"><input className="st-in" type="number" min={0} value={f.price} onChange={(e) => set("price", e.target.value)} /></Field>
@@ -421,6 +425,29 @@ function EventSheet({ form, onClose, onSaved }: { form: any; onClose: () => void
         {editing && <button className="st-btn d" onClick={del}>Delete</button>}
       </div>
     </Sheet>
+  );
+}
+
+function RepeatFields({ f, set }: { f: any; set: (k: string, v: any) => void }) {
+  const startMs = f.startsAt ? +new Date(f.startsAt) : NaN;
+  const startDay = isNaN(startMs) ? -1 : istWeekday(startMs);
+  const days: number[] = f.repeatDays;
+  const toggle = (i: number) => set("repeatDays", days.includes(i) ? days.filter((d) => d !== i) : [...days, i]);
+  const endIn = (weeks: number) => { const d = new Date(startMs + weeks * 7 * 864e5); set("repeatUntil", d.toISOString().slice(0, 10)); };
+  const effective = [...new Set([...days, ...(startDay >= 0 ? [startDay] : [])])];
+  const n = !isNaN(startMs) && f.repeatUntil && effective.length ? totalSessions({ starts_at: new Date(f.startsAt).toISOString(), repeat_days: effective, repeat_until: f.repeatUntil }) : 0;
+  return (
+    <div className="st-card" style={{ padding: 14, marginBottom: 16 }}>
+      <Field label="REPEATS ON (PICK ONE OR MORE DAYS)">
+        <div className="st-chips">{DAYS.map((d, i) => <button type="button" key={d} className={"st-chip" + (effective.includes(i) ? " on" : "")} onClick={() => i !== startDay && toggle(i)} title={i === startDay ? "The first date’s day is always included" : undefined}>{d}</button>)}</div>
+        {startDay >= 0 && <div className="st-s" style={{ marginTop: 8 }}>The first date is a {DAYS_LONG[startDay]}, so {DAYS[startDay]} is always included.</div>}
+      </Field>
+      <Field label="REPEATS UNTIL">
+        <input className="st-in" type="date" value={f.repeatUntil} min={f.startsAt?.slice(0, 10)} onChange={(e) => set("repeatUntil", e.target.value)} />
+        <div className="st-chips" style={{ marginTop: 8 }}>{[["4 weeks", 4], ["8 weeks", 8], ["3 months", 13], ["6 months", 26]].map(([l, w]) => <button type="button" key={l as string} className="st-chip" onClick={() => endIn(w as number)}>{l}</button>)}</div>
+      </Field>
+      <div className="st-s">{n ? `${n} session${n === 1 ? "" : "s"}: every ${effective.length === 7 ? "day" : effective.sort((a, b) => a - b).map((i) => DAYS[i]).join(", ")} until ${f.repeatUntil}` : "Choose when the repeat ends."}</div>
+    </div>
   );
 }
 

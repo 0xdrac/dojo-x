@@ -1,5 +1,6 @@
 import DOJO from "@/lib/dojo";
 import { str } from "./util";
+import { istDate, istWeekday } from "@/lib/recur";
 
 const DISCS = DOJO.order as string[];
 const COACHES = DOJO.coachOrder as string[];
@@ -34,5 +35,20 @@ export function eventRow(b: any, partial = false): { row?: Record<string, any>; 
   if (has("price")) { const n = Number(b.price || 0); if (!Number.isInteger(n) || n < 0 || n > 1000000) return { error: "Price must be a whole number of rupees." }; row.price = n; }
   if (has("capacity")) { const n = b.capacity === "" || b.capacity == null ? null : Number(b.capacity); if (n !== null && (!Number.isInteger(n) || n < 1)) return { error: "Capacity must be a whole number." }; row.capacity = n; }
   if (has("published")) row.published = !!b.published;
+  if (has("repeatDays") || has("repeatUntil")) {
+    const days = Array.isArray(b.repeatDays) ? [...new Set<number>(b.repeatDays.map(Number))] : [];
+    if (!days.length) { row.repeat_days = null; row.repeat_until = null; }   // one-off
+    else {
+      if (days.some((d) => !Number.isInteger(d) || d < 0 || d > 6)) return { error: "Pick valid days of the week." };
+      if (!row.starts_at) return { error: "Set the start date and time." };
+      const first = istDate(+new Date(row.starts_at));
+      const until = String(b.repeatUntil || "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(until)) return { error: "Pick when the repeat ends." };
+      if (until < first) return { error: "The repeat can’t end before it starts." };
+      if (+new Date(until) - +new Date(first) > 366 * 864e5) return { error: "Repeats can run for at most a year." };
+      days.push(istWeekday(+new Date(row.starts_at)));         // the first date always counts
+      row.repeat_days = [...new Set(days)].sort((a, c) => a - c); row.repeat_until = until;
+    }
+  }
   return { row };
 }

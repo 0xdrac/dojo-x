@@ -2,13 +2,14 @@ import { T } from "@/lib/server/tables";
 import { store } from "@/lib/server/store";
 import { isRes, staffGuard, today, weekday } from "@/lib/server/guard";
 import { json } from "@/lib/server/util";
+import { nextOccurrence } from "@/lib/recur";
 
 export async function GET() {
   const g = await staffGuard(["owner", "frontdesk"]); if (isRes(g)) return g.res;
   const d = today(), monthStart = d.slice(0, 8) + "01";
   const [members, trials, att, classes, events, cancels] = await Promise.all([
     store().allMembers(), store().trials(), T.list("attendance", { eq: { on_date: d } }),
-    T.list("classes", { eq: { active: true, day: weekday(d) } }), T.list("events", { eq: { published: true }, gte: ["starts_at", new Date().toISOString()] }),
+    T.list("classes", { eq: { active: true, day: weekday(d) } }), T.list("events", { eq: { published: true } }),
     T.list("class_cancellations", { eq: { on_date: d } }),
   ]);
   const cancelled = new Set(cancels.map((c) => c.class_id));
@@ -20,6 +21,6 @@ export async function GET() {
     trialsOpen: trials.filter((t) => t.status === "booked").length,
     checkinsToday: att.filter((a) => a.status !== "absent").length,
     classesToday: classes.filter((c) => !cancelled.has(c.id)).length,
-    upcomingEvents: events.length,
+    upcomingEvents: events.filter((e) => nextOccurrence(e as any)).length,
   });
 }

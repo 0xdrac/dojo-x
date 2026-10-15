@@ -85,8 +85,12 @@ create table if not exists events (
   price       int not null default 0,            -- rupees, 0 = free
   capacity    int,
   published   boolean not null default true,
+  repeat_days  smallint[],                       -- weekdays it repeats on (0 = Mon ... 6 = Sun); null = one-off
+  repeat_until date,                             -- last date of the series
   created_at  timestamptz not null default now()
 );
+alter table events add column if not exists repeat_days  smallint[];
+alter table events add column if not exists repeat_until date;
 
 create table if not exists coupons (
   code        text primary key,
