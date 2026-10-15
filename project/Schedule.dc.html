@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<script src="./dojo-data.js"></script>
+<script src="./dojo-motion.js"></script>
+<style>html{scroll-behavior:auto}body{margin:0;background:#0D0D0D;color:#C9C9C9;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}*{box-sizing:border-box}a{color:#F5F5F5;text-decoration:none}a:hover{color:#FFFFFF}button,input,select,textarea{font-family:inherit}::selection{background:#C8102E;color:#F5F5F5}:focus-visible{outline:2px solid #F5F5F5;outline-offset:3px}body.kc-cursor,body.kc-cursor *{cursor:none !important}</style>
+</helmet>
+<div ref="{{root}}" style="position:relative;overflow-x:clip">
+<dc-import name="SiteHeader" active="schedule" hint-size="100%,0px"></dc-import>
+
+<section data-screen-label="Schedule hero" style="position:relative;padding:clamp(110px,12vw,150px) clamp(16px,4vw,56px) clamp(24px,3vw,40px);overflow:hidden">
+<div data-parallax="-0.1" aria-hidden="true" style="position:absolute;top:30px;right:-3vw;font-family:Anton,Impact,sans-serif;font-size:24vw;line-height:.8;white-space:nowrap;color:transparent;-webkit-text-stroke:1px rgba(245,245,245,.06);pointer-events:none">WEEK 42</div>
+<div style="position:relative;max-width:1328px;margin:0 auto">
+<div data-hero-fade="" style="display:flex;align-items:center;gap:10px;margin-bottom:18px;font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.2em;color:#9A9A9A"><span>HOME</span><span style="color:#C8102E">/</span><span style="color:#F5F5F5">SCHEDULE</span></div>
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px">
+<h1 data-shake="" style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(60px,10vw,160px);line-height:.86;text-transform:uppercase;color:#F5F5F5"><span data-slam="" style="display:inline-block">The week</span><br><span data-slam="" style="display:inline-block;color:transparent;-webkit-text-stroke:2px #F5F5F5">ahead</span><span data-slam="" style="display:inline-block;color:#C8102E">.</span></h1>
+<div data-hero-fade="" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+<span style="font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#F5F5F5">WEEK OF 12 – 18 OCT 2026</span>
+<div role="group" aria-label="Preview as" style="display:flex;border:1px solid #2E2E2E">
+<sc-for list="{{viewAs}}" as="v" hint-placeholder-count="2">
+<button onClick="{{v.pick}}" aria-pressed="{{v.on}}" style="height:40px;padding:0 14px;background:{{v.bg}};color:{{v.fg}};border:0;font:800 11px/1 Manrope,sans-serif;letter-spacing:.1em;cursor:pointer">{{v.label}}</button>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<sc-if value="{{desk}}" hint-placeholder-val="{{true}}">
+<section data-screen-label="Filters desktop" style="padding:0 clamp(16px,4vw,56px)">
+<div data-hero-fade="" style="max-width:1328px;margin:0 auto;padding:18px 0;border-top:1px solid #262626;border-bottom:1px solid #262626;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+<span style="width:84px;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A">DISCIPLINE</span>
+<sc-for list="{{discChips}}" as="c" hint-placeholder-count="8">
+<button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px;background:{{c.bg}};border:1px solid {{c.bd}};color:{{c.fg}};font:700 12px/1 Manrope,sans-serif;letter-spacing:.04em;cursor:pointer;transition:background .15s,border-color .15s" style-active="transform:scale(.96)"><span style="width:7px;height:7px;background:{{c.color}}"></span>{{c.label}}</button>
+</sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center">
+<div style="display:flex;gap:6px;align-items:center"><span style="width:84px;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A">LEVEL</span>
+<sc-for list="{{levelChips}}" as="c" hint-placeholder-count="4"><button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="height:36px;padding:0 12px;background:{{c.bg}};border:1px solid {{c.bd}};color:{{c.fg}};font:700 12px/1 Manrope,sans-serif;cursor:pointer" style-active="transform:scale(.96)">{{c.label}}</button></sc-for>
+</div>
+<div style="display:flex;gap:6px;align-items:center"><span style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A;margin-right:6px">AGE</span>
+<sc-for list="{{ageChips}}" as="c" hint-placeholder-count="4"><button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="height:36px;padding:0 12px;background:{{c.bg}};border:1px solid {{c.bd}};color:{{c.fg}};font:700 12px/1 Manrope,sans-serif;cursor:pointer" style-active="transform:scale(.96)">{{c.label}}</button></sc-for>
+</div>
+<span style="margin-left:auto;font:500 12px/1 'JetBrains Mono',monospace;color:#9A9A9A">{{resultLabel}}</span>
+<sc-if value="{{hasFilters}}" hint-placeholder-val="{{false}}"><button onClick="{{reset}}" style="height:36px;padding:0 4px;background:transparent;border:0;border-bottom:1px solid #C8102E;color:#F5F5F5;font:700 12px/1 'JetBrains Mono',monospace;letter-spacing:.08em;cursor:pointer">RESET</button></sc-if>
+</div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{notDesk}}" hint-placeholder-val="{{false}}">
+<div style="position:sticky;top:64px;z-index:30;background:rgba(13,13,13,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #262626">
+<div role="tablist" aria-label="Day" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));padding:0 8px">
+<sc-for list="{{dayTabs}}" as="t" hint-placeholder-count="7">
+<button role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:62px;background:transparent;border:0;color:{{t.fg}};cursor:pointer"><span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em">{{t.dow}}</span><span style="font-family:Anton,Impact,sans-serif;font-size:22px;line-height:1">{{t.date}}</span><span style="position:absolute;left:18%;right:18%;bottom:0;height:3px;background:#C8102E;transform:{{t.bar}};transition:transform .25s cubic-bezier(.7,0,.2,1)"></span><span style="position:absolute;top:8px;right:22%;width:5px;height:5px;border-radius:50%;background:{{t.dot}}"></span></button>
+</sc-for>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px 10px">
+<span style="font:500 11px/1.3 'JetBrains Mono',monospace;color:#9A9A9A">{{dayLabel}} · {{resultLabel}}</span>
+<button onClick="{{openSheet}}" style="display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;background:#1A1A1A;border:1px solid #2E2E2E;color:#F5F5F5;font:800 12px/1 Manrope,sans-serif;letter-spacing:.1em;cursor:pointer" style-active="transform:scale(.96)">FILTERS<sc-if value="{{hasFilters}}" hint-placeholder-val="{{false}}"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;background:#C8102E;font:700 11px/1 'JetBrains Mono',monospace">{{filterCount}}</span></sc-if></button>
+</div>
+</div>
+</sc-if>
+
+<section data-screen-label="Timetable" style="padding:clamp(20px,3vw,32px) clamp(16px,4vw,56px) clamp(72px,9vw,120px)">
+<div ref="{{gridRef}}" style="max-width:1328px;margin:0 auto">
+<sc-if value="{{loading}}" hint-placeholder-val="{{false}}">
+<div aria-busy="true" style="display:grid;grid-template-columns:{{gridCols}};gap:8px">
+<sc-for list="{{skels}}" as="s" hint-placeholder-count="7">
+<div style="display:flex;flex-direction:column;gap:8px"><span data-skel="" style="height:36px;background:#1A1A1A"></span><span data-skel="" style="height:112px;background:#1A1A1A"></span><span data-skel="" style="height:112px;background:#1A1A1A"></span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{showGrid}}" hint-placeholder-val="{{true}}">
+<div style="display:grid;grid-template-columns:{{gridCols}};gap:8px;align-items:start">
+<sc-for list="{{cols}}" as="d" hint-placeholder-count="7">
+<div style="display:grid;grid-template-columns:{{innerCols}};gap:8px;min-width:0;align-items:start">
+<sc-if value="{{desk}}" hint-placeholder-val="{{true}}"><div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-bottom:2px solid {{d.bd}}"><span style="font-family:Anton,Impact,sans-serif;font-size:24px;color:#F5F5F5;text-transform:uppercase">{{d.dow}} <span style="color:#9A9A9A">{{d.date}}</span></span><span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{d.tagFg}}">{{d.tag}}</span></div></sc-if>
+<sc-for list="{{d.items}}" as="c" hint-placeholder-count="4">
+<button onClick="{{c.open}}" data-cls="" style="--h:0;position:relative;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:{{cardPad}};background:#161616;border:1px solid {{c.bd}};color:#F5F5F5;text-align:left;cursor:pointer;opacity:{{c.op}};transition:border-color .15s,background .15s,transform .15s" style-hover="--h:1;background:#1D1D1D;border-color:#9A9A9A" style-active="transform:scale(.98)">
+<span style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Anton,Impact,sans-serif;font-size:{{timeSize}};line-height:1">{{c.time}}</span><span style="font:500 10px/1 'JetBrains Mono',monospace;color:#9A9A9A">{{c.dur}}</span></span>
+<span style="display:flex;align-items:center;gap:7px;font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:#C9C9C9"><span style="width:7px;height:7px;background:{{c.color}};flex:none"></span>{{c.disc}}</span>
+<span style="font:800 {{titleSize}}/1.25 Manrope,sans-serif">{{c.title}}</span>
+<span style="font-size:12px;line-height:1.4;color:#9A9A9A">{{c.coach}} · {{c.level}} · {{c.age}}</span>
+<span style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px"><span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:{{c.spotFg}}">{{c.spots}}</span><span style="font:800 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;padding:5px 7px;background:{{c.ctaBg}};color:{{c.ctaFg}}">{{c.cta}}</span></span>
+<span style="position:absolute;left:0;bottom:0;height:2px;width:100%;background:{{c.fill}};transform-origin:left;transform:scaleX({{c.pct}})"></span>
+</button>
+</sc-for>
+<sc-if value="{{d.none}}" hint-placeholder-val="{{false}}"><div style="padding:14px;border:1px dashed #262626;font:500 11px/1.4 'JetBrains Mono',monospace;color:#9A9A9A">NO MATCHING CLASSES</div></sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+<div style="padding:clamp(40px,6vw,72px) 0;display:flex;flex-direction:column;align-items:flex-start;gap:14px;max-width:460px">
+<span style="font-family:Anton,Impact,sans-serif;font-size:96px;line-height:.8;color:#262626">00</span>
+<span style="font:800 20px/1.3 Manrope,sans-serif;color:#F5F5F5">No classes match those filters</span>
+<span style="font-size:15px;line-height:1.6;color:#9A9A9A">Try a different level or age group, or reset to see the full week.</span>
+<button onClick="{{reset}}" style="height:48px;padding:0 18px;background:#C8102E;border:0;color:#F5F5F5;font:800 12px/1 Manrope,sans-serif;letter-spacing:.1em;cursor:pointer;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)" style-active="transform:scale(.96)">RESET FILTERS</button>
+</div>
+</sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:24px;font:500 11px/1.4 'JetBrains Mono',monospace;color:#9A9A9A">
+<span style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:2px;background:#C9C9C9"></span>BAR = HOW FULL</span>
+<span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;background:oklch(0.82 0.14 80)"></span>≤ 4 SPOTS LEFT</span>
+<span>FREE CANCELLATION UP TO 2 HRS BEFORE CLASS</span>
+</div>
+</div>
+</section>
+
+<sc-if value="{{sheetOpen}}" hint-placeholder-val="{{false}}">
+<div style="position:fixed;inset:0;z-index:60">
+<div onClick="{{closeSheet}}" style="position:absolute;inset:0;background:rgba(0,0,0,.6)"></div>
+<div ref="{{sheetRef}}" role="dialog" aria-label="Filter classes" style="position:absolute;left:0;right:0;bottom:0;max-height:86svh;overflow-y:auto;background:#1A1A1A;border-top:1px solid #2E2E2E;padding:12px 20px calc(20px + env(safe-area-inset-bottom))">
+<div style="width:40px;height:4px;background:#333333;margin:0 auto 16px"></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:Anton,Impact,sans-serif;font-size:32px;color:#F5F5F5">FILTERS</span><button onClick="{{reset}}" style="min-height:44px;background:transparent;border:0;color:#9A9A9A;font:700 12px/1 'JetBrains Mono',monospace;cursor:pointer">RESET</button></div>
+<div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A;margin-top:12px">DISCIPLINE</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+<sc-for list="{{discChips}}" as="c" hint-placeholder-count="8"><button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 12px;background:{{c.bg}};border:1px solid {{c.bd}};color:{{c.fg}};font:700 13px/1 Manrope,sans-serif;cursor:pointer"><span style="width:7px;height:7px;background:{{c.color}}"></span>{{c.label}}</button></sc-for>
+</div>
+<div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A;margin-top:20px">LEVEL</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+<sc-for list="{{levelChips}}" as="c" hint-placeholder-count="4"><button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="height:44px;padding:0 14px;background:{{c.bg}};border:1px solid {{c.bd}};color:{{c.fg}};font:700 13px/1 Manrope,sans-serif;cursor:pointer">{{c.label}}</button></sc-for>
+</div>
+<div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A;margin-top:20px">AGE GROUP</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+<sc-for list="{{ageChips}}" as="c" hint-placeholder-count="4"><button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="height:44px;padding:0 14px;background:{{c.bg}};border:1px solid {{c.bd}};color:{{c.fg}};font:700 13px/1 Manrope,sans-serif;cursor:pointer">{{c.label}}</button></sc-for>
+</div>
+<button onClick="{{closeSheet}}" style="width:100%;height:54px;margin-top:24px;background:#C8102E;border:0;color:#F5F5F5;font:800 14px/1 Manrope,sans-serif;letter-spacing:.1em;cursor:pointer" style-active="transform:scale(.97)">SHOW {{weekCountU}}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{detailOpen}}" hint-placeholder-val="{{false}}">
+<div style="position:fixed;inset:0;z-index:60;display:flex;align-items:{{detailAlign}};justify-content:center;padding:{{detailPad}}">
+<div onClick="{{closeDetail}}" style="position:absolute;inset:0;background:rgba(0,0,0,.65)"></div>
+<div ref="{{detailRef}}" role="dialog" aria-modal="true" aria-label="{{dt.title}}" style="position:relative;width:100%;max-width:560px;max-height:90svh;overflow-y:auto;background:#1A1A1A;border:1px solid #2E2E2E;box-shadow:0 24px 64px rgba(0,0,0,.6);clip-path:{{detailClip}}">
+<div style="height:4px;background:{{dt.color}};width:34%"></div>
+<div style="padding:clamp(20px,3vw,28px)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><span style="display:flex;align-items:center;gap:8px;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#C9C9C9"><span style="width:8px;height:8px;background:{{dt.color}}"></span>{{dt.disc}}</span><button onClick="{{closeDetail}}" aria-label="Close" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #2E2E2E;color:#F5F5F5;font-size:16px;cursor:pointer">✕</button></div>
+<div style="font-family:Anton,Impact,sans-serif;font-size:clamp(34px,5vw,48px);line-height:.95;color:#F5F5F5;text-transform:uppercase;margin-top:10px">{{dt.title}}</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin-top:18px;border-top:1px solid #2E2E2E">
+<div style="padding:12px 0;border-bottom:1px solid #2E2E2E"><div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A">WHEN</div><div style="margin-top:6px;font:700 15px/1.3 Manrope,sans-serif;color:#F5F5F5">{{dt.when}}</div></div>
+<div style="padding:12px 0 12px 14px;border-bottom:1px solid #2E2E2E;border-left:1px solid #2E2E2E"><div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A">COACH</div><a href="{{dt.coachHref}}" style="display:block;margin-top:6px;font:700 15px/1.3 Manrope,sans-serif;color:#F5F5F5;text-decoration:underline;text-decoration-color:#C8102E;text-underline-offset:4px">{{dt.coach}}</a></div>
+<div style="padding:12px 0;border-bottom:1px solid #2E2E2E"><div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A">LEVEL</div><div style="margin-top:6px;font:700 15px/1.3 Manrope,sans-serif;color:#F5F5F5">{{dt.level}}</div></div>
+<div style="padding:12px 0 12px 14px;border-bottom:1px solid #2E2E2E;border-left:1px solid #2E2E2E"><div style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A">AGE GROUP</div><div style="margin-top:6px;font:700 15px/1.3 Manrope,sans-serif;color:#F5F5F5">{{dt.age}}</div></div>
+</div>
+<div style="margin-top:16px"><div style="display:flex;justify-content:space-between;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.1em"><span style="color:{{dt.spotFg}}">{{dt.spots}}</span><span style="color:#9A9A9A">{{dt.cap}}</span></div><div style="height:6px;background:#262626;margin-top:8px"><div style="height:100%;width:{{dt.pctW}};background:{{dt.fill}}"></div></div></div>
+<p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:#C9C9C9">{{dt.desc}} Bring water, a towel and a mouthguard. Arrive 10 minutes early for your first class.</p>
+<sc-if value="{{isMember}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:20px">
+<button onClick="{{dt.book}}" data-bookbtn="" disabled="{{dt.bookDisabled}}" style="position:relative;display:flex;align-items:center;justify-content:center;gap:12px;height:56px;border:0;background:{{dt.bookBg}};color:{{dt.bookFg}};font:800 14px/1 Manrope,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);transition:background .25s" style-active="transform:scale(.96)">
+<sc-if value="{{dt.isLoading}}" hint-placeholder-val="{{false}}"><span data-spin="" style="width:20px;height:20px;border:2.5px solid rgba(245,245,245,.3);border-top-color:#F5F5F5;border-radius:50%"></span></sc-if>
+<sc-if value="{{dt.isDone}}" hint-placeholder-val="{{false}}"><span data-punch="" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:#F5F5F5;color:#1E7A43;font-size:15px;font-weight:900">✓</span></sc-if>
+<span>{{dt.bookLabel}}</span>
+</button>
+<sc-if value="{{dt.isDone}}" hint-placeholder-val="{{false}}"><button onClick="{{dt.cancel}}" style="height:48px;background:transparent;box-shadow:inset 0 0 0 1px oklch(0.70 0.19 45);border:0;color:oklch(0.80 0.14 45);font:800 12px/1 Manrope,sans-serif;letter-spacing:.1em;cursor:pointer" style-hover="background:oklch(0.70 0.19 45);color:#0D0D0D">CANCEL BOOKING</button></sc-if>
+<span style="font:500 12px/1.5 Manrope,sans-serif;color:#9A9A9A">Free cancellation until 2 hours before class. Late cancels or no-shows count as an attended session.</span>
+</div>
+</sc-if>
+<sc-if value="{{isVisitor}}" hint-placeholder-val="{{true}}">
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:20px">
+<a href="Free Trial.dc.html" style="--h:0;position:relative;display:flex;flex:1 1 220px;transition:transform .2s cubic-bezier(.7,0,.2,1),filter .25s" style-hover="--h:1;transform:translateY(-2px);filter:drop-shadow(0 10px 24px rgba(200,16,46,.5))" style-active="transform:scale(.96)"><span style="position:relative;overflow:hidden;display:flex;width:100%;align-items:center;justify-content:center;gap:12px;height:56px;padding:0 22px;background:#C8102E;color:#F5F5F5;font:800 14px/1 Manrope,sans-serif;letter-spacing:.1em;text-transform:uppercase;clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)"><span style="position:absolute;top:0;bottom:0;left:-20%;width:140%;background:#8E0B20;transform:translateX(calc((var(--h) - 1) * 105%)) skewX(-24deg);transition:transform .35s cubic-bezier(.7,0,.2,1)"></span><span style="position:relative">Try this class free</span><span style="position:relative;transform:translateX(calc(var(--h) * 6px));transition:transform .25s cubic-bezier(.7,0,.2,1)">→</span></span></a>
+<a href="Login.dc.html" style="display:flex;flex:1 1 140px;align-items:center;justify-content:center;height:56px;border:1px solid #2E2E2E;color:#F5F5F5;font:800 13px/1 Manrope,sans-serif;letter-spacing:.1em;text-transform:uppercase" style-hover="background:#1D1D1D" style-active="transform:scale(.96)">Login to book</a>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<dc-import name="SiteFooter" cta="{{false}}" hint-size="100%,420px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    const q = new URLSearchParams(location.search);
+    const d = q.get('d'), day = q.get('day');
+    this.state = { w: window.innerWidth, ready: !!window.DOJO, day: day != null ? +day : 3, disc: d ? [d] : [], level: 'All', age: 'All', sheet: false, sel: null, member: false, book: {}, loading: false };
+  }
+  root = React.createRef(); gridRef = React.createRef(); sheetRef = React.createRef(); detailRef = React.createRef();
+  componentDidMount() {
+    this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
+    this._kd = e => { if (e.key === 'Escape') this.setState({ sel: null, sheet: false }); };
+    window.addEventListener('keydown', this._kd);
+    DojoReady(() => this.setState({ ready: true }, () => DojoMotion.init(this.root.current)));
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._rs); window.removeEventListener('keydown', this._kd); clearTimeout(this.lt); document.body.style.overflow = ''; }
+  componentDidUpdate(pp, ps) {
+    const M = window.DojoMotion; if (!M) return;
+    const r = this.root.current;
+    if (this.state.sheet && !ps.sheet) M.slideIn(this.sheetRef.current, 'bottom');
+    if (this.state.sel != null && ps.sel == null) M.slideIn(this.detailRef.current, this.state.w < 768 ? 'bottom' : 'center');
+    document.body.style.overflow = this.state.sheet || this.state.sel != null ? 'hidden' : '';
+    if (ps.loading && !this.state.loading && this.gridRef.current) M.stagger(this.gridRef.current.querySelectorAll('[data-cls]'));
+    if (ps.day !== this.state.day && this.state.w < 1180 && this.gridRef.current) M.stagger(this.gridRef.current.querySelectorAll('[data-cls]'));
+    if (this.state.loading && !ps.loading && r && !M.reduced()) r.querySelectorAll('[data-skel]').forEach(el => el.animate([{ background: '#1A1A1A' }, { background: '#262626' }, { background: '#1A1A1A' }], { duration: 900, iterations: Infinity }));
+    const b = this.state.book, pb = ps.book, id = this.state.sel;
+    if (id != null && b[id] !== pb[id] && r) { r.querySelectorAll('[data-spin]').forEach(el => !el._s && (el._s = 1, el.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], { duration: 700, iterations: Infinity }))); if (b[id] === 'done') { M.punch(r.querySelector('[data-punch]')); M.pulse(r.querySelector('[data-bookbtn]')); } }
+  }
+  filt(fn) { this.setState(fn); this.setState({ loading: true }); clearTimeout(this.lt); this.lt = setTimeout(() => this.setState({ loading: false }), 380); }
+  book(id) {
+    if (this.state.book[id]) return;
+    this.setState(s => ({ book: { ...s.book, [id]: 'loading' } }));
+    setTimeout(() => this.setState(s => ({ book: { ...s.book, [id]: 'done' } })), 1100);
+  }
+  renderVals() {
+    const D = window.DOJO, { w, day, disc, level, age, sheet, sel, member, book, loading } = this.state;
+    const desk = w >= 1180, mob = w < 768;
+    const v = { root: this.root, gridRef: this.gridRef, sheetRef: this.sheetRef, detailRef: this.detailRef, desk, notDesk: !desk };
+    if (!D) return v;
+    const dates = [12, 13, 14, 15, 16, 17, 18];
+    const chip = (on, label, pick, color) => ({ label, on, pick, color, bg: on ? 'rgba(200,16,46,.16)' : '#161616', bd: on ? '#C8102E' : '#2E2E2E', fg: on ? '#F5F5F5' : '#C9C9C9' });
+    const match = c => (!disc.length || disc.includes(c.disc)) && (level === 'All' || c.level === level || c.level === 'All levels') && (age === 'All' || c.age === age);
+    const all = D.classes.filter(match);
+    const card = c => {
+      const left = c.cap - c.booked - (book[c.id] === 'done' ? 1 : 0), full = left <= 0, st = book[c.id];
+      return {
+        open: () => this.setState({ sel: c.id }), time: D.time12(c.t), dur: `${c.dur}M`, disc: D.disciplines[c.disc].name.toUpperCase(), color: D.color(c.disc), title: c.title,
+        coach: D.coaches[c.coach].first, level: c.level, age: c.age,
+        spots: st === 'done' ? 'YOU’RE BOOKED' : full ? 'FULL · WAITLIST' : `${left} SPOTS LEFT`,
+        spotFg: st === 'done' ? 'oklch(0.82 0.13 150)' : full ? '#9A9A9A' : left <= 4 ? 'oklch(0.86 0.12 80)' : '#C9C9C9',
+        cta: st === 'done' ? '✓ BOOKED' : full ? 'WAITLIST' : member ? 'BOOK' : 'TRY FREE',
+        ctaBg: st === 'done' ? 'oklch(0.74 0.15 150 / .16)' : full ? '#262626' : '#C8102E', ctaFg: st === 'done' ? 'oklch(0.82 0.13 150)' : full ? '#9A9A9A' : '#F5F5F5',
+        bd: st === 'done' ? 'oklch(0.74 0.15 150 / .6)' : '#262626', op: full && st !== 'done' ? .7 : 1,
+        pct: Math.min(1, (c.cap - left) / c.cap).toFixed(2), fill: full ? '#9A9A9A' : left <= 4 ? 'oklch(0.82 0.14 80)' : '#C9C9C9'
+      };
+    };
+    const dayIdx = desk ? [0, 1, 2, 3, 4, 5, 6] : [day];
+    const cols = dayIdx.map(di => { const items = all.filter(c => c.d === di).map(card); return { dow: D.days[di], date: dates[di], items, none: !items.length && desk, bd: di === 3 ? '#C8102E' : '#262626', tag: di === 3 ? 'TODAY' : `${items.length}`, tagFg: di === 3 ? '#F5F5F5' : '#9A9A9A' }; });
+    const dayCount = all.filter(c => c.d === day).length;
+    const filterCount = disc.length + (level !== 'All') + (age !== 'All');
+    const c = sel != null ? D.classes.find(x => x.id === sel) : null;
+    let dt = {};
+    if (c) {
+      const st = book[c.id], left = c.cap - c.booked - (st === 'done' ? 1 : 0), full = left <= 0 && st !== 'done';
+      dt = {
+        title: c.title, disc: D.disciplines[c.disc].name.toUpperCase(), color: D.color(c.disc),
+        when: `${D.daysLong[c.d]} ${dates[c.d]} Oct · ${D.time12(c.t)} · ${c.dur} min`, coach: `${D.coaches[c.coach].first} ${D.coaches[c.coach].last}`, coachHref: `Coaches.dc.html?c=${c.coach}`,
+        level: c.level, age: c.age === 'Kids' ? 'Kids 5–12' : c.age === 'Teens' ? 'Teens 13–17' : 'Adults 18+',
+        spots: full ? 'CLASS FULL' : `${left} OF ${c.cap} SPOTS LEFT`, cap: `${c.cap - left}/${c.cap} BOOKED`, pctW: `${Math.min(100, (c.cap - left) / c.cap * 100)}%`,
+        spotFg: full ? '#9A9A9A' : left <= 4 ? 'oklch(0.86 0.12 80)' : '#F5F5F5', fill: left <= 4 ? 'oklch(0.82 0.14 80)' : '#C8102E',
+        desc: D.disciplines[c.disc].one,
+        isLoading: st === 'loading', isDone: st === 'done',
+        bookLabel: st === 'loading' ? 'Booking…' : st === 'done' ? 'Booked' : full ? 'Join waitlist' : 'Book this class',
+        bookBg: st === 'done' ? '#1E7A43' : st === 'loading' ? '#A50D26' : full ? '#333333' : '#C8102E', bookFg: '#F5F5F5', bookDisabled: st === 'loading',
+        book: () => full ? DojoMotion.toast('Added to waitlist. We’ll WhatsApp you if a spot opens.') : this.book(c.id),
+        cancel: () => { this.setState(s => { const b = { ...s.book }; delete b[c.id]; return { book: b }; }); DojoMotion.toast('Booking cancelled. No charge.'); }
+      };
+    }
+    return Object.assign(v, {
+      mob, loading, showGrid: !loading && all.length > 0, empty: !loading && all.length === 0,
+      gridCols: desk ? 'repeat(7,minmax(0,1fr))' : 'minmax(0,1fr)',
+      innerCols: desk ? 'minmax(0,1fr)' : w >= 640 ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)',
+      skels: dayIdx.map(i => ({ i })),
+      cardPad: desk ? '12px' : '16px', timeSize: desk ? '20px' : '28px', titleSize: desk ? '13px' : '16px',
+      cols,
+      viewAs: [['VISITOR', false], ['MEMBER', true]].map(([label, m]) => ({ label, on: member === m, bg: member === m ? '#C8102E' : 'transparent', fg: member === m ? '#F5F5F5' : '#9A9A9A', pick: () => this.setState({ member: m }) })),
+      isMember: member, isVisitor: !member,
+      discChips: [chip(!disc.length, 'All', () => this.filt({ disc: [] }), '#9A9A9A')].concat(D.order.map(k => chip(disc.includes(k), D.disciplines[k].name, () => this.filt(s => ({ disc: s.disc.includes(k) ? s.disc.filter(x => x !== k) : [...s.disc, k] })), D.color(k)))),
+      levelChips: ['All', 'Beginner', 'Intermediate', 'Advanced'].map(l => chip(level === l, l, () => this.filt({ level: l }))),
+      ageChips: ['All', 'Kids', 'Teens', 'Adults'].map(a => chip(age === a, a, () => this.filt({ age: a }))),
+      dayTabs: D.days.map((dow, i) => ({ dow: dow.toUpperCase(), date: dates[i], on: day === i, fg: day === i ? '#F5F5F5' : '#9A9A9A', bar: day === i ? 'scaleX(1)' : 'scaleX(0)', dot: i === 3 ? '#C8102E' : 'transparent', pick: () => this.setState({ day: i }) })),
+      dayLabel: `${D.daysLong[day].toUpperCase()} ${dates[day]} OCT`,
+      resultLabel: desk ? `${all.length} CLASSES THIS WEEK` : `${dayCount} CLASSES`,
+      weekCountU: `${dayCount} CLASSES ON ${D.days[day].toUpperCase()}`,
+      hasFilters: filterCount > 0, filterCount, reset: () => this.filt({ disc: [], level: 'All', age: 'All' }),
+      sheetOpen: sheet, openSheet: () => this.setState({ sheet: true }), closeSheet: () => this.setState({ sheet: false }),
+      detailOpen: !!c, closeDetail: () => this.setState({ sel: null }), dt,
+      detailAlign: mob ? 'flex-end' : 'center', detailPad: mob ? '0' : '24px',
+      detailClip: mob ? 'none' : 'polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,0 100%)'
+    });
+  }
+}
+</script>
+</body>
+</html>

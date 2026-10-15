@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+body{margin:0;background:#E9E7E3;font-family:system-ui,sans-serif}
+a{color:#1a1a1a}
+a:hover{color:#C8102E}
+</style>
+</helmet>
+<section id="t3" style="padding:40px 44px 32px">
+<div style="display:flex;align-items:baseline;gap:10px;margin:0 0 8px"><a href="#t3" style="font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none">3</a><span style="font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a">Phase 3 · Member portal, login and free trial at mobile (375) and desktop (1440). Every frame is live.</span></div>
+<p style="margin:0 0 28px;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.55)">Login demo: 98450 21734 logs straight in, any other number runs onboarding. In the portal, switch between Aarav, Diya (kid, Karate belts, expiring plan) and Neha (frozen Yoga plan).</p>
+<sc-for list="{{pages}}" as="p" hint-placeholder-count="12">
+<div id="{{p.id}}" style="margin:0 0 48px">
+<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;font:400 12px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.6)"><a href="#{{p.id}}" style="font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none">{{p.id}}</a><b style="color:#1a1a1a">{{p.name}}</b> · {{p.note}} · <a href="{{p.src}}">open ↗</a></div>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<div style="flex:none;width:375px;height:780px;border:8px solid #1a1a1a;border-radius:32px;overflow:hidden;background:#0D0D0D;box-sizing:content-box"><iframe src="{{p.src}}" title="{{p.name}} mobile" loading="lazy" style="width:375px;height:780px;border:0;display:block"></iframe></div>
+<div style="flex:none;width:1440px;height:900px;border:1px solid rgba(0,0,0,.15);border-radius:8px;overflow:hidden;background:#0D0D0D"><iframe src="{{p.src}}" title="{{p.name}} desktop" loading="lazy" style="width:1440px;height:900px;border:0;display:block"></iframe></div>
+</div>
+</div>
+</sc-for>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const P = [
+      ['Login + OTP', 'Login.dc.html', 'phone, OTP, error + resend states'],
+      ['Onboarding', 'Login.dc.html#onboard', 'profile, waiver (draw/type), family'],
+      ['Free trial', 'Free Trial.dc.html?d=muaythai', 'class, slot, details, ticket'],
+      ['Dashboard · Aarav', 'Member Portal.dc.html?m=aarav#home', 'plan, next class, streak, today'],
+      ['Classes', 'Member Portal.dc.html?m=aarav#classes', 'book, cancel, waitlist, my bookings'],
+      ['My plan · Diya', 'Member Portal.dc.html?m=diya#plan', 'expiring, renew/upgrade, auto vs manual'],
+      ['My plan · Neha', 'Member Portal.dc.html?m=neha#plan', 'frozen state, unfreeze'],
+      ['Payments', 'Member Portal.dc.html?m=aarav#pay', 'invoices, failed retry, filters'],
+      ['Progress · Diya', 'Member Portal.dc.html?m=diya#progress', 'belt journey, heatmap'],
+      ['Profile', 'Member Portal.dc.html?m=aarav#me', 'details, waiver, family, notifications']
+    ];
+    return { pages: P.map(([name, src, note], i) => ({ id: `3${'abcdefghijklmn'[i]}`, name, src, note })) };
+  }
+}
+</script>
+</body>
+</html>

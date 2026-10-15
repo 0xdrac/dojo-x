@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script>document.documentElement.setAttribute('data-calm','')</script>
+<script src="./dojo-data.js"></script>
+<script src="./dojo-motion.js"></script>
+<style>body{margin:0;background:#0D0D0D;color:#C9C9C9;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#F5F5F5;text-decoration:none}a:hover{color:#FFFFFF}button,input{font-family:inherit}::selection{background:#C8102E;color:#F5F5F5}:focus-visible{outline:2px solid #F5F5F5;outline-offset:3px}input::placeholder{color:#7A7A7A}</style>
+</helmet>
+<div ref="{{root}}" style="min-height:100vh;display:flex;flex-direction:column">
+<header style="position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;height:64px;padding:0 clamp(16px,4vw,56px);background:rgba(13,13,13,.94);border-bottom:1px solid #262626;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+<sc-if value="{{canBack}}" hint-placeholder-val="{{false}}"><button onClick="{{back}}" aria-label="Back" style="width:44px;height:44px;margin-left:-10px;background:transparent;border:0;color:#F5F5F5;font-size:20px;cursor:pointer">←</button></sc-if>
+<a href="Home.dc.html" style="font-family:Anton,Impact,sans-serif;font-size:26px;line-height:1;color:#F5F5F5">DOJO<span style="color:#C8102E">X</span></a>
+<span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A">FREE TRIAL</span>
+<a href="Home.dc.html" aria-label="Close" style="margin-left:auto;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid #2E2E2E;color:#F5F5F5">✕</a>
+</header>
+<sc-if value="{{showBar}}" hint-placeholder-val="{{true}}"><div style="max-width:880px;width:100%;margin:0 auto;padding:20px clamp(16px,4vw,32px) 0;display:grid;grid-template-columns:repeat(3,1fr);gap:4px"><sc-for list="{{bars}}" as="b" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:8px"><div style="height:4px;background:{{b.c}};transition:background .3s"></div><span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:{{b.fg}}">{{b.label}}</span></div></sc-for></div></sc-if>
+
+<div ref="{{stepRef}}" style="flex:1;max-width:880px;width:100%;margin:0 auto;padding:clamp(24px,4vw,40px) clamp(16px,4vw,32px) {{bottomPad}}">
+
+<sc-if value="{{s1}}" hint-placeholder-val="{{true}}">
+<div style="display:flex;flex-direction:column;gap:20px">
+<div><h1 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(48px,7vw,88px);line-height:.88;text-transform:uppercase;color:#F5F5F5">Your first class<br><span style="color:transparent;-webkit-text-stroke:2px #F5F5F5">is free.</span></h1><p style="margin:14px 0 0;max-width:520px;font-size:16px;line-height:1.6;color:#C9C9C9">Pick what you want to try. No card needed, no pressure to sign up.</p></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ages}}" as="a" hint-placeholder-count="3"><button onClick="{{a.pick}}" aria-pressed="{{a.on}}" style="height:44px;padding:0 16px;background:{{a.bg}};border:1px solid {{a.bd}};color:{{a.fg}};font:700 13px/1 Manrope,sans-serif;cursor:pointer">{{a.label}}</button></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:8px">
+<sc-for list="{{discs}}" as="d" hint-placeholder-count="7"><button onClick="{{d.pick}}" aria-pressed="{{d.on}}" style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:132px;padding:18px;background:{{d.bg}};border:1px solid {{d.bd}};color:#F5F5F5;text-align:left;cursor:pointer;clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%);transition:background .15s,border-color .15s" style-active="transform:scale(.97)"><span style="display:flex;width:100%;justify-content:space-between;align-items:center"><span style="width:8px;height:8px;background:{{d.color}}"></span><span style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:#9A9A9A">{{d.slots}}</span></span><span style="font-family:Anton,Impact,sans-serif;font-size:30px;line-height:1;text-transform:uppercase">{{d.name}}</span><span style="margin-top:auto;font-size:13px;line-height:1.4;color:#9A9A9A">{{d.note}}</span></button></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{s2}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div><div style="display:flex;align-items:center;gap:8px;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A"><span style="width:8px;height:8px;background:{{dColor}}"></span>{{dName}} · {{ageLabel}}</div><h2 style="margin:12px 0 0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(40px,5vw,64px);line-height:.9;text-transform:uppercase;color:#F5F5F5">Pick a slot<span style="color:#C8102E">.</span></h2></div>
+<div style="display:flex;flex-direction:column;gap:18px">
+<sc-for list="{{slotDays}}" as="g" hint-placeholder-count="3"><div><div style="margin-bottom:8px;font:700 12px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#F5F5F5">{{g.label}}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:6px"><sc-for list="{{g.slots}}" as="c" hint-placeholder-count="2"><button onClick="{{c.pick}}" aria-pressed="{{c.on}}" disabled="{{c.full}}" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;background:{{c.bg}};border:1px solid {{c.bd}};color:#F5F5F5;text-align:left;cursor:pointer;opacity:{{c.op}}"><span style="font:700 18px/1 'JetBrains Mono',monospace">{{c.time}}</span><span style="font:700 13px/1.3 Manrope,sans-serif">{{c.title}}</span><span style="font:500 12px/1.3 Manrope,sans-serif;color:{{c.sc}}">{{c.coach}} · {{c.spots}}</span></button></sc-for></div></div></sc-for>
+<sc-if value="{{noSlots}}" hint-placeholder-val="{{false}}"><div style="padding:24px;border:1px dashed #2E2E2E;font-size:14px;line-height:1.6;color:#C9C9C9">No {{ageLabel}} {{dName}} classes this week. Try another age group, or WhatsApp us on +91 98110 42210 and we’ll fit you in.</div></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{s3}}" hint-placeholder-val="{{false}}">
+<div style="display:grid;grid-template-columns:{{s3cols}};gap:24px;align-items:start">
+<form onSubmit="{{submit}}" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(40px,5vw,64px);line-height:.9;text-transform:uppercase;color:#F5F5F5">Your details<span style="color:#C8102E">.</span></h2>
+<sc-for list="{{fields}}" as="f" hint-placeholder-count="2"><label style="display:flex;flex-direction:column;gap:8px"><span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">{{f.label}}</span><input value="{{f.v}}" onInput="{{f.set}}" placeholder="{{f.ph}}" inputmode="{{f.im}}" aria-invalid="{{f.bad}}" style="height:54px;padding:0 14px;background:#141414;border:1px solid {{f.bd}};color:#F5F5F5;font:600 16px/1 Manrope,sans-serif;outline:none"><sc-if value="{{f.bad}}" hint-placeholder-val="{{false}}"><span style="font:500 13px/1.3 Manrope,sans-serif;color:oklch(0.80 0.14 45)">{{f.err}}</span></sc-if></label></sc-for>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">EXPERIENCE</span><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><sc-for list="{{exps}}" as="x" hint-placeholder-count="3"><button type="button" onClick="{{x.pick}}" aria-pressed="{{x.on}}" style="height:48px;background:{{x.bg}};border:1px solid {{x.bd}};color:#F5F5F5;font:700 12px/1.2 Manrope,sans-serif;cursor:pointer">{{x.label}}</button></sc-for></div></div>
+<button type="submit" style="height:56px;border:0;background:#C8102E;color:#F5F5F5;font:800 14px/1 Manrope,sans-serif;letter-spacing:.1em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)" style-active="transform:scale(.97)"><sc-if value="{{busy}}" hint-placeholder-val="{{false}}"><span data-spin="" style="width:18px;height:18px;border:2px solid rgba(245,245,245,.3);border-top-color:#F5F5F5;border-radius:50%"></span></sc-if>{{submitLabel}}</button>
+<span style="font-size:12px;line-height:1.5;color:#9A9A9A">We’ll confirm on WhatsApp. Your number is only used for this booking and class reminders.</span>
+</form>
+<div style="padding:20px;background:#1A1A1A;border:1px solid #2E2E2E;border-left:3px solid {{dColor}}"><div style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">YOUR TRIAL</div><div style="margin-top:12px;font-family:Anton,Impact,sans-serif;font-size:28px;line-height:1;text-transform:uppercase;color:#F5F5F5">{{slot.title}}</div><div style="margin-top:10px;font:600 14px/1.6 Manrope,sans-serif;color:#C9C9C9">{{slot.when}}<br>with {{slot.coach}} · {{slot.dur}} min</div><button onClick="{{changeSlot}}" style="margin-top:12px;height:40px;padding:0 12px;background:transparent;border:1px solid #2E2E2E;color:#F5F5F5;font:700 12px/1 Manrope,sans-serif;cursor:pointer">Change slot</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{s4}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:20px;max-width:560px">
+<div ref="{{ticketRef}}" style="position:relative;background:#1A1A1A;border:1px solid #2E2E2E;clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,0 100%)">
+<div style="height:6px;background:{{dColor}}"></div>
+<div style="padding:24px">
+<div style="display:flex;justify-content:space-between;gap:12px;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A"><span>TRIAL CONFIRMED</span><span>#TR-4417</span></div>
+<h2 style="margin:16px 0 0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(44px,6vw,72px);line-height:.88;text-transform:uppercase;color:#F5F5F5">See you,<br>{{firstName}}<span style="color:#C8102E">.</span></h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;margin-top:22px;padding-top:18px;border-top:1px dashed #2E2E2E">
+<sc-for list="{{tFacts}}" as="f" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:6px"><span style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#9A9A9A">{{f.k}}</span><span style="font:800 15px/1.3 Manrope,sans-serif;color:#F5F5F5">{{f.v}}</span></div></sc-for>
+</div>
+</div>
+</div>
+<div style="padding:20px;background:#161616;border:1px solid #262626"><div style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#F5F5F5;margin-bottom:12px">WHAT TO BRING</div><sc-for list="{{bring}}" as="b" hint-placeholder-count="3"><div style="display:flex;gap:10px;padding:6px 0;font-size:14px;line-height:1.5;color:#C9C9C9"><span style="color:#C8102E;font-weight:900">·</span>{{b.t}}</div></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:8px">
+<button onClick="{{addCal}}" style="height:52px;background:#F5F5F5;border:0;color:#0D0D0D;font:800 13px/1 Manrope,sans-serif;letter-spacing:.06em;cursor:pointer" style-active="transform:scale(.97)">Add to calendar</button>
+<a href="https://maps.google.com/?q=Sai+Complex+Plot+510+Sector+12+Vasundhara+Ghaziabad" style="display:flex;align-items:center;justify-content:center;height:52px;border:1px solid #2E2E2E;color:#F5F5F5;font:800 13px/1 Manrope,sans-serif;letter-spacing:.06em">Get directions</a>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px;color:#9A9A9A"><button onClick="{{reschedule}}" style="padding:0;min-height:44px;background:transparent;border:0;color:#F5F5F5;font:700 14px Manrope,sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer">Reschedule</button><a href="Home.dc.html" style="display:flex;align-items:center;min-height:44px;color:#C9C9C9">Back to home</a></div>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{showFoot}}" hint-placeholder-val="{{false}}">
+<div style="position:sticky;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px clamp(16px,4vw,56px) calc(12px + env(safe-area-inset-bottom));background:rgba(13,13,13,.96);border-top:1px solid #262626;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+<span style="flex:1;min-width:0;font:600 13px/1.3 Manrope,sans-serif;color:#C9C9C9">{{footText}}</span>
+<button onClick="{{next}}" disabled="{{cantNext}}" style="height:52px;padding:0 24px;border:0;background:{{nextBg}};color:#F5F5F5;font:800 13px/1 Manrope,sans-serif;letter-spacing:.1em;cursor:pointer;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)" style-active="transform:scale(.96)">NEXT →</button>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { w: window.innerWidth, step: 1, age: 'Adults', disc: new URLSearchParams(location.search).get('d'), slot: null, name: '', phone: '', exp: 'None', tried: false, busy: false };
+  root = React.createRef(); stepRef = React.createRef(); ticketRef = React.createRef();
+  componentDidMount() { this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoReady(() => { this.forceUpdate(); DojoMotion.init(this.root.current); }); }
+  componentWillUnmount() { window.removeEventListener('resize', this._rs); }
+  componentDidUpdate(pp, ps) {
+    ps = ps || {};
+    const M = window.DojoMotion; if (!M) return;
+    if (ps.step !== this.state.step) { window.scrollTo(0, 0); if (!M.reduced() && this.stepRef.current) this.stepRef.current.animate([{ opacity: 0, transform: 'translateX(24px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' }); if (this.state.step === 4) setTimeout(() => M.punch(this.ticketRef.current), 150); }
+    if (this.state.busy && !ps.busy) M.observe(this.root.current);
+  }
+  renderVals() {
+    const D = window.DOJO, s = this.state, mob = s.w < 768;
+    const base = { root: this.root, stepRef: this.stepRef, ticketRef: this.ticketRef, s1: s.step === 1 };
+    if (!D) return base;
+    const ageOk = c => s.age === 'Kids' ? c.age === 'Kids' : s.age === 'Teens' ? (c.age === 'Teens' || c.age === 'All ages') : c.age !== 'Kids';
+    const upcoming = c => c.d > 3 || (c.d === 3 && c.t >= '16:00');
+    const avail = k => D.classes.filter(c => c.disc === k && ageOk(c) && upcoming(c) && c.level !== 'Advanced');
+    const coach = c => D.coaches[c.coach] ? D.coaches[c.coach].first : c.coach;
+    const when = c => (c.d === 3 ? 'Today' : c.d === 4 ? 'Tomorrow' : D.daysLong[c.d]) + ', ' + (12 + c.d) + ' Oct · ' + D.time12(c.t);
+    const sl = s.slot ? D.classes.find(c => c.id === s.slot) : null;
+    const dk = s.disc && D.disciplines[s.disc] ? s.disc : null;
+    const errs = { name: !s.name.trim() ? 'Enter your name.' : '', phone: !/^[6-9]\d{9}$/.test(s.phone.replace(/\D/g, '')) ? 'Enter a 10-digit Indian mobile number.' : '' };
+    const fld = (k, label, ph, im) => ({ label, ph, im, v: s[k], set: e => this.setState({ [k]: e.target.value }), bad: s.tried && !!errs[k], err: errs[k], bd: s.tried && errs[k] ? 'oklch(0.70 0.19 45)' : '#2E2E2E' });
+    const groups = dk ? [3, 4, 5, 6].map(d => ({ label: (d === 3 ? 'TODAY' : d === 4 ? 'TOMORROW' : D.daysLong[d].toUpperCase()) + ' · ' + (12 + d) + ' OCT', slots: avail(dk).filter(c => c.d === d).sort((a, b) => a.t.localeCompare(b.t)).map(c => { const left = c.cap - c.booked, full = left <= 0, on = s.slot === c.id; return { time: D.time12(c.t), title: c.title, coach: coach(c), spots: full ? 'Full' : left <= 3 ? `${left} left` : 'Open', sc: full ? 'oklch(0.80 0.14 45)' : left <= 3 ? 'oklch(0.82 0.14 75)' : '#9A9A9A', full, op: full ? .45 : 1, on, bg: on ? 'rgba(200,16,46,.14)' : '#161616', bd: on ? '#C8102E' : '#262626', pick: () => this.setState({ slot: c.id }) }; }) })).filter(g => g.slots.length) : [];
+    const first = s.name.trim().split(' ')[0] || 'fighter';
+    const BRING = { yoga: ['Comfortable stretchy clothes', 'Water bottle', 'Mats and blocks are provided'], gymnastics: ['Fitted clothes, no zips or buttons', 'Water bottle', 'Hair tied back, no jewellery'], karate: ['T-shirt and track pants', 'Water bottle', 'Arrive 10 minutes early to meet Sensei Meera'] };
+    return Object.assign(base, {
+      s2: s.step === 2, s3: s.step === 3, s4: s.step === 4, showBar: s.step < 4, canBack: s.step === 2 || s.step === 3, back: () => this.setState({ step: s.step - 1 }),
+      bars: ['CLASS', 'SLOT', 'DETAILS'].map((label, i) => ({ label, c: i < s.step ? '#C8102E' : '#262626', fg: i < s.step ? '#F5F5F5' : '#9A9A9A' })),
+      ages: [['Kids', 'Kids 5–12'], ['Teens', 'Teens 13–17'], ['Adults', 'Adults 18+']].map(([k, label]) => ({ label, on: s.age === k, bg: s.age === k ? '#F5F5F5' : 'transparent', bd: s.age === k ? '#F5F5F5' : '#2E2E2E', fg: s.age === k ? '#0D0D0D' : '#F5F5F5', pick: () => this.setState({ age: k, slot: null }) })),
+      discs: D.order.map(k => { const n = avail(k).length, on = dk === k; return { name: D.disciplines[k].name, color: D.color(k), note: D.disciplines[k].full + ' · ' + D.disciplines[k].ages, slots: n ? `${n} SLOT${n > 1 ? 'S' : ''} THIS WEEK` : 'NONE THIS WEEK', on, bg: on ? 'rgba(200,16,46,.14)' : '#161616', bd: on ? '#C8102E' : '#262626', pick: () => this.setState({ disc: k, slot: null }) }; }),
+      dName: dk ? D.disciplines[dk].name.toUpperCase() : '', dColor: dk ? D.color(dk) : '#262626', ageLabel: s.age.toUpperCase(),
+      slotDays: groups, noSlots: dk && !groups.length,
+      slot: sl ? { title: sl.title, when: when(sl), coach: coach(sl), dur: sl.dur } : { title: '', when: '', coach: '', dur: '' }, changeSlot: () => this.setState({ step: 2 }),
+      s3cols: s.w >= 900 ? 'minmax(0,1fr) 300px' : 'minmax(0,1fr)',
+      fields: [fld('name', s.age === 'Kids' ? 'CHILD’S NAME' : 'FULL NAME', 'Your name', 'text'), fld('phone', s.age === 'Adults' ? 'MOBILE (WHATSAPP)' : 'PARENT’S MOBILE (WHATSAPP)', '98450 21734', 'numeric')],
+      exps: ['None', 'Some', 'Lots'].map(x => ({ label: { None: 'Never trained', Some: 'A little', Lots: 'Experienced' }[x], on: s.exp === x, bg: s.exp === x ? 'rgba(200,16,46,.14)' : '#141414', bd: s.exp === x ? '#C8102E' : '#2E2E2E', pick: () => this.setState({ exp: x }) })),
+      busy: s.busy, submitLabel: s.busy ? 'BOOKING' : 'CONFIRM FREE TRIAL →',
+      submit: e => { e.preventDefault(); if (errs.name || errs.phone) return this.setState({ tried: true }); this.setState({ busy: true }); setTimeout(() => this.setState({ busy: false, step: 4 }), 900); },
+      showFoot: s.step <= 2, footText: s.step === 1 ? (dk ? D.disciplines[dk].name + ' selected' : 'Pick a discipline') : sl ? when(sl) : 'Pick a time',
+      cantNext: s.step === 1 ? !dk : !sl, nextBg: (s.step === 1 ? dk : sl) ? '#C8102E' : '#333333', next: () => this.setState({ step: s.step + 1 }), bottomPad: s.step <= 2 ? '32px' : '64px',
+      firstName: first,
+      tFacts: sl ? [{ k: 'CLASS', v: sl.title }, { k: 'WHEN', v: when(sl) }, { k: 'COACH', v: coach(sl) }, { k: 'WHERE', v: 'Sai Complex, Plot 510, Sector 12, Vasundhara' }] : [],
+      bring: (BRING[dk] || ['T-shirt and shorts or track pants', 'Water bottle and a small towel', 'Gloves and shin guards are lent for trials']).map(t => ({ t })),
+      addCal: () => DojoMotion.toast('Calendar invite downloaded'), reschedule: () => this.setState({ step: 2 })
+    });
+  }
+}
+</script>
+</body>
+</html>

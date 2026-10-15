@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script>document.documentElement.setAttribute('data-calm','')</script>
+<script src="./dojo-data.js"></script>
+<script src="./dojo-portal.js"></script>
+<script src="./dojo-motion.js"></script>
+<style>body{margin:0;background:#0D0D0D;color:#C9C9C9;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}*{box-sizing:border-box}a{color:#F5F5F5;text-decoration:none}a:hover{color:#FFFFFF}button,input{font-family:inherit}::selection{background:#C8102E;color:#F5F5F5}:focus-visible{outline:2px solid #F5F5F5;outline-offset:3px}input[type=range]{accent-color:#C8102E}</style>
+</helmet>
+<div ref="{{root}}" style="min-height:100vh;display:grid;grid-template-columns:{{cols}};background:#0D0D0D">
+
+<sc-if value="{{desk}}" hint-placeholder-val="{{true}}">
+<aside aria-label="Portal navigation" style="position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:24px;padding:24px 16px;background:#111111;border-right:1px solid #262626">
+<a href="Home.dc.html" style="display:flex;align-items:baseline;gap:6px;padding:0 8px;font-family:Anton,Impact,sans-serif;font-size:30px;line-height:1;color:#F5F5F5;letter-spacing:.02em">DOJO<span style="color:#C8102E">X</span><span style="margin-left:6px;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">MEMBERS</span></a>
+<button onClick="{{openSwitch}}" aria-label="Switch family member" style="display:flex;align-items:center;gap:12px;padding:10px;background:#1A1A1A;border:1px solid #2E2E2E;color:#F5F5F5;text-align:left;cursor:pointer" style-hover="border-color:#9A9A9A">
+<span style="width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;background:{{av.bg}};color:{{av.fg}};font:800 14px/1 Manrope,sans-serif">{{av.init}}</span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font:800 14px/1.1 Manrope,sans-serif">{{m.name}}</span><span style="font:500 11px/1.2 'JetBrains Mono',monospace;color:#9A9A9A">{{m.rel}}</span></span>
+<span style="font:700 12px/1 'JetBrains Mono',monospace;color:#9A9A9A">⇅</span>
+</button>
+<nav style="display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="6">
+<button onClick="{{n.go}}" aria-current="{{n.cur}}" style="position:relative;display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;background:{{n.bg}};border:0;color:{{n.fg}};font:700 14px/1 Manrope,sans-serif;text-align:left;cursor:pointer;transition:background .15s" style-hover="background:#1A1A1A;color:#F5F5F5">
+<span style="position:absolute;left:0;top:10px;bottom:10px;width:3px;background:{{n.bar}}"></span>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="{{n.icon}}"></path></svg>{{n.label}}
+<sc-if value="{{n.badge}}" hint-placeholder-val="{{false}}"><span style="margin-left:auto;padding:4px 6px;background:#C8102E;font:700 10px/1 'JetBrains Mono',monospace;color:#F5F5F5">{{n.badge}}</span></sc-if>
+</button>
+</sc-for>
+</nav>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;padding:0 8px">
+<a href="Home.dc.html" style="font:600 13px/1.4 Manrope,sans-serif;color:#C9C9C9">← Back to website</a>
+<a href="Login.dc.html" style="font:600 13px/1.4 Manrope,sans-serif;color:#9A9A9A">Log out</a>
+</div>
+</aside>
+</sc-if>
+
+<main style="min-width:0;padding-bottom:{{mainPad}}">
+<sc-if value="{{mob}}" hint-placeholder-val="{{false}}">
+<header style="position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;height:60px;padding:0 16px;background:rgba(13,13,13,.94);border-bottom:1px solid #262626;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+<sc-if value="{{showBack}}" hint-placeholder-val="{{false}}"><button onClick="{{goBack}}" aria-label="Back" style="width:44px;height:44px;margin-left:-10px;background:transparent;border:0;color:#F5F5F5;font-size:20px;cursor:pointer">←</button></sc-if>
+<span style="font-family:Anton,Impact,sans-serif;font-size:24px;line-height:1;color:#F5F5F5">{{mobTitle}}</span>
+<button onClick="{{openSwitch}}" aria-label="Switch family member" style="margin-left:auto;display:flex;align-items:center;gap:8px;height:44px;padding:0 4px 0 10px;background:#1A1A1A;border:1px solid #2E2E2E;color:#F5F5F5;cursor:pointer"><span style="font:700 12px/1 Manrope,sans-serif">{{m.first}}</span><span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:{{av.bg}};color:{{av.fg}};font:800 12px/1 Manrope,sans-serif">{{av.init}}</span></button>
+</header>
+</sc-if>
+
+<div ref="{{viewRef}}" style="max-width:1180px;margin:0 auto;padding:{{pad}}">
+
+<sc-if value="{{banner}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-bottom:20px;padding:14px 16px;background:{{bannerBg}};border:1px solid {{bannerBd}}">
+<span style="width:10px;height:10px;flex:none;background:{{bannerDot}}"></span>
+<span style="flex:1 1 240px;font:600 14px/1.5 Manrope,sans-serif;color:#F5F5F5">{{bannerText}}</span>
+<button onClick="{{bannerAct}}" style="height:44px;padding:0 16px;background:#F5F5F5;border:0;color:#0D0D0D;font:800 12px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:pointer" style-active="transform:scale(.96)">{{bannerCta}}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{vHome}}" hint-placeholder-val="{{true}}">
+<div style="display:flex;flex-direction:column;gap:clamp(20px,2.4vw,28px)">
+<div>
+<div style="font:600 12px/1 'JetBrains Mono',monospace;letter-spacing:.2em;color:#9A9A9A">THU 15 OCT 2026 · {{m.memberId}}</div>
+<h1 style="margin:12px 0 0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(44px,6vw,80px);line-height:.9;text-transform:uppercase;color:#F5F5F5">{{greet}}<span style="color:#C8102E">.</span></h1>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px">
+<div style="grid-column:span {{planSpan}};position:relative;display:flex;flex-direction:column;gap:16px;padding:22px;background:#1A1A1A;border:1px solid #2E2E2E;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,0 100%)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">MY PLAN</span><span style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid {{st.c}};font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{st.c}}"><span style="width:6px;height:6px;background:{{st.c}}"></span>{{st.t}}</span></div>
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 24px">
+<div style="flex:1 1 220px"><div style="font-family:Anton,Impact,sans-serif;font-size:clamp(30px,3.4vw,42px);line-height:1;text-transform:uppercase;color:#F5F5F5">{{planName}}</div><div style="margin-top:8px;font:600 13px/1.4 Manrope,sans-serif;color:#C9C9C9">{{planSub}}</div></div>
+<div style="text-align:right"><div style="font-family:Anton,Impact,sans-serif;font-size:56px;line-height:.85;color:{{daysC}}">{{p.daysLeft}}</div><div style="margin-top:6px;font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#9A9A9A">DAYS LEFT</div></div>
+</div>
+<div><div style="height:6px;background:#262626"><div style="height:100%;width:{{usedPct}};background:{{daysC}}"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font:500 11px/1 'JetBrains Mono',monospace;color:#9A9A9A"><span>{{p.start}}</span><span>{{p.end}}</span></div></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button onClick="{{goPlan}}" style="height:44px;padding:0 16px;background:#C8102E;border:0;color:#F5F5F5;font:800 12px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:pointer;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)" style-active="transform:scale(.96)">MANAGE PLAN →</button>
+<span style="display:flex;align-items:center;padding:0 4px;font:500 12px/1.4 'JetBrains Mono',monospace;color:#9A9A9A">{{p.via}} · {{p.next}}</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px;padding:22px;background:#161616;border:1px solid #262626">
+<span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">NEXT CLASS</span>
+<sc-if value="{{nx}}" hint-placeholder-val="{{true}}">
+<div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;background:{{nx.color}}"></span><span style="font:700 11px/1 Manrope,sans-serif;letter-spacing:.1em;color:#C9C9C9;text-transform:uppercase">{{nx.disc}}</span></div>
+<div style="font-family:Anton,Impact,sans-serif;font-size:30px;line-height:1;text-transform:uppercase;color:#F5F5F5">{{nx.title}}</div>
+<div style="font:600 14px/1.5 Manrope,sans-serif;color:#C9C9C9">{{nx.when}}<br><span style="color:#9A9A9A">with {{nx.coach}} · {{nx.dur}} min</span></div>
+<div style="margin-top:auto;display:flex;gap:8px"><button onClick="{{nx.cancel}}" style="height:44px;padding:0 14px;background:transparent;border:1px solid #2E2E2E;color:#F5F5F5;font:700 12px/1 Manrope,sans-serif;cursor:pointer" style-hover="border-color:#9A9A9A">Cancel booking</button><button onClick="{{goClasses}}" style="height:44px;padding:0 14px;background:transparent;border:0;color:#F5F5F5;font:700 12px/1 Manrope,sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer">All bookings</button></div>
+</sc-if>
+<sc-if value="{{noNx}}" hint-placeholder-val="{{false}}">
+<div style="font:600 15px/1.5 Manrope,sans-serif;color:#C9C9C9">No classes booked this week.</div>
+<button onClick="{{goClasses}}" style="margin-top:auto;height:44px;background:#F5F5F5;border:0;color:#0D0D0D;font:800 12px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:pointer">BOOK A CLASS</button>
+</sc-if>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#262626;border:1px solid #262626">
+<sc-for list="{{tiles}}" as="t" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:8px;padding:18px;background:#161616"><span style="font-family:Anton,Impact,sans-serif;font-size:40px;line-height:1;color:{{t.c}}">{{t.v}}</span><span style="font:600 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.14em;color:#9A9A9A">{{t.k}}</span></div></sc-for>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:12px">
+<div style="padding:22px;background:#161616;border:1px solid #262626">
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px"><span style="font-family:Anton,Impact,sans-serif;font-size:28px;color:#F5F5F5;text-transform:uppercase">Today</span><button onClick="{{goClasses}}" style="background:transparent;border:0;color:#F5F5F5;font:700 12px/1 Manrope,sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:4px;min-height:44px">Full schedule</button></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{today}}" as="c" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:14px;padding:12px;background:#1A1A1A;border-left:3px solid {{c.color}}"><span style="width:64px;font:700 13px/1.2 'JetBrains Mono',monospace;color:#F5F5F5">{{c.time}}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font:800 14px/1.2 Manrope,sans-serif;color:#F5F5F5">{{c.title}}</span><span style="font:500 12px/1.2 Manrope,sans-serif;color:#9A9A9A">{{c.coach}} · {{c.spots}}</span></span><button onClick="{{c.act}}" disabled="{{c.dis}}" style="height:40px;min-width:84px;padding:0 12px;background:{{c.bg}};border:1px solid {{c.bd}};color:{{c.fg}};font:800 11px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:pointer" style-active="transform:scale(.95)">{{c.label}}</button></div></sc-for>
+<sc-if value="{{noToday}}" hint-placeholder-val="{{false}}"><div style="padding:16px;background:#1A1A1A;font-size:14px;color:#9A9A9A">No more classes in your plan today.</div></sc-if>
+</div>
+</div>
+<div style="padding:22px;background:#161616;border:1px solid #262626">
+<div style="font-family:Anton,Impact,sans-serif;font-size:28px;color:#F5F5F5;text-transform:uppercase;margin-bottom:14px">From the dojo</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{news}}" as="a" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:6px;padding:14px 0;border-top:1px solid #262626"><span style="display:flex;gap:8px;align-items:center;font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#9A9A9A">{{a.tag}}<sc-if value="{{a.isNew}}" hint-placeholder-val="{{false}}"><span style="padding:3px 5px;background:#C8102E;color:#F5F5F5">NEW</span></sc-if></span><span style="font:800 15px/1.3 Manrope,sans-serif;color:#F5F5F5">{{a.title}}</span><span style="font-size:13px;line-height:1.5;color:#9A9A9A">{{a.body}}</span></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{vClasses}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<sc-if value="{{desk}}" hint-placeholder-val="{{true}}"><h1 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(44px,5vw,72px);line-height:.9;text-transform:uppercase;color:#F5F5F5">Classes<span style="color:#C8102E">.</span></h1></sc-if>
+<div role="tablist" style="display:flex;border-bottom:1px solid #262626">
+<sc-for list="{{ctabs}}" as="t" hint-placeholder-count="2"><button role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="height:48px;padding:0 18px;background:transparent;border:0;border-bottom:3px solid {{t.bd}};margin-bottom:-1px;color:{{t.fg}};font:800 13px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">{{t.label}}</button></sc-for>
+</div>
+<sc-if value="{{tabSched}}" hint-placeholder-val="{{true}}">
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="7"><button onClick="{{d.pick}}" aria-pressed="{{d.on}}" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0;background:{{d.bg}};border:1px solid {{d.bd}};color:{{d.fg}};cursor:pointer;opacity:{{d.op}}"><span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em">{{d.dow}}</span><span style="font-family:Anton,Impact,sans-serif;font-size:24px;line-height:1">{{d.date}}</span><span style="width:5px;height:5px;background:{{d.dot}}"></span></button></sc-for>
+</div>
+<sc-if value="{{isFrozen}}" hint-placeholder-val="{{false}}"><div style="padding:14px 16px;background:oklch(0.78 0.1 240 / .12);border:1px solid oklch(0.78 0.1 240 / .5);font:600 14px/1.5 Manrope,sans-serif;color:#F5F5F5">{{m.first}}’s plan is frozen until 18 Oct. Booking reopens when the freeze ends, or unfreeze from My Plan.</div></sc-if>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{list}}" as="c" hint-placeholder-count="5">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;padding:14px 16px;background:{{c.rowBg}};border:1px solid {{c.rowBd}};border-left:3px solid {{c.color}};opacity:{{c.op}}">
+<div style="width:76px;display:flex;flex-direction:column;gap:4px"><span style="font:700 15px/1 'JetBrains Mono',monospace;color:#F5F5F5">{{c.time}}</span><span style="font:500 11px/1 'JetBrains Mono',monospace;color:#9A9A9A">{{c.dur}} MIN</span></div>
+<div style="flex:1 1 200px;min-width:0;display:flex;flex-direction:column;gap:6px">
+<span style="font:800 16px/1.2 Manrope,sans-serif;color:#F5F5F5">{{c.title}}</span>
+<span style="display:flex;flex-wrap:wrap;gap:6px 12px;font:500 12px/1.3 Manrope,sans-serif;color:#9A9A9A"><span style="color:{{c.color}};font-weight:800;text-transform:uppercase;letter-spacing:.06em">{{c.disc}}</span><span>{{c.coach}}</span><span>{{c.level}} · {{c.age}}</span></span>
+</div>
+<div style="width:120px;display:flex;flex-direction:column;gap:6px"><div style="height:4px;background:#262626"><div style="height:100%;width:{{c.fill}};background:{{c.fillC}}"></div></div><span style="font:600 11px/1 'JetBrains Mono',monospace;color:{{c.spotsC}}">{{c.spots}}</span></div>
+<button onClick="{{c.act}}" disabled="{{c.dis}}" style="height:44px;min-width:124px;padding:0 14px;background:{{c.bg}};border:1px solid {{c.bd}};color:{{c.fg}};font:800 12px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:{{c.cur}}" style-active="transform:scale(.96)">{{c.label}}</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{tabMine}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{mine}}" as="c" hint-placeholder-count="3"><div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;padding:16px;background:#161616;border:1px solid #262626;border-left:3px solid {{c.color}}"><div style="flex:1 1 220px;display:flex;flex-direction:column;gap:6px"><span style="font:700 12px/1 'JetBrains Mono',monospace;letter-spacing:.06em;color:#F5F5F5">{{c.when}}</span><span style="font:800 16px/1.2 Manrope,sans-serif;color:#F5F5F5">{{c.title}}</span><span style="font:500 12px/1.3 Manrope,sans-serif;color:#9A9A9A">{{c.coach}} · free cancellation until {{c.cutoff}}</span></div><button onClick="{{c.cancel}}" style="height:44px;padding:0 16px;background:transparent;border:1px solid #2E2E2E;color:#F5F5F5;font:700 12px/1 Manrope,sans-serif;cursor:pointer" style-hover="border-color:#C8102E">Cancel</button></div></sc-for>
+<sc-if value="{{noMine}}" hint-placeholder-val="{{false}}"><div style="padding:28px;background:#161616;border:1px dashed #2E2E2E;text-align:center;font-size:14px;color:#9A9A9A">Nothing booked yet. Pick a class from the schedule.</div></sc-if>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{vPlan}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:clamp(20px,2.4vw,28px)">
+<sc-if value="{{desk}}" hint-placeholder-val="{{true}}"><h1 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(44px,5vw,72px);line-height:.9;text-transform:uppercase;color:#F5F5F5">My plan<span style="color:#C8102E">.</span></h1></sc-if>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px">
+<div style="display:flex;flex-direction:column;gap:14px;padding:22px;background:#1A1A1A;border:1px solid #2E2E2E">
+<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">CURRENT PLAN</span><span style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid {{st.c}};font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{st.c}}"><span style="width:6px;height:6px;background:{{st.c}}"></span>{{st.t}}</span></div>
+<div style="font-family:Anton,Impact,sans-serif;font-size:clamp(30px,3.4vw,42px);line-height:1;text-transform:uppercase;color:#F5F5F5">{{planName}}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px">
+<sc-for list="{{planFacts}}" as="f" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:6px"><span style="font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#9A9A9A">{{f.k}}</span><span style="font:700 14px/1.3 Manrope,sans-serif;color:#F5F5F5">{{f.v}}</span></div></sc-for>
+</div>
+<div><div style="height:6px;background:#262626"><div style="height:100%;width:{{usedPct}};background:{{daysC}}"></div></div><div style="margin-top:8px;font:500 11px/1 'JetBrains Mono',monospace;color:#9A9A9A">{{p.daysLeft}} OF {{p.totalDays}} DAYS LEFT</div></div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;padding:22px;background:#161616;border:1px solid #262626">
+<span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">HOW YOU PAY</span>
+<sc-for list="{{modes}}" as="o" hint-placeholder-count="2"><button onClick="{{o.pick}}" role="radio" aria-checked="{{o.on}}" style="display:flex;align-items:center;gap:14px;padding:14px;background:{{o.bg}};border:1px solid {{o.bd}};color:#F5F5F5;text-align:left;cursor:pointer"><span style="width:20px;height:20px;flex:none;border-radius:50%;border:1.5px solid {{o.ring}};display:flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;border-radius:50%;background:{{o.dot}}"></span></span><span style="display:flex;flex-direction:column;gap:4px"><span style="font:800 15px/1.2 Manrope,sans-serif">{{o.title}}</span><span style="font-size:13px;line-height:1.4;color:#9A9A9A">{{o.note}}</span></span></button></sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;padding:22px;background:#161616;border:1px solid #262626">
+<span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">FREEZE</span>
+<div style="font:800 17px/1.3 Manrope,sans-serif;color:#F5F5F5">{{fzTitle}}</div>
+<div style="font-size:14px;line-height:1.5;color:#9A9A9A">{{fzNote}}</div>
+<div style="height:6px;background:#262626"><div style="height:100%;width:{{fzPct}};background:oklch(0.78 0.1 240)"></div></div>
+<button onClick="{{fzAct}}" disabled="{{fzDis}}" style="margin-top:auto;height:44px;background:transparent;border:1px solid #2E2E2E;color:#F5F5F5;font:800 12px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:pointer;opacity:{{fzOp}}" style-hover="border-color:#F5F5F5">{{fzCta}}</button>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:{{renewCols}};gap:12px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:20px;padding:22px;background:#161616;border:1px solid #262626">
+<div><div style="font-family:Anton,Impact,sans-serif;font-size:32px;color:#F5F5F5;text-transform:uppercase">Renew or upgrade</div><div style="margin-top:6px;font-size:14px;color:#9A9A9A">{{renewNote}}</div></div>
+<div><div style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A;margin-bottom:10px">DISCIPLINES</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{rCards}}" as="c" hint-placeholder-count="7"><button onClick="{{c.toggle}}" aria-pressed="{{c.on}}" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px;background:{{c.bg}};border:1px solid {{c.bd}};color:#F5F5F5;font:700 13px/1 Manrope,sans-serif;cursor:pointer"><span style="width:8px;height:8px;background:{{c.color}}"></span>{{c.name}}<span style="font:700 12px/1 Manrope,sans-serif;color:{{c.mk}}">{{c.mark}}</span></button></sc-for></div></div>
+<div><div style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A;margin-bottom:10px">LENGTH</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:6px"><sc-for list="{{rDurs}}" as="d" hint-placeholder-count="4"><button onClick="{{d.pick}}" role="radio" aria-checked="{{d.on}}" aria-disabled="{{d.dis}}" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px;background:{{d.bg}};border:1px solid {{d.bd}};color:#F5F5F5;text-align:left;cursor:pointer;opacity:{{d.op}}"><span style="font:800 13px/1 Manrope,sans-serif">{{d.label}}</span><span style="font:600 11px/1 'JetBrains Mono',monospace;color:{{d.sc}}">{{d.save}}</span></button></sc-for></div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;padding:22px;background:#1A1A1A;border:1px solid #2E2E2E">
+<span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">RENEWAL SUMMARY</span>
+<sc-for list="{{rLines}}" as="l" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;gap:12px;font:500 13px/1.4 Manrope,sans-serif;color:#C9C9C9"><span>{{l.k}}</span><span style="font-family:'JetBrains Mono',monospace;color:{{l.c}};white-space:nowrap">{{l.v}}</span></div></sc-for>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-top:12px;border-top:1px solid #2E2E2E"><span style="font:800 13px/1.3 Manrope,sans-serif;color:#F5F5F5">Total</span><span ref="{{rTotRef}}" style="display:inline-block;font-family:Anton,Impact,sans-serif;font-size:36px;color:#F5F5F5">{{rTotal}}</span></div>
+<button onClick="{{renew}}" disabled="{{rNone}}" style="height:52px;border:0;background:{{rBg}};color:#F5F5F5;font:800 13px/1 Manrope,sans-serif;letter-spacing:.1em;cursor:pointer;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)" style-active="transform:scale(.96)">{{rCta}}</button>
+<span style="font-size:12px;line-height:1.5;color:#9A9A9A;text-align:center">Starts {{rStart}}. Coupon codes are applied at checkout.</span>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{vPay}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<sc-if value="{{desk}}" hint-placeholder-val="{{true}}"><h1 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(44px,5vw,72px);line-height:.9;text-transform:uppercase;color:#F5F5F5">Payments<span style="color:#C8102E">.</span></h1></sc-if>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1px;background:#262626;border:1px solid #262626">
+<sc-for list="{{payTiles}}" as="t" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:8px;padding:18px;background:#161616"><span style="font:600 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.14em;color:#9A9A9A">{{t.k}}</span><span style="font-family:Anton,Impact,sans-serif;font-size:32px;line-height:1;color:#F5F5F5">{{t.v}}</span><span style="font:500 12px/1.3 Manrope,sans-serif;color:#9A9A9A">{{t.s}}</span></div></sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{payF}}" as="f" hint-placeholder-count="5"><button onClick="{{f.pick}}" aria-pressed="{{f.on}}" style="height:40px;padding:0 14px;background:{{f.bg}};border:1px solid {{f.bd}};color:{{f.fg}};font:700 12px/1 Manrope,sans-serif;cursor:pointer">{{f.label}}</button></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:1px;background:#262626;border:1px solid #262626">
+<sc-for list="{{pays}}" as="r" hint-placeholder-count="4">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:16px;background:#161616">
+<div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:6px"><span style="font:800 15px/1.3 Manrope,sans-serif;color:#F5F5F5">{{r.desc}}</span><span style="font:500 11px/1.3 'JetBrains Mono',monospace;color:#9A9A9A">{{r.no}} · {{r.date}} · {{r.via}}</span></div>
+<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid {{r.c}};font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{r.c}}">{{r.status}}</span>
+<span style="min-width:96px;text-align:right;font:700 15px/1 'JetBrains Mono',monospace;color:#F5F5F5">{{r.amt}}</span>
+<button onClick="{{r.act}}" style="height:40px;min-width:104px;padding:0 12px;background:{{r.bg}};border:1px solid {{r.bd}};color:#F5F5F5;font:700 12px/1 Manrope,sans-serif;cursor:pointer" style-active="transform:scale(.96)">{{r.label}}</button>
+</div>
+</sc-for>
+</div>
+<span style="font-size:12px;line-height:1.5;color:#9A9A9A">Payments are processed securely by Razorpay. Receipts are issued by Dojo X, Vasundhara, Ghaziabad.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{vProg}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:clamp(20px,2.4vw,28px)">
+<sc-if value="{{desk}}" hint-placeholder-val="{{true}}"><h1 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(44px,5vw,72px);line-height:.9;text-transform:uppercase;color:#F5F5F5">Progress<span style="color:#C8102E">.</span></h1></sc-if>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:1px;background:#262626;border:1px solid #262626">
+<sc-for list="{{progTiles}}" as="t" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:8px;padding:18px;background:#161616"><span style="font-family:Anton,Impact,sans-serif;font-size:44px;line-height:1;color:{{t.c}}">{{t.v}}</span><span style="font:600 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.14em;color:#9A9A9A">{{t.k}}</span></div></sc-for>
+</div>
+
+<sc-if value="{{belt}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:18px;padding:22px;background:#1A1A1A;border:1px solid #2E2E2E">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Anton,Impact,sans-serif;font-size:32px;color:#F5F5F5;text-transform:uppercase">Belt journey</span><span style="font:600 12px/1 'JetBrains Mono',monospace;color:#9A9A9A">NEXT GRADING · {{belt.grading}}</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:4px">
+<sc-for list="{{belts}}" as="b" hint-placeholder-count="8"><div style="display:flex;flex-direction:column;gap:6px;opacity:{{b.op}}"><div style="height:18px;background:{{b.c}};outline:{{b.ol}};outline-offset:3px"></div><span style="font:700 10px/1.2 'JetBrains Mono',monospace;letter-spacing:.06em;color:{{b.fg}}">{{b.name}}</span></div></sc-for>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px">
+<div style="display:flex;flex-direction:column;gap:10px"><span style="font:800 16px/1.3 Manrope,sans-serif;color:#F5F5F5">{{belt.toNext}}</span><div style="height:8px;background:#262626"><div style="height:100%;width:{{belt.pct}};background:{{belt.nextC}}"></div></div><span style="font:600 12px/1 'JetBrains Mono',monospace;color:#9A9A9A">{{belt.att}}</span>
+<button onClick="{{regGrade}}" disabled="{{gradDone}}" style="margin-top:8px;align-self:flex-start;height:44px;padding:0 16px;background:{{gradBg}};border:0;color:#F5F5F5;font:800 12px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:pointer" style-active="transform:scale(.96)">{{gradCta}}</button></div>
+<div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{belt.req}}" as="r" hint-placeholder-count="4"><div style="display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4;color:{{r.fg}}"><span style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;background:{{r.bg}};border:1.5px solid {{r.bd}};color:#0D0D0D;font-weight:900;font-size:12px">{{r.mk}}</span>{{r.t}}</div></sc-for></div>
+</div>
+</div>
+</sc-if>
+
+<div style="display:grid;grid-template-columns:{{progCols}};gap:12px;align-items:start">
+<div style="padding:22px;background:#161616;border:1px solid #262626;min-width:0">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-bottom:16px"><span style="font-family:Anton,Impact,sans-serif;font-size:28px;color:#F5F5F5;text-transform:uppercase">Attendance · 16 weeks</span><span style="display:flex;align-items:center;gap:6px;font:500 10px/1 'JetBrains Mono',monospace;color:#9A9A9A">LESS<span style="width:12px;height:12px;background:#222222"></span><span style="width:12px;height:12px;background:rgba(200,16,46,.55)"></span><span style="width:12px;height:12px;background:#C8102E"></span>MORE<span style="width:12px;height:12px;margin-left:8px;background:oklch(0.78 0.1 240 / .5)"></span>FROZEN</span></div>
+<div style="overflow-x:auto"><div style="display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;grid-auto-columns:minmax(14px,1fr);gap:4px;min-width:300px">
+<sc-for list="{{heat}}" as="h" hint-placeholder-count="112"><span title="{{h.tip}}" style="aspect-ratio:1;background:{{h.bg}};border:{{h.bd}}"></span></sc-for>
+</div></div>
+<div style="display:flex;justify-content:space-between;margin-top:8px;font:500 10px/1 'JetBrains Mono',monospace;color:#9A9A9A"><span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span><span>OCT</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:22px;background:#161616;border:1px solid #262626">
+<span style="font-family:Anton,Impact,sans-serif;font-size:28px;color:#F5F5F5;text-transform:uppercase">This month</span>
+<sc-for list="{{split}}" as="s" hint-placeholder-count="2"><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font:700 13px/1 Manrope,sans-serif;color:#F5F5F5"><span>{{s.name}}</span><span style="font-family:'JetBrains Mono',monospace;color:#C9C9C9">{{s.n}} classes</span></div><div style="height:8px;background:#262626"><div style="height:100%;width:{{s.pct}};background:{{s.color}}"></div></div></div></sc-for>
+<span style="font-size:13px;line-height:1.5;color:#9A9A9A">{{progNote}}</span>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{vMe}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-direction:column;gap:clamp(16px,2vw,24px)">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px">
+<span style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:{{av.bg}};color:{{av.fg}};font-family:Anton,Impact,sans-serif;font-size:36px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%)">{{av.init}}</span>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:Anton,Impact,sans-serif;font-size:clamp(36px,4vw,52px);line-height:.95;text-transform:uppercase;color:#F5F5F5">{{m.name}}</span><span style="font:600 12px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:#9A9A9A">{{m.memberId}} · MEMBER SINCE {{m.since}}</span></div>
+</div>
+<sc-if value="{{mob}}" hint-placeholder-val="{{false}}"><button onClick="{{goPay}}" style="display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 16px;background:#1A1A1A;border:1px solid #2E2E2E;color:#F5F5F5;font:800 14px/1 Manrope,sans-serif;cursor:pointer">Payments &amp; invoices<span>→</span></button></sc-if>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px">
+<sc-for list="{{infoCards}}" as="g" hint-placeholder-count="3">
+<div style="padding:20px;background:#161616;border:1px solid #262626">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">{{g.title}}</span><button onClick="{{editInfo}}" style="height:36px;padding:0 10px;background:transparent;border:1px solid #2E2E2E;color:#F5F5F5;font:700 11px/1 Manrope,sans-serif;cursor:pointer">Edit</button></div>
+<sc-for list="{{g.rows}}" as="r" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #222222;font-size:14px;line-height:1.4"><span style="color:#9A9A9A">{{r.k}}</span><span style="color:#F5F5F5;font-weight:600;text-align:right">{{r.v}}</span></div></sc-for>
+</div>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px">
+<div style="padding:20px;background:#161616;border:1px solid #262626">
+<div style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A;margin-bottom:10px">FAMILY ON THIS ACCOUNT</div>
+<sc-for list="{{fam}}" as="f" hint-placeholder-count="3"><button onClick="{{f.pick}}" style="width:100%;display:flex;align-items:center;gap:12px;padding:10px 0;background:transparent;border:0;border-top:1px solid #222222;color:#F5F5F5;text-align:left;cursor:pointer"><span style="width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;background:{{f.bg}};color:{{f.fg}};font:800 13px/1 Manrope,sans-serif">{{f.init}}</span><span style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font:800 14px/1.1 Manrope,sans-serif">{{f.name}}</span><span style="font:500 12px/1.2 Manrope,sans-serif;color:#9A9A9A">{{f.sub}}</span></span><span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:{{f.tc}}">{{f.tag}}</span></button></sc-for>
+<button onClick="{{addFam}}" style="width:100%;height:48px;margin-top:8px;background:transparent;border:1px dashed #2E2E2E;color:#F5F5F5;font:700 13px/1 Manrope,sans-serif;cursor:pointer" style-hover="border-color:#9A9A9A">+ Add family member · both get 10% off</button>
+</div>
+<div style="padding:20px;background:#161616;border:1px solid #262626">
+<div style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A;margin-bottom:10px">NOTIFICATIONS</div>
+<sc-for list="{{notifs}}" as="n" hint-placeholder-count="3"><button onClick="{{n.toggle}}" role="switch" aria-checked="{{n.on}}" style="width:100%;display:flex;align-items:center;gap:12px;padding:12px 0;background:transparent;border:0;border-top:1px solid #222222;color:#F5F5F5;text-align:left;cursor:pointer"><span style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font:700 14px/1.2 Manrope,sans-serif">{{n.t}}</span><span style="font-size:12px;line-height:1.3;color:#9A9A9A">{{n.s}}</span></span><span style="width:44px;height:26px;flex:none;padding:3px;background:{{n.track}};transition:background .2s"><span style="display:block;width:20px;height:20px;background:#F5F5F5;transform:{{n.knob}};transition:transform .2s cubic-bezier(.7,0,.2,1)"></span></span></button></sc-for>
+</div>
+</div>
+<a href="Login.dc.html" style="align-self:flex-start;display:flex;align-items:center;height:44px;padding:0 16px;border:1px solid #2E2E2E;font:700 13px/1 Manrope,sans-serif;color:#F5F5F5">Log out</a>
+</div>
+</sc-if>
+
+</div>
+</main>
+
+<sc-if value="{{mob}}" hint-placeholder-val="{{false}}">
+<nav aria-label="Portal tabs" style="position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom);background:rgba(17,17,17,.97);border-top:1px solid #262626;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+<sc-for list="{{tabs}}" as="n" hint-placeholder-count="5"><button onClick="{{n.go}}" aria-current="{{n.cur}}" style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:64px;background:transparent;border:0;color:{{n.fg}};font:700 10px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer"><span style="position:absolute;top:0;left:30%;right:30%;height:3px;background:{{n.bar}}"></span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="{{n.icon}}"></path></svg>{{n.short}}<sc-if value="{{n.badge}}" hint-placeholder-val="{{false}}"><span style="position:absolute;top:10px;left:calc(50% + 8px);width:8px;height:8px;background:#C8102E"></span></sc-if></button></sc-for>
+</nav>
+</sc-if>
+
+<sc-if value="{{sheetOn}}" hint-placeholder-val="{{false}}">
+<div onClick="{{closeSheet}}" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.7);display:flex;align-items:{{sheetAlign}};justify-content:center;padding:{{sheetPad}}">
+<div ref="{{sheetRef}}" onClick="{{stop}}" role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" style="width:100%;max-width:480px;max-height:90vh;overflow:auto;background:#161616;border:1px solid #2E2E2E;padding:24px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px"><span style="font-family:Anton,Impact,sans-serif;font-size:30px;line-height:1;text-transform:uppercase;color:#F5F5F5">{{sheetTitle}}</span><button onClick="{{closeSheet}}" aria-label="Close" style="width:44px;height:44px;background:transparent;border:1px solid #2E2E2E;color:#F5F5F5;cursor:pointer">✕</button></div>
+
+<sc-if value="{{shSwitch}}" hint-placeholder-val="{{false}}"><div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{fam}}" as="f" hint-placeholder-count="3"><button onClick="{{f.pick}}" style="display:flex;align-items:center;gap:12px;padding:12px;background:{{f.rowBg}};border:1px solid {{f.rowBd}};color:#F5F5F5;text-align:left;cursor:pointer"><span style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;background:{{f.bg}};color:{{f.fg}};font:800 14px/1 Manrope,sans-serif">{{f.init}}</span><span style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font:800 15px/1.1 Manrope,sans-serif">{{f.name}}</span><span style="font:500 12px/1.2 Manrope,sans-serif;color:#9A9A9A">{{f.sub}}</span></span><span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:{{f.tc}}">{{f.tag}}</span></button></sc-for></div></sc-if>
+
+<sc-if value="{{shCancel}}" hint-placeholder-val="{{false}}"><div style="display:flex;flex-direction:column;gap:16px"><div style="padding:14px;background:#1A1A1A;border-left:3px solid {{cx.color}}"><div style="font:800 16px/1.3 Manrope,sans-serif;color:#F5F5F5">{{cx.title}}</div><div style="margin-top:6px;font:500 13px/1.4 Manrope,sans-serif;color:#9A9A9A">{{cx.when}} · {{cx.coach}}</div></div><p style="margin:0;font-size:14px;line-height:1.6;color:#C9C9C9">Free cancellation until {{cx.cutoff}}. Your spot goes to the first person on the waitlist.</p><div style="display:flex;gap:8px"><button onClick="{{closeSheet}}" style="flex:1;height:52px;background:transparent;border:1px solid #2E2E2E;color:#F5F5F5;font:800 13px/1 Manrope,sans-serif;cursor:pointer">Keep it</button><button onClick="{{confirmCancel}}" style="flex:1;height:52px;background:#C8102E;border:0;color:#F5F5F5;font:800 13px/1 Manrope,sans-serif;letter-spacing:.06em;cursor:pointer" style-active="transform:scale(.96)">Cancel booking</button></div></div></sc-if>
+
+<sc-if value="{{shFreeze}}" hint-placeholder-val="{{false}}"><div style="display:flex;flex-direction:column;gap:18px">
+<div><div style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A;margin-bottom:10px">STARTS</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><sc-for list="{{fzStarts}}" as="s" hint-placeholder-count="2"><button onClick="{{s.pick}}" aria-pressed="{{s.on}}" style="height:48px;background:{{s.bg}};border:1px solid {{s.bd}};color:#F5F5F5;font:700 13px/1 Manrope,sans-serif;cursor:pointer">{{s.label}}</button></sc-for></div></div>
+<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">DAYS</span><span style="font-family:Anton,Impact,sans-serif;font-size:40px;line-height:1;color:#F5F5F5">{{fzDays}}</span></div><input type="range" min="3" max="{{fzMax}}" value="{{fzDays}}" onInput="{{setFz}}" aria-label="Freeze days" style="width:100%;height:32px"><div style="display:flex;justify-content:space-between;font:500 11px/1 'JetBrains Mono',monospace;color:#9A9A9A"><span>3</span><span>{{fzMax}} LEFT THIS YEAR</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px;background:#1A1A1A"><div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:#9A9A9A">Paused</span><span style="color:#F5F5F5;font-weight:700">{{fzRange}}</span></div><div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:#9A9A9A">New expiry</span><span style="color:oklch(0.78 0.14 150);font-weight:700">{{fzNewEnd}}</span></div></div>
+<button onClick="{{confirmFreeze}}" style="height:52px;background:#C8102E;border:0;color:#F5F5F5;font:800 13px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:pointer" style-active="transform:scale(.96)">FREEZE {{fzDays}} DAYS</button>
+<span style="font-size:12px;line-height:1.5;color:#9A9A9A;text-align:center">Bookings in this window are cancelled. Autopay pauses and resumes automatically.</span>
+</div></sc-if>
+
+<sc-if value="{{shMandate}}" hint-placeholder-val="{{false}}"><div style="display:flex;flex-direction:column;gap:16px"><p style="margin:0;font-size:14px;line-height:1.6;color:#C9C9C9">We’ll send a one-time mandate request to your UPI app. You approve it once; renewals of {{rTotal}} are debited on {{p.end}} with a reminder 24 hours before.</p><label style="display:flex;flex-direction:column;gap:8px"><span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;color:#9A9A9A">UPI ID</span><input value="{{upi}}" onInput="{{setUpi}}" style="height:52px;padding:0 14px;background:#0D0D0D;border:1px solid #2E2E2E;color:#F5F5F5;font:600 15px/1 'JetBrains Mono',monospace;outline:none"></label><button onClick="{{confirmMandate}}" style="height:52px;background:#C8102E;border:0;color:#F5F5F5;font:800 13px/1 Manrope,sans-serif;letter-spacing:.08em;cursor:pointer" style-active="transform:scale(.96)">SEND MANDATE REQUEST</button></div></sc-if>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const P_ID = c => c.pin && DXP.members[c.pin] ? c.pin : DXP.current();
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    const v = (location.hash || '').slice(1); this.pin = new URLSearchParams(location.search).get('m');
+    this.state = { w: window.innerWidth, ready: false, id: window.DXP ? DXP.current() : 'aarav', view: ['home', 'classes', 'plan', 'pay', 'progress', 'me'].includes(v) ? v : 'home', bookings: null, wait: {}, modes: {}, frozen: {}, unfrozen: {}, sheet: null, cx: null, fz: 7, fzS: 0, day: 3, ctab: 'sched', rSel: null, rDur: null, payF: 'all', notif: { wa: true, renew: true, mail: false }, grad: false, upi: 'aarav@okhdfc', retried: {} };
+  }
+  root = React.createRef(); viewRef = React.createRef(); sheetRef = React.createRef(); rTotRef = React.createRef();
+  componentDidMount() {
+    this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
+    DojoReady(() => {
+      const wait = () => window.DXP ? go() : setTimeout(wait, 30);
+      const go = () => {
+        const b = {};
+        DXP.order.forEach(id => { const m = DXP.members[id]; b[id] = DOJO.classes.filter(c => this.ok(m, c) && !this.past(c)).slice(0, m.bookings).map(c => c.id); });
+        this.setState({ ready: true, bookings: b, id: P_ID(this) }, () => DojoMotion.init(this.root.current));
+        this._off = DXP.on(id => !this.pin && id !== this.state.id && this.setState({ id, rSel: null, rDur: null }));
+      };
+      wait();
+    });
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._rs); this._off && this._off(); }
+  componentDidUpdate(pp, ps) {
+    const M = window.DojoMotion; if (!M) return; ps = ps || {};
+    if ((ps.view !== this.state.view || ps.id !== this.state.id) && this.viewRef.current && !M.reduced()) this.viewRef.current.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    if (this.state.sheet && !ps.sheet) M.slideIn(this.sheetRef.current, this.state.w < 768 ? 'bottom' : 'center');
+    if (this.lastTot !== undefined && this.lastTot !== this.tot) M.pop(this.rTotRef.current);
+    this.lastTot = this.tot;
+  }
+  ok(m, c) { return m.plan.disc.includes(c.disc) && (m.age < 13 ? c.age === 'Kids' : c.age !== 'Kids'); }
+  past(c) { return c.d < 3 || (c.d === 3 && c.t < '14:30'); }
+  when(c) { return (c.d === 3 ? 'Today' : c.d === 4 ? 'Tomorrow' : DOJO.days[c.d] + ' ' + (12 + c.d) + ' Oct') + ' · ' + DOJO.time12(c.t); }
+  cutoff(c) { let [h, mm] = c.t.split(':').map(Number); h -= 2; return (c.d === 3 ? 'today ' : DOJO.days[c.d] + ' ') + DOJO.time12(String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0')); }
+  go = view => { this.setState({ view, sheet: null }); try { history.replaceState(null, '', '#' + view); } catch (e) {} window.scrollTo(0, 0); };
+  setMember = id => { this.pin = null; DXP.set(id); this.setState({ id, sheet: null, rSel: null, rDur: null, upi: { aarav: 'aarav@okhdfc', diya: 'aarav@okhdfc', neha: 'neha@ybl' }[id] }); };
+  book = c => {
+    const { id, bookings } = this.state, mine = bookings[id];
+    if (c.booked + 1 > c.cap && !mine.includes(c.id)) { this.setState(s => ({ wait: { ...s.wait, [c.id]: !s.wait[c.id] } })); DojoMotion.toast(this.state.wait[c.id] ? 'Left the waitlist' : 'You’re #2 on the waitlist. We’ll WhatsApp you if a spot opens.'); return; }
+    this.setState({ bookings: { ...bookings, [id]: [...mine, c.id] } });
+    DojoMotion.toast(`Booked: ${c.title}, ${this.when(c)}`);
+  };
+  confirmCancel = () => { const { id, bookings, cx } = this.state; this.setState({ bookings: { ...bookings, [id]: bookings[id].filter(x => x !== cx) }, sheet: null }); DojoMotion.toast('Booking cancelled. No charge.'); };
+  fmtD = d => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  renderVals() {
+    const D = window.DOJO, P = window.DXP, s = this.state, w = s.w, mob = w < 1024, desk = w >= 1024;
+    const base = { root: this.root, viewRef: this.viewRef, sheetRef: this.sheetRef, rTotRef: this.rTotRef, mob, desk, cols: desk ? '248px minmax(0,1fr)' : 'minmax(0,1fr)', pad: w < 768 ? '20px 16px 32px' : desk ? '40px clamp(24px,3vw,48px) 56px' : '28px 24px 48px', mainPad: mob ? '80px' : '0', vHome: false, nav: [], tabs: [], fam: [], sheetOn: false, banner: false };
+    if (!D || !P || !s.bookings) return base;
+    const f = D.fmt, id = s.id, m = P.members[id], p0 = m.plan;
+    const frozen = s.unfrozen[id] ? false : (p0.status === 'frozen' || !!s.frozen[id]);
+    const status = s.frozen[id] ? 'frozen' : s.unfrozen[id] ? 'active' : p0.status;
+    const mode = s.modes[id] || p0.mode;
+    const fzEnd = s.frozen[id] ? this.fmtD(new Date(new Date(p0.end).getTime() + s.frozen[id].days * 864e5)) : p0.end;
+    const p = { ...p0, end: fzEnd, via: mode === 'auto' ? (p0.mode === 'auto' ? p0.via : 'UPI Autopay · ' + s.upi) : 'Pay each cycle' };
+    const AV = { aarav: ['#C8102E', '#F5F5F5'], diya: [D.color('karate'), '#0D0D0D'], neha: [D.color('yoga'), '#0D0D0D'] };
+    const av = { init: m.init, bg: AV[id][0], fg: AV[id][1] };
+    const ST = { active: ['ACTIVE', 'oklch(0.78 0.14 150)'], expiring: [`EXPIRES IN ${p0.daysLeft} DAYS`, 'oklch(0.82 0.14 75)'], frozen: [s.frozen[id] ? `FROZEN · ${s.frozen[id].range.toUpperCase()}` : 'FROZEN · 12–18 OCT', 'oklch(0.78 0.1 240)'] };
+    const st = { t: ST[status][0], c: ST[status][1] };
+    const planName = p0.disc.map(k => D.disciplines[k].name).join(' + ');
+    const nm = k => D.disciplines[k].name, coach = c => D.coaches[c.coach] ? D.coaches[c.coach].first : c.coach;
+    const mine = s.bookings[id], byId = x => D.classes.find(c => c.id === x);
+    const myList = mine.map(byId).filter(Boolean).sort((a, b) => a.d - b.d || a.t.localeCompare(b.t));
+    const ICON = { home: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z', classes: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4', plan: 'M4 5h16v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6z', pay: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6', progress: 'M4 20V11M10 20V5M16 20v-6M2 20h20', me: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0' };
+    const NAV = [['home', 'Dashboard', 'Home'], ['classes', 'Classes', 'Classes'], ['plan', 'My Plan', 'Plan'], ['pay', 'Payments', 'Pay'], ['progress', 'Progress', 'Progress'], ['me', 'Profile', 'Me']];
+    const payRows = P.payments[id];
+    const failed = payRows.some(r => r[4] === 'Failed' && !s.retried[r[0]]) && false;
+    const badge = { plan: status === 'expiring' ? '!' : '', pay: payRows.filter(r => r[4] === 'Pending').length ? String(payRows.filter(r => r[4] === 'Pending').length) : '' };
+    const navItem = ([k, label, short]) => { const on = s.view === k || (k === 'me' && s.view === 'pay' && mob); return { label, short, icon: ICON[k], cur: on ? 'page' : 'false', bg: on ? '#1A1A1A' : 'transparent', fg: on ? '#F5F5F5' : '#9A9A9A', bar: on ? '#C8102E' : 'transparent', badge: badge[k] || (k === 'me' && mob ? badge.pay : ''), go: () => this.go(k) }; };
+    const used = Math.max(0, Math.min(1, 1 - p0.daysLeft / p0.totalDays));
+    const daysC = status === 'expiring' ? 'oklch(0.82 0.14 75)' : status === 'frozen' ? 'oklch(0.78 0.1 240)' : '#C8102E';
+    const stats = P.stats[id];
+    const classRow = c => {
+      const booked = mine.includes(c.id), ok = this.ok(m, c), past = this.past(c), taken = c.booked + (booked ? 1 : 0), full = taken >= c.cap, onWait = !!s.wait[c.id];
+      const left = c.cap - taken;
+      let label, act = () => {}, dis = false, bg = 'transparent', bd = '#2E2E2E', fg = '#F5F5F5';
+      if (past) { label = booked ? 'ATTENDED' : 'ENDED'; dis = true; fg = '#9A9A9A'; }
+      else if (!ok) { label = m.plan.disc.includes(c.disc) ? 'NOT FOR AGE' : 'ADD TO PLAN'; act = () => m.plan.disc.includes(c.disc) ? null : (this.setState({ rSel: [...p0.disc, c.disc] }), this.go('plan')); fg = '#C9C9C9'; dis = m.plan.disc.includes(c.disc); }
+      else if (frozen) { label = 'FROZEN'; dis = true; fg = '#9A9A9A'; }
+      else if (booked) { label = 'BOOKED ✓'; bg = 'oklch(0.74 0.15 150 / .15)'; bd = 'oklch(0.74 0.15 150)'; act = () => this.setState({ sheet: 'cancel', cx: c.id }); }
+      else if (full) { label = onWait ? 'ON WAITLIST' : 'JOIN WAITLIST'; bd = onWait ? 'oklch(0.82 0.14 75)' : '#2E2E2E'; act = () => this.book(c); }
+      else { label = 'BOOK'; bg = '#C8102E'; bd = '#C8102E'; act = () => this.book(c); }
+      return { id: c.id, time: D.time12(c.t), dur: c.dur, title: c.title, disc: nm(c.disc), color: D.color(c.disc), coach: coach(c), level: c.level, age: c.age, spots: past ? '—' : full ? 'FULL' : `${left} SPOT${left > 1 ? 'S' : ''} LEFT`, spotsC: full ? 'oklch(0.80 0.14 45)' : left <= 3 ? 'oklch(0.82 0.14 75)' : '#9A9A9A', fill: Math.min(100, taken / c.cap * 100) + '%', fillC: full ? 'oklch(0.70 0.19 45)' : '#C9C9C9', label, act, dis, bg, bd, fg, cur: dis ? 'default' : 'pointer', op: ok && !past ? 1 : .55, rowBg: booked ? '#1A1A1A' : '#161616', rowBd: booked ? 'oklch(0.74 0.15 150 / .5)' : '#262626' };
+    };
+    const nx = myList.find(c => !this.past(c));
+    const todayList = D.classes.filter(c => c.d === 3 && this.ok(m, c) && !this.past(c)).sort((a, b) => a.t.localeCompare(b.t)).slice(0, 4).map(classRow).map(r => ({ ...r, label: r.label === 'BOOKED ✓' ? 'BOOKED' : r.label.replace('JOIN ', '') }));
+    let banner = null;
+    if (status === 'expiring') banner = { t: `${m.first}’s ${planName} plan ends on ${p0.end}. Renew to keep ${m.age < 13 ? 'her' : 'your'} batch spot.`, cta: 'RENEW NOW', act: () => this.go('plan'), bg: 'oklch(0.82 0.14 75 / .12)', bd: 'oklch(0.82 0.14 75 / .5)', dot: 'oklch(0.82 0.14 75)' };
+    if (status === 'frozen') banner = { t: `${m.first}’s plan is frozen (${s.frozen[id] ? s.frozen[id].range : '12–18 Oct'}). Expiry moves to ${s.frozen[id] ? fzEnd : p0.end}.`, cta: 'UNFREEZE', act: () => { this.setState(st2 => ({ unfrozen: { ...st2.unfrozen, [id]: true }, frozen: { ...st2.frozen, [id]: null } })); DojoMotion.toast('Plan unfrozen. Booking is open again.'); }, bg: 'oklch(0.78 0.1 240 / .12)', bd: 'oklch(0.78 0.1 240 / .5)', dot: 'oklch(0.78 0.1 240)' };
+    const pend = payRows.find(r => r[4] === 'Pending');
+    if (!banner && pend) banner = { t: `Autopay of ${f(pend[3])} for ${pend[2]} is processing with your bank.`, cta: 'VIEW', act: () => this.go('pay'), bg: '#1A1A1A', bd: '#2E2E2E', dot: 'oklch(0.82 0.14 75)' };
+    if (s.view !== 'home' && s.view !== 'plan') banner = null;
+    // renew
+    const rSel = s.rSel || p0.disc, onlyYoga = rSel.length && rSel.every(k => k === 'yoga'), rDur = onlyYoga ? 'monthly' : (s.rDur || p0.dur);
+    const q = D.quote(rSel, rDur, 1, null); this.tot = q.total;
+    const fam2 = P.order.filter(x => P.members[x].plan.status !== 'x').length >= 2;
+    const qp = D.quote(rSel, rDur, 2, null);
+    const rLines = [];
+    if (q.fight.length) rLines.push({ k: `${q.fight.length} × ${q.pl.l} (${f(q.pl.p)})`, v: f(q.fightCycle), c: '#F5F5F5' });
+    if (q.yoga) rLines.push({ k: 'Yoga · monthly', v: f(q.yogaM), c: '#F5F5F5' });
+    if (rSel.length) { rLines.push({ k: 'Family discount (10%)', v: '−' + f(Math.round(q.perPerson * .10)), c: 'oklch(0.78 0.14 150)' }); }
+    const famSub = Math.round(q.perPerson * .9), famGst = 0;
+    const famTotal = famSub + famGst; this.tot = famTotal;
+    const startD = this.fmtD(new Date(new Date(fzEnd).getTime() + 864e5));
+    const toggleR = k => this.setState(st2 => { const cur = st2.rSel || p0.disc; return { rSel: cur.includes(k) ? cur.filter(x => x !== k) : [...cur, k] }; });
+    // freeze
+    const usedFz = { aarav: 7, diya: 0, neha: 7 }[id] + (s.frozen[id] ? s.frozen[id].days : 0), fzMax = Math.max(3, 30 - usedFz);
+    const fzStartDates = [new Date('2026-10-16'), new Date('2026-10-19')];
+    const fzS = fzStartDates[s.fzS], fzE = new Date(fzS.getTime() + (s.fz - 1) * 864e5);
+    const shortD = d => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const canFreeze = p0.dur !== 'monthly';
+    // progress
+    const heatRaw = P.heat(id), todayIdx = 15 * 7 + 3;
+    const HB = { 0: '#222222', 1: 'rgba(200,16,46,.55)', 2: '#C8102E', '-1': 'oklch(0.78 0.1 240 / .5)' };
+    const heat = heatRaw.map((v, i) => i > todayIdx ? { bg: 'transparent', bd: '1px solid #222222', tip: '' } : { bg: HB[v], bd: '0', tip: v > 0 ? `${v} class${v > 1 ? 'es' : ''}` : v < 0 ? 'Frozen' : 'Rest' });
+    const totalSplit = stats.split.reduce((a, b) => a + b[1], 0);
+    const B = m.belt;
+    const belt = B ? { grading: B.grading.toUpperCase(), toNext: `${Math.round(B.progress * 100)}% to ${D.belts[B.cur + 1][0]} belt`, pct: Math.round(B.progress * 100) + '%', nextC: D.belts[B.cur + 1][1], att: `${B.classes[0]} OF ${B.classes[1]} CLASSES SINCE LAST GRADING`, req: B.req.map(([t, done]) => ({ t, mk: done ? '✓' : '', bg: done ? 'oklch(0.78 0.14 150)' : 'transparent', bd: done ? 'oklch(0.78 0.14 150)' : '#9A9A9A', fg: done ? '#C9C9C9' : '#F5F5F5' })) } : null;
+    // pay
+    const PC = { Paid: 'oklch(0.78 0.14 150)', Failed: 'oklch(0.75 0.17 35)', Pending: 'oklch(0.82 0.14 75)', Refunded: '#9A9A9A' };
+    const pays = payRows.filter(r => s.payF === 'all' || r[4] === s.payF).map(r => { const stt = s.retried[r[0]] ? 'Paid' : r[4]; const retry = stt === 'Failed'; return { no: r[0], date: r[1], desc: r[2], amt: (r[3] < 0 ? '−' : '') + f(Math.abs(r[3])), status: stt.toUpperCase(), c: PC[stt], via: r[5], label: retry ? 'Retry' : stt === 'Pending' ? 'Details' : 'Receipt', bg: retry ? '#C8102E' : 'transparent', bd: retry ? '#C8102E' : '#2E2E2E', act: () => retry ? (this.setState(st2 => ({ retried: { ...st2.retried, [r[0]]: true } })), DojoMotion.toast('Payment of ' + f(r[3]) + ' received')) : (stt === 'Pending' ? DojoMotion.toast('Bank is processing. Usually clears within 2 hours.') : (location.href = `Invoice.dc.html?d=${p0.disc.join(',')}&dur=${p0.dur}&p=2&n=${encodeURIComponent(m.name)}&m=${encodeURIComponent(r[5])}`)) }; });
+    const paidFY = payRows.filter(r => (r[4] === 'Paid' || s.retried[r[0]]) && r[0].includes('2026-27')).reduce((a, r) => a + r[3], 0);
+    const fam = P.order.map(x => { const mm = P.members[x], on = x === id, stx = x === id ? status : mm.plan.status; return { init: mm.init, name: mm.name, sub: `${mm.rel} · ${mm.plan.disc.map(nm).join(' + ')}`, bg: AV[x][0], fg: AV[x][1], tag: on ? 'VIEWING' : stx === 'expiring' ? 'RENEW SOON' : stx === 'frozen' ? 'FROZEN' : 'ACTIVE', tc: on ? '#F5F5F5' : ST[stx][1], rowBg: on ? 'rgba(200,16,46,.14)' : '#1A1A1A', rowBd: on ? '#C8102E' : '#262626', pick: () => this.setMember(x) }; });
+    const tabsK = ['home', 'classes', 'plan', 'progress', 'me'];
+    const titles = { home: 'Dashboard', classes: 'Classes', plan: 'My Plan', pay: 'Payments', progress: 'Progress', me: 'Profile' };
+    const sheetTitles = { switch: 'Switch member', cancel: 'Cancel booking?', freeze: 'Freeze plan', mandate: 'Set up Autopay' };
+    const cxC = s.cx ? byId(s.cx) : null;
+    return Object.assign(base, {
+      vHome: s.view === 'home', vClasses: s.view === 'classes', vPlan: s.view === 'plan', vPay: s.view === 'pay', vProg: s.view === 'progress', vMe: s.view === 'me',
+      m, p, av, st, planName, daysC, usedPct: Math.round(used * 100) + '%', planSpan: desk ? 2 : 1,
+      planSub: `${D.plans[p0.dur].l} plan · ${p0.start} → ${fzEnd}`,
+      greet: { aarav: 'Ready, Aarav?', diya: 'Hi, Diya', neha: 'Breathe, Neha' }[id],
+      nav: NAV.map(navItem), tabs: NAV.filter(n => tabsK.includes(n[0])).map(navItem),
+      openSwitch: () => this.setState({ sheet: 'switch' }), closeSheet: () => this.setState({ sheet: null }), stop: e => e.stopPropagation(),
+      mobTitle: titles[s.view], showBack: mob && s.view === 'pay', goBack: () => this.go('me'),
+      goPlan: () => this.go('plan'), goClasses: () => this.go('classes'), goPay: () => this.go('pay'),
+      banner: !!banner, bannerText: banner && banner.t, bannerCta: banner && banner.cta, bannerAct: banner && banner.act, bannerBg: banner && banner.bg, bannerBd: banner && banner.bd, bannerDot: banner && banner.dot,
+      nx: nx ? { title: nx.title, disc: nm(nx.disc), color: D.color(nx.disc), when: this.when(nx), coach: coach(nx), dur: nx.dur, cancel: () => this.setState({ sheet: 'cancel', cx: nx.id }) } : null, noNx: !nx,
+      tiles: [{ k: 'DAY STREAK', v: m.streak, c: m.streak ? '#C8102E' : '#9A9A9A' }, { k: 'CLASSES IN OCT', v: stats.month, c: '#F5F5F5' }, { k: 'HOURS TRAINED', v: stats.hours, c: '#F5F5F5' }, { k: 'BOOKED AHEAD', v: myList.filter(c => !this.past(c)).length, c: '#F5F5F5' }],
+      today: todayList, noToday: !todayList.length,
+      news: P.announcements.map(([tag, title, body, n]) => ({ tag, title, body, isNew: !!n })),
+      ctabs: [['sched', 'Schedule'], ['mine', `My bookings · ${myList.filter(c => !this.past(c)).length}`]].map(([k, label]) => ({ label, on: s.ctab === k, bd: s.ctab === k ? '#C8102E' : 'transparent', fg: s.ctab === k ? '#F5F5F5' : '#9A9A9A', pick: () => this.setState({ ctab: k }) })),
+      tabSched: s.ctab === 'sched', tabMine: s.ctab === 'mine',
+      days: D.days.map((dw, i) => ({ dow: dw.toUpperCase(), date: 12 + i, on: s.day === i, bg: s.day === i ? '#F5F5F5' : '#161616', bd: s.day === i ? '#F5F5F5' : i === 3 ? '#C8102E' : '#262626', fg: s.day === i ? '#0D0D0D' : '#F5F5F5', op: i < 3 ? .5 : 1, dot: mine.some(x => { const c = byId(x); return c && c.d === i; }) ? '#C8102E' : 'transparent', pick: () => this.setState({ day: i }) })),
+      isFrozen: frozen, list: D.classes.filter(c => c.d === s.day).sort((a, b) => (this.ok(m, b) - this.ok(m, a)) || a.t.localeCompare(b.t)).map(classRow),
+      mine: myList.filter(c => !this.past(c)).map(c => ({ when: this.when(c).toUpperCase(), title: c.title, coach: coach(c), cutoff: this.cutoff(c), color: D.color(c.disc), cancel: () => this.setState({ sheet: 'cancel', cx: c.id }) })), noMine: !myList.filter(c => !this.past(c)).length,
+      planFacts: [{ k: 'LENGTH', v: D.plans[p0.dur].l }, { k: 'STARTED', v: p0.start }, { k: 'EXPIRES', v: fzEnd }, { k: 'NEXT PAYMENT', v: mode === 'auto' ? p0.next : 'Manual · reminder 7 days before' }],
+      modes: [['auto', 'Auto-renew', 'UPI Autopay. Reminder 24h before each debit.'], ['manual', 'Pay each cycle', 'We remind you 7 days before expiry. Nothing auto-debited.']].map(([k, title, note]) => { const on = mode === k; return { title, note, on, bg: on ? 'rgba(200,16,46,.14)' : '#1A1A1A', bd: on ? '#C8102E' : '#262626', ring: on ? '#C8102E' : '#9A9A9A', dot: on ? '#C8102E' : 'transparent', pick: () => { if (on) return; if (k === 'auto') this.setState({ sheet: 'mandate' }); else { this.setState(st2 => ({ modes: { ...st2.modes, [id]: 'manual' } })); DojoMotion.toast('Autopay mandate cancelled. You’ll pay each cycle.'); } } }; }),
+      fzTitle: frozen ? `Frozen · ${s.frozen[id] ? s.frozen[id].range : '12–18 Oct'}` : canFreeze ? `${30 - usedFz} of 30 days left this year` : 'Not available on monthly plans',
+      fzNote: frozen ? 'Expiry has moved forward to match. Unfreeze any time to start booking again.' : canFreeze ? 'Travel, exams or injury. Your expiry moves forward automatically.' : 'Freeze comes with quarterly, 6-month and annual plans.',
+      fzPct: Math.round(usedFz / 30 * 100) + '%', fzCta: frozen ? 'UNFREEZE NOW' : 'FREEZE PLAN', fzDis: !canFreeze && !frozen, fzOp: !canFreeze && !frozen ? .4 : 1,
+      fzAct: frozen ? banner && banner.act || (() => {}) : () => this.setState({ sheet: 'freeze', fz: Math.min(7, fzMax) }),
+      renewCols: desk ? 'minmax(0,1fr) 380px' : 'minmax(0,1fr)',
+      renewNote: `Your next plan starts the day after ${fzEnd}. ${m.first} is on a family account, so 10% off applies.`,
+      rCards: D.order.map(k => { const on = rSel.includes(k); return { name: nm(k), color: D.color(k), on, mark: on ? '✓' : '+', mk: on ? '#F5F5F5' : '#9A9A9A', bg: on ? 'rgba(200,16,46,.14)' : '#1A1A1A', bd: on ? '#C8102E' : '#262626', toggle: () => toggleR(k) }; }),
+      rDurs: D.planOrder.map(k => { const on = rDur === k, dis = onlyYoga && k !== 'monthly', sv = D.planSave(k); return { label: D.plans[k].l, save: sv ? `SAVE ${sv}%` : f(D.plans[k].p), sc: sv ? 'oklch(0.78 0.14 150)' : '#9A9A9A', on, dis, op: dis ? .4 : 1, bg: on ? 'rgba(200,16,46,.14)' : '#1A1A1A', bd: on ? '#C8102E' : '#262626', pick: () => !dis && this.setState({ rDur: k }) }; }),
+      rLines, rTotal: rSel.length ? f(famTotal) : '₹0', rNone: !rSel.length, rBg: rSel.length ? '#C8102E' : '#333333', rStart: startD,
+      rCta: rSel.length ? (rSel.length > p0.disc.length || rSel.some(k => !p0.disc.includes(k)) ? 'UPGRADE & RENEW →' : 'RENEW PLAN →') : 'PICK A DISCIPLINE',
+      renew: () => { if (!rSel.length) return; location.href = `Checkout.dc.html?src=portal&d=${rSel.join(',')}&dur=${rDur}&p=2&mode=${mode}`; },
+      shSwitch: s.sheet === 'switch', shCancel: s.sheet === 'cancel', shFreeze: s.sheet === 'freeze', shMandate: s.sheet === 'mandate', sheetOn: !!s.sheet, sheetTitle: sheetTitles[s.sheet] || '',
+      sheetAlign: mob ? 'flex-end' : 'center', sheetPad: mob ? '0' : '24px',
+      cx: cxC ? { title: cxC.title, when: this.when(cxC), coach: coach(cxC), cutoff: this.cutoff(cxC), color: D.color(cxC.disc) } : { title: '', when: '', coach: '', cutoff: '', color: '#262626' }, confirmCancel: this.confirmCancel,
+      fzStarts: fzStartDates.map((d, i) => ({ label: (i ? '' : 'Tomorrow · ') + d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }), on: s.fzS === i, bg: s.fzS === i ? 'rgba(200,16,46,.14)' : '#1A1A1A', bd: s.fzS === i ? '#C8102E' : '#262626', pick: () => this.setState({ fzS: i }) })),
+      fzDays: s.fz, fzMax, setFz: e => this.setState({ fz: +e.target.value }),
+      fzRange: `${shortD(fzS)} – ${shortD(fzE)}`, fzNewEnd: this.fmtD(new Date(new Date(p0.end).getTime() + s.fz * 864e5)),
+      confirmFreeze: () => { const range = `${shortD(fzS)} – ${shortD(fzE)}`; this.setState(st2 => ({ frozen: { ...st2.frozen, [id]: { days: st2.fz, range } }, unfrozen: { ...st2.unfrozen, [id]: false }, sheet: null })); DojoMotion.toast(`Frozen ${range}. New expiry ${this.fmtD(new Date(new Date(p0.end).getTime() + s.fz * 864e5))}.`); },
+      upi: s.upi, setUpi: e => this.setState({ upi: e.target.value }),
+      confirmMandate: () => { this.setState(st2 => ({ modes: { ...st2.modes, [id]: 'auto' }, sheet: null })); DojoMotion.toast('Mandate request sent to ' + s.upi + '. Approve it in your UPI app.'); },
+      payTiles: [{ k: 'PAID IN FY 2026-27', v: f(paidFY), s: `${payRows.filter(r => r[4] === 'Paid').length} invoices` }, { k: 'NEXT PAYMENT', v: mode === 'auto' ? p0.next.split(' on ')[0].split(' due')[0] : 'Manual', s: mode === 'auto' ? p.via : 'Reminder 7 days before ' + fzEnd }, { k: 'PAYMENT METHOD', v: mode === 'auto' ? 'UPI' : '—', s: p.via }],
+      payF: ['all', 'Paid', 'Pending', 'Failed', 'Refunded'].map(k => ({ label: k === 'all' ? 'All' : k, on: s.payF === k, bg: s.payF === k ? '#F5F5F5' : 'transparent', bd: s.payF === k ? '#F5F5F5' : '#2E2E2E', fg: s.payF === k ? '#0D0D0D' : '#F5F5F5', pick: () => this.setState({ payF: k }) })),
+      pays,
+      progTiles: [{ k: 'CURRENT STREAK', v: m.streak, c: m.streak ? '#C8102E' : '#9A9A9A' }, { k: 'BEST STREAK', v: m.best, c: '#F5F5F5' }, { k: 'CLASSES IN OCT', v: stats.month, c: '#F5F5F5' }, { k: 'VS LAST MONTH', v: (stats.month >= stats.last ? '+' : '−') + Math.abs(stats.month - stats.last), c: stats.month >= stats.last ? 'oklch(0.78 0.14 150)' : 'oklch(0.75 0.17 35)' }],
+      belt, belts: B ? D.belts.map((b, i) => ({ name: b[0].toUpperCase(), c: b[1], op: i <= B.cur + 1 ? 1 : .35, ol: i === B.cur ? '2px solid #F5F5F5' : '0', fg: i === B.cur ? '#F5F5F5' : '#9A9A9A' })) : [],
+      regGrade: () => { this.setState({ grad: true }); DojoMotion.toast('Registered for grading on 14 Dec. Fee ₹800 added to next invoice.'); }, gradDone: s.grad, gradBg: s.grad ? 'oklch(0.55 0.12 150)' : '#C8102E', gradCta: s.grad ? 'REGISTERED ✓' : 'REGISTER FOR GRADING',
+      heat, progCols: desk ? 'minmax(0,1fr) 340px' : 'minmax(0,1fr)',
+      split: stats.split.map(([k, n]) => ({ name: nm(k), n, pct: Math.round(n / totalSplit * 100) + '%', color: D.color(k) })),
+      progNote: stats.month >= stats.last ? `Up on September. ${stats.fav} is your most-trained discipline.` : `${stats.last - stats.month} fewer than September. Book ahead to keep the streak alive.`,
+      infoCards: [{ title: 'PERSONAL', rows: [['Phone', m.phone], ['Email', m.email], ['Date of birth', m.dob], ['Gender', m.gender]] }, { title: 'EMERGENCY CONTACT', rows: [['Name', m.emergency.name], ['Relation', m.emergency.rel], ['Phone', m.emergency.phone]] }, { title: 'WAIVER', rows: [['Status', 'Signed ✓'], ['Signed on', m.waiver.signed], ['Signed by', m.waiver.by], ['Signature', m.waiver.type]] }].map(g => ({ title: g.title, rows: g.rows.map(([k, v]) => ({ k, v })) })),
+      editInfo: () => DojoMotion.toast('Editing opens the same form used in onboarding'),
+      fam, addFam: () => { location.href = 'Login.dc.html#family'; },
+      notifs: [['wa', 'WhatsApp class reminders', '2 hours before every booking'], ['renew', 'Renewal reminders', '7 days and 1 day before expiry'], ['mail', 'Email invoices', 'Receipt to ' + (m.email === '—' ? 'account owner' : m.email)]].map(([k, t, sub]) => { const on = s.notif[k]; return { t, s: sub, on, track: on ? '#C8102E' : '#333333', knob: on ? 'translateX(18px)' : 'none', toggle: () => this.setState(st2 => ({ notif: { ...st2.notif, [k]: !st2.notif[k] } })) }; })
+    });
+  }
+}
+</script>
+</body>
+</html>
