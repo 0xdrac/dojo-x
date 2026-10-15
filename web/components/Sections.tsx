@@ -75,7 +75,7 @@ export function Disciplines() {
         </div>
         <div className="dgrid">
           {DISCIPLINES.map((d, i) => (
-            <TLink key={d.slug} data-reveal="" href={`/disciplines/${d.slug}`} className="card">
+            <TLink key={d.slug} data-reveal="" href={`/discipline?d=${d.slug}`} className="card">
               <div className="ph stripe"><Slot ph={d.ph} /></div>
               <div className="tint" /><div className="fade" />
               <div className="no"><i style={{ background: hue(d.hue) }} />{String(i + 1).padStart(2, "0")}</div>

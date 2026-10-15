@@ -1,15 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import TLink from "./TLink";
 import { NAV, PHONE } from "@/lib/data";
 
 export default function Header() {
+  const path = usePathname();
   const [sc, setSc] = useState(false);
   const [menu, setMenu] = useState(false);
-  const [past, setPast] = useState(false);
 
   useEffect(() => {
-    const f = () => { setSc(window.scrollY > 40); setPast(window.scrollY > window.innerHeight * 0.75); };
+    const f = () => { setSc(window.scrollY > 40); };
     const close = () => setMenu(false);
     f(); window.addEventListener("scroll", f, { passive: true }); window.addEventListener("dx-close-menu", close);
     return () => { window.removeEventListener("scroll", f); window.removeEventListener("dx-close-menu", close); document.body.style.overflow = ""; };
@@ -38,7 +39,7 @@ export default function Header() {
             </span>
           </TLink>
           <nav className="nav" aria-label="Main">
-            {NAV.map(([l, h]) => <TLink key={h} href={h}>{l}</TLink>)}
+            {NAV.map(([l, h]) => <TLink key={h} href={h} className={path === h ? "act" : undefined} aria-current={path === h ? "page" : undefined}>{l}</TLink>)}
           </nav>
           <TLink href="/login" className="dk" style={{ font: "700 12px/1 var(--sans)", letterSpacing: ".12em", textTransform: "uppercase", padding: "14px 4px", borderBottom: "1px solid #2E2E2E" }}>Member Login</TLink>
           <TLink href="/schedule" className="btn dk" style={{ flex: "none" }}>
@@ -61,7 +62,7 @@ export default function Header() {
           <div style={{ position: "absolute", top: 0, bottom: 0, right: "-30%", width: "60%", background: "var(--red)", opacity: 0.1, transform: "skewX(-18deg)", pointerEvents: "none" }} />
           <nav aria-label="Mobile" style={{ position: "relative", display: "flex", flexDirection: "column" }}>
             {NAV.map(([l, h], i) => (
-              <TLink key={h} href={h} className="it" data-menu-item=""><b>{String(i + 1).padStart(2, "0")}</b><span>{l}</span></TLink>
+              <TLink key={h} href={h} className="it" data-menu-item="" style={path === h ? { color: "var(--red)" } : undefined}><b>{String(i + 1).padStart(2, "0")}</b><span>{l}</span></TLink>
             ))}
           </nav>
           <div data-menu-item="" style={{ position: "relative", marginTop: "auto", paddingTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -72,14 +73,6 @@ export default function Header() {
         </div>
       )}
 
-      <a href="https://wa.me/919845021734?text=Hi%20Dojo%20X%2C%20I%27d%20like%20a%20free%20trial" target="_blank" rel="noopener"
-        aria-label="Chat with us on WhatsApp" className={"wa" + (past && !menu ? " up" : "")}>WA</a>
-      <div className={"sticky" + (past && !menu ? " show" : "")}>
-        <TLink href="#pricing" style={{ flex: 1, border: "1px solid #2E2E2E", color: "var(--fg)" }}>Join Now</TLink>
-        <TLink href="/schedule" style={{ flex: 1.4, position: "relative", overflow: "hidden", gap: 8, background: "var(--red)", color: "var(--fg)", clipPath: "polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)" }}>
-          <span className="shine" data-shine="" /><span style={{ position: "relative" }}>Book Free Trial →</span>
-        </TLink>
-      </div>
     </>
   );
 }

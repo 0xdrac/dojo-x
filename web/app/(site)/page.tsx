@@ -2,12 +2,14 @@ import { Hero, Marquee, Disciplines, Stats, Gallery, Location, FinalCta, Footer 
 import Coaches from "@/components/Coaches";
 import Pricing from "@/components/Pricing";
 import Reviews from "@/components/Reviews";
+import HomeFloaters from "@/components/HomeFloaters";
 
 export default function Home() {
   return (
     <main>
       <Hero /><Marquee /><Disciplines /><Stats /><Coaches /><Pricing /><Reviews /><Gallery /><Location /><FinalCta />
       <Footer />
+      <HomeFloaters />
     </main>
   );
 }

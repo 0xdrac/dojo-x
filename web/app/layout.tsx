@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Shell from "@/components/Shell";
-import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "Dojo X Fight Academy · Vasundhara, Ghaziabad",
@@ -19,10 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <Shell>
-          <Header />
-          {children}
-        </Shell>
+        <Shell>{children}</Shell>
       </body>
     </html>
   );

@@ -63,6 +63,23 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     s.animate([{ transform: START }, { transform: IN }], { duration: 260, easing: EASE, fill: "forwards" }).onfinish = () => router.push(href);
   }, [path, reduced, router]);
 
+  // API for the ported screens (lib/motion.ts) + delegated clicks for [data-toast] and plain internal links
+  useEffect(() => {
+    (window as any).__dxShell = { go, toast };
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const t = e.target as Element;
+      const te = t.closest?.("[data-toast]");
+      if (te) { e.preventDefault(); toast(te.getAttribute("data-toast") || ""); return; }
+      const a = t.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a || a.target === "_blank") return;
+      const href = a.getAttribute("href") || "";
+      if (href.startsWith("/") && !href.startsWith("//")) { e.preventDefault(); go(href); }
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [go, toast]);
+
   // slash-out after a route change
   useEffect(() => { if (pending.current) { pending.current = false; slashOut(); } window.scrollTo(0, 0); }, [path, slashOut]);
 
@@ -85,6 +102,22 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     }
 
     const fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+    const FIELD = 'input,textarea,select,[contenteditable="true"]';
+    const editing = () => { const a = document.activeElement; return !!(a && a.matches && a.matches(FIELD)); };
+    const onFocusIn = (e: FocusEvent) => {
+      if (!(e.target as Element).matches?.(FIELD)) return;
+      if (g) g.style.opacity = "0";
+      document.body.classList.remove("kc-cursor");
+      if (ringRef.current) ringRef.current.style.opacity = "0";
+      if (dotRef.current) dotRef.current.style.opacity = "0";
+    };
+    const onFocusOut = () => setTimeout(() => {
+      if (editing()) return;
+      if (g && MOTION.grain) g.style.opacity = "0.06";
+      if (fine && MOTION.cursor) document.body.classList.add("kc-cursor");
+    }, 0);
+    document.addEventListener("focusin", onFocusIn); document.addEventListener("focusout", onFocusOut);
+
     let mm: ((e: MouseEvent) => void) | undefined;
     const m = { x: -100, y: -100, rx: -100, ry: -100, hit: false };
     if (fine && MOTION.cursor) {
@@ -92,8 +125,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       mm = (e) => {
         m.x = e.clientX; m.y = e.clientY;
         const dot = dotRef.current, ring = ringRef.current; if (!dot || !ring) return;
-        dot.style.opacity = "1";
-        const hit = !!(e.target as Element).closest?.("a,button,[data-tilt]");
+        if (editing() || (e.target as Element).closest?.(FIELD)) { ring.style.opacity = "0"; dot.style.opacity = "0"; m.hit = false; return; }
+        dot.style.opacity = m.hit ? "0" : "1";
+        const hit = !!(e.target as Element).closest?.("a,button,[data-tilt],label,[role=button]");
         if (hit !== m.hit) {
           m.hit = hit; ring.style.width = ring.style.height = hit ? "44px" : "8px";
           ring.style.opacity = hit ? "1" : "0"; dot.style.opacity = hit ? "0" : "1";
@@ -130,6 +164,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener("resize", rs); window.removeEventListener("scroll", sc);
       if (mm) window.removeEventListener("mousemove", mm);
+      document.removeEventListener("focusin", onFocusIn); document.removeEventListener("focusout", onFocusOut);
       cancelAnimationFrame(raf); clearInterval(gi); document.body.classList.remove("kc-cursor");
     };
   }, [reduced]);
@@ -178,6 +213,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   // per-route effects: reveals, counters, shine; slam when returning to home
   useEffect(() => {
     if (path === "/" && introDone.current) slam();
+    if (path !== "/") return;
     const fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches, red = reduced(), vh = window.innerHeight;
     const els = [...document.querySelectorAll<HTMLElement>("[data-reveal]")];
     els.forEach((el) => { if (el.getBoundingClientRect().top > vh * 0.95) el.style.opacity = "0"; });

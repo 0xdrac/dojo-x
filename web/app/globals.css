@@ -68,9 +68,9 @@ body.kc-cursor,body.kc-cursor *{cursor:none!important}
 .logo i{width:12px;height:28px;background:var(--red);transform:skewX(-18deg)}
 .nav{display:none;gap:26px;margin-left:auto}
 .nav a{position:relative;font:700 12px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding:10px 0;transition:color .2s}
-.nav a:hover{color:var(--fg)}
+.nav a:hover,.nav a.act{color:var(--fg)}
 .nav a:after{content:"";position:absolute;left:0;right:0;bottom:2px;height:2px;background:var(--red);transform-origin:left;transform:scaleX(0) skewX(-40deg);transition:transform .25s var(--ease)}
-.nav a:hover:after{transform:scaleX(1) skewX(-40deg)}
+.nav a.act:after,.nav a:hover:after{transform:scaleX(1) skewX(-40deg)}
 .dk{display:none}.mb{display:flex}
 .pill{display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 14px;background:var(--red);color:var(--fg);font:800 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
 .pill:active{transform:scale(.96)}
