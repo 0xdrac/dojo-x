@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useShell } from "@/components/Shell";
-import { D, api, coachName, coachesOf, discNames, discsOf, fmtDay, hueColor, http, initials, time12, useLoad, wd, ymd } from "./ui";
+import { occursOn } from "@/lib/classes";
+import { D, api, coachName, coachesOf, discNames, discsOf, fmtDay, hueColor, http, initials, time12, useLoad, ymd } from "./ui";
 
 type Status = "present" | "late" | "absent";
 
@@ -18,9 +19,8 @@ export default function CoachApp() {
   const att = useLoad(() => http("GET", `/api/staff/attendance?date=${date}`), [date, staff?.id]);
 
   if (!staff) return <div className="st-main mono" style={{ color: "var(--dim)" }}>Loading…</div>;
-  const day = wd(new Date(date + "T12:00:00"));
   const cancelled = new Set((((classes.data as any)?.cancellations ?? []) as any[]).filter((c) => c.on_date === date).map((c) => c.class_id));
-  const mine = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && c.day === day && (!coach || coachesOf(c).includes(coach))).sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const mine = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && occursOn(c, date) && (!coach || coachesOf(c).includes(coach))).sort((a, b) => a.start_time.localeCompare(b.start_time));
   const rows = (((att.data as any)?.attendance ?? []) as any[]);
   const count = (id: string, st?: Status) => rows.filter((a) => a.class_id === id && (st ? a.status === st : a.status !== "absent")).length;
   const isToday = date === ymd();

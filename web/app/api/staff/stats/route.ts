@@ -1,6 +1,7 @@
 import { T } from "@/lib/server/tables";
 import { store } from "@/lib/server/store";
-import { isRes, staffGuard, today, weekday } from "@/lib/server/guard";
+import { isRes, staffGuard, today } from "@/lib/server/guard";
+import { occursOn } from "@/lib/classes";
 import { json } from "@/lib/server/util";
 import { nextOccurrence } from "@/lib/recur";
 
@@ -9,7 +10,7 @@ export async function GET() {
   const d = today(), monthStart = d.slice(0, 8) + "01";
   const [members, trials, att, classes, events, cancels] = await Promise.all([
     store().allMembers(), store().trials(), T.list("attendance", { eq: { on_date: d } }),
-    T.list("classes", { eq: { active: true, day: weekday(d) } }), T.list("events", { eq: { published: true } }),
+    T.list("classes", { eq: { active: true } }), T.list("events", { eq: { published: true } }),
     T.list("class_cancellations", { eq: { on_date: d } }),
   ]);
   const cancelled = new Set(cancels.map((c) => c.class_id));
@@ -20,7 +21,7 @@ export async function GET() {
     trialsToday: trials.filter((t) => t.createdAt.slice(0, 10) === d).length,
     trialsOpen: trials.filter((t) => t.status === "booked").length,
     checkinsToday: att.filter((a) => a.status !== "absent").length,
-    classesToday: classes.filter((c) => !cancelled.has(c.id)).length,
+    classesToday: classes.filter((c) => occursOn(c, d) && !cancelled.has(c.id)).length,
     upcomingEvents: events.filter((e) => nextOccurrence(e as any)).length,
   });
 }

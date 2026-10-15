@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useShell } from "@/components/Shell";
+import { addDays, countSessions, endOf, nextDateOnOrAfter, occursOn, startOf, weekdayOf } from "@/lib/classes";
 import { describeRepeat, istWeekday, totalSessions } from "@/lib/recur";
 import { Chips, Multi, coachNames, coachesOf, discNames, discsOf, DAYS, DAYS_LONG, Field, Sheet, D, api, coachName, fmtDay, fmtWhen, hueColor, http, initials, nextDateFor, time12, toLocalInput, useLoad, wd, ymd } from "./ui";
 
@@ -79,9 +80,9 @@ function Dashboard({ go }: { go: (v: View) => void }) {
   const att = useLoad(() => http("GET", `/api/staff/attendance?date=${ymd()}`));
   const trials = useLoad(() => http("GET", "/api/staff/trials"));
   const events = useLoad(() => http("GET", "/api/staff/events"));
-  const s = stats.data as any, today = ymd(), day = wd();
+  const s = stats.data as any, today = ymd();
   const cancelled = new Set(((classes.data as any)?.cancellations ?? []).filter((c: any) => c.on_date === today).map((c: any) => c.class_id));
-  const todays = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && c.day === day).sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const todays = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && occursOn(c, today)).sort((a, b) => a.start_time.localeCompare(b.start_time));
   const attBy = (id: string) => (((att.data as any)?.attendance ?? []) as any[]).filter((a) => a.class_id === id && a.status !== "absent").length;
   const upcoming = (((events.data as any)?.events ?? []) as any[]).filter((e) => e.next).sort((a, b) => a.next.localeCompare(b.next)).slice(0, 3);
   const setStatus = async (id: string, status: string) => { const r = await api.setTrialStatus(id, status); if (!r.ok) return toast(r.error!); trials.reload(); };
@@ -189,7 +190,7 @@ function Checkin() {
   const [classId, setClassId] = useState("");
   const att = useLoad(() => http("GET", `/api/staff/attendance?date=${ymd()}`));
   const classes = useLoad(() => http("GET", "/api/staff/classes"));
-  const todays = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && c.day === wd()).sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const todays = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && occursOn(c, ymd())).sort((a, b) => a.start_time.localeCompare(b.start_time));
 
   useEffect(() => {
     if (!q.trim()) { setHits(null); return; }
@@ -250,7 +251,7 @@ function Checkin() {
 
 /* ---------------- Schedule ---------------- */
 const LEVELS = ["All levels", "Beginner", "Intermediate", "Advanced"], AGES = ["Kids", "Teens", "Adults"];
-const blankClass = (day: number) => ({ day, startTime: "18:30", durationMin: 60, disciplines: ["mma"], title: "", coaches: ["arjun"], level: "All levels", ageGroup: "Adults", capacity: 20 });
+const blankClass = (day: number) => ({ day, days: [day], mode: "ongoing", startDate: ymd(), endDate: "", date: nextDateFor(day), startTime: "18:30", durationMin: 60, disciplines: ["mma"], title: "", coaches: ["arjun"], level: "All levels", ageGroup: "Adults", capacity: 20 });
 
 function Schedule({ owner }: { owner: boolean }) {
   const { toast } = useShell();
@@ -261,7 +262,14 @@ function Schedule({ owner }: { owner: boolean }) {
   const cancels = (((data as any)?.cancellations ?? []) as any[]);
   const list = classes.filter((c) => c.day === day).sort((a, b) => a.start_time.localeCompare(b.start_time));
   const date = nextDateFor(day);
-  const isCancelled = (c: any) => cancels.some((x) => x.class_id === c.id && x.on_date === date);
+  const todayStr = ymd();
+  /** The next date this class actually runs (respecting its start/end dates), or null when it has finished. */
+  const nextRun = (c: any): string | null => {
+    const a = startOf(c), b = endOf(c), from = a && a > todayStr ? a : todayStr;
+    const d = nextDateOnOrAfter(from, c.day);
+    return b && d > b ? null : d;
+  };
+  const isCancelled = (c: any) => { const n = nextRun(c); return !!n && cancels.some((x) => x.class_id === c.id && x.on_date === n); };
 
   const clearAll = async () => {
     if (!confirm(`Delete all ${classes.length} classes from the weekly schedule? This can't be undone.`)) return;
@@ -271,9 +279,10 @@ function Schedule({ owner }: { owner: boolean }) {
   const loadSample = async () => { const r = await http("POST", "/api/staff/classes/sample"); if (!r.ok) return toast(r.error!); toast("Sample timetable loaded"); reload(); };
 
   const toggleCancel = async (c: any) => {
-    const r = await http("POST", `/api/staff/classes/${c.id}/cancel`, { date, cancelled: !isCancelled(c) });
+    const n = nextRun(c); if (!n) return;
+    const r = await http("POST", `/api/staff/classes/${c.id}/cancel`, { date: n, cancelled: !isCancelled(c) });
     if (!r.ok) return toast(r.error!);
-    toast(isCancelled(c) ? "Class restored" : `Cancelled for ${fmtDay(date)}`); reload();
+    toast(isCancelled(c) ? "Class restored" : `Cancelled for ${fmtDay(n)}`); reload();
   };
 
   return (
@@ -289,7 +298,8 @@ function Schedule({ owner }: { owner: boolean }) {
       <div className="st-sec">{DAYS_LONG[day].toUpperCase()} · NEXT {fmtDay(date).toUpperCase()}</div>
       <div className="st-card">
         {loading ? <Loading /> : !list.length ? <div className="st-empty">No classes on {DAYS_LONG[day]}.{owner ? " Use “+ Add class”." : ""}{owner && !classes.length && <div style={{ marginTop: 14 }}><button className="st-btn" onClick={loadSample}>Or load the sample timetable</button></div>}</div> : list.map((c) => {
-          const off = isCancelled(c) || !c.active;
+          const nr = nextRun(c), ended = !nr, off = isCancelled(c) || !c.active || ended;
+          const a = startOf(c), b = endOf(c), once = a && b && a === b;
           return (
             <div className="st-row" key={c.id} style={{ opacity: off ? 0.55 : 1, flexWrap: "wrap" }}>
               <span style={{ width: 8, alignSelf: "stretch", background: hueColor(discsOf(c)[0]), flex: "none" }} />
@@ -298,10 +308,15 @@ function Schedule({ owner }: { owner: boolean }) {
                 <div className="st-s">{discNames(c).toUpperCase()} · {time12(c.start_time)} · {c.duration_min} MIN · {coachNames(c).toUpperCase()} · {c.level.toUpperCase()} · {c.age_group.toUpperCase()} · CAP {c.capacity}</div>
               </div>
               {!c.active && <span className="st-pill">HIDDEN</span>}
-              {isCancelled(c) && <span className="st-pill" style={{ color: "oklch(0.78 0.16 40)" }}>CANCELLED {fmtDay(date).toUpperCase()}</span>}
+              {ended && <span className="st-pill">ENDED</span>}
+              {once ? <span className="st-pill">ONE DATE · {fmtDay(a!).toUpperCase()}</span> : <>
+                {a && a > todayStr && <span className="st-pill">STARTS {fmtDay(a).toUpperCase()}</span>}
+                {b && !ended && <span className="st-pill">ENDS {fmtDay(b).toUpperCase()}</span>}
+              </>}
+              {isCancelled(c) && <span className="st-pill" style={{ color: "oklch(0.78 0.16 40)" }}>CANCELLED {fmtDay(nr!).toUpperCase()}</span>}
               {owner && <>
-                <button className="st-btn sm" onClick={() => toggleCancel(c)}>{isCancelled(c) ? "Restore" : "Cancel " + fmtDay(date).split(" ")[0]}</button>
-                <button className="st-btn sm" onClick={() => setForm({ id: c.id, day: c.day, startTime: c.start_time, durationMin: c.duration_min, disciplines: discsOf(c), title: c.title, coaches: coachesOf(c), level: c.level, ageGroup: c.age_group, capacity: c.capacity, active: c.active })}>Edit</button>
+                {!ended && <button className="st-btn sm" onClick={() => toggleCancel(c)}>{isCancelled(c) ? "Restore" : "Cancel " + fmtDay(nr!).split(" ")[0]}</button>}
+                <button className="st-btn sm" onClick={() => setForm({ id: c.id, day: c.day, mode: startOf(c) && endOf(c) && startOf(c) === endOf(c) ? "once" : endOf(c) ? "until" : "ongoing", startDate: startOf(c) ?? ymd(), endDate: endOf(c) ?? "", date: startOf(c) ?? ymd(), startTime: c.start_time, durationMin: c.duration_min, disciplines: discsOf(c), title: c.title, coaches: coachesOf(c), level: c.level, ageGroup: c.age_group, capacity: c.capacity, active: c.active })}>Edit</button>
               </>}
             </div>
           );
@@ -318,13 +333,35 @@ function ClassSheet({ form, onClose, onSaved }: { form: any; onClose: () => void
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const set = (k: string, v: any) => setF((x: any) => ({ ...x, [k]: v }));
-  const editing = !!f.id;
+  const editing = !!f.id, once = f.mode === "once";
+  const endIn = (weeks: number) => set("endDate", addDays(f.startDate || ymd(), weeks * 7 - 1));
+
+  const days: number[] = once ? [weekdayOf(f.date || ymd())] : editing ? [f.day] : f.days;
+  const summary = (() => {
+    const names = [...days].sort((a, c) => a - c).map((i) => DAYS[i]).join(", ");
+    if (once) return `One class on ${fmtDay(f.date || ymd())}`;
+    if (f.mode === "until" && f.startDate && f.endDate && f.endDate >= f.startDate) {
+      const n = days.reduce((t, d) => t + countSessions(d, f.startDate, f.endDate), 0);
+      return `${n} class${n === 1 ? "" : "es"}: every ${names} from ${fmtDay(f.startDate)} until ${fmtDay(f.endDate)}`;
+    }
+    return days.length ? `Every ${names}, ongoing${f.startDate && f.startDate > ymd() ? ` from ${fmtDay(f.startDate)}` : ""}` : "";
+  })();
+
   const save = async () => {
-    setBusy(true); setErr("");
-    const r = editing ? await http("PATCH", `/api/staff/classes/${f.id}`, f) : await http("POST", "/api/staff/classes", f);
+    setErr("");
+    if (!editing && !once && !f.days.length) return setErr("Pick at least one day.");
+    if (f.mode === "until" && !f.endDate) return setErr("Pick when the repeat ends.");
+    const { mode, startDate, endDate, date, days: _d, ...rest } = f;
+    const payload: any = { ...rest };
+    if (once) { payload.day = weekdayOf(date); payload.startDate = date; payload.endDate = date; }
+    else { payload.startDate = startDate || null; payload.endDate = mode === "until" ? endDate : null; }
+    if (!editing) payload.days = once ? [payload.day] : f.days;
+    setBusy(true);
+    const r = editing ? await http("PATCH", `/api/staff/classes/${f.id}`, payload) : await http("POST", "/api/staff/classes", payload);
     setBusy(false);
     if (!r.ok) return setErr(r.error!);
-    toast(editing ? "Class updated" : "Class added"); onSaved(f.day);
+    const n = r.classes?.length ?? 1;
+    toast(editing ? "Class updated" : n > 1 ? `${n} classes added` : "Class added"); onSaved(payload.days?.[0] ?? payload.day);
   };
   const del = async () => {
     if (!confirm(`Delete “${f.title}” from the weekly schedule?`)) return;
@@ -335,19 +372,41 @@ function ClassSheet({ form, onClose, onSaved }: { form: any; onClose: () => void
     <Sheet title={editing ? "Edit class" : "Add class"} onClose={onClose}>
       <Field label="TITLE"><input className="st-in" value={f.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. Muay Thai Fundamentals" /></Field>
       <Field label="DISCIPLINES (PICK ANY NUMBER)"><Multi value={f.disciplines} options={D.order.map((k: string) => [k, D.disciplines[k].name])} onChange={(v) => set("disciplines", v)} /></Field>
-      <Field label="DAY"><Chips value={f.day} options={DAYS.map((d, i) => [i, d])} onChange={(v) => set("day", v)} /></Field>
+      <Field label="COACHES (PICK ANY NUMBER)"><Multi value={f.coaches} options={D.coachOrder.map((k: string) => [k, coachName(k)])} onChange={(v) => set("coaches", v)} /></Field>
+
+      <div className="st-card" style={{ padding: 14, marginBottom: 16 }}>
+        <Field label="REPEAT"><Chips value={f.mode} options={[["ongoing", "Every week, ongoing"], ["until", "Every week until a date"], ["once", "One date only"]]} onChange={(v) => set("mode", v)} /></Field>
+        {once ? (
+          <Field label="DATE"><input className="st-in" type="date" value={f.date} onChange={(e) => set("date", e.target.value)} /></Field>
+        ) : (
+          <>
+            <Field label={editing ? "DAY" : "DAYS (PICK ONE OR MORE)"}>
+              {editing
+                ? <Chips value={f.day} options={DAYS.map((d, i) => [i, d])} onChange={(v) => set("day", v)} />
+                : <Multi value={f.days.map(String)} options={DAYS.map((d, i) => [String(i), d])} onChange={(v) => set("days", v.map(Number))} />}
+            </Field>
+            <div style={{ display: "grid", gridTemplateColumns: f.mode === "until" ? "1fr 1fr" : "1fr", gap: 12 }}>
+              <Field label="STARTS ON"><input className="st-in" type="date" value={f.startDate} onChange={(e) => set("startDate", e.target.value)} /></Field>
+              {f.mode === "until" && <Field label="ENDS ON"><input className="st-in" type="date" value={f.endDate} min={f.startDate} onChange={(e) => set("endDate", e.target.value)} /></Field>}
+            </div>
+            {f.mode === "until" && <div className="st-chips" style={{ marginBottom: 6 }}>{[["4 weeks", 4], ["8 weeks", 8], ["3 months", 13], ["6 months", 26]].map(([l, w]) => <button type="button" key={l as string} className="st-chip" onClick={() => endIn(w as number)}>{l}</button>)}</div>}
+          </>
+        )}
+        {summary && <div className="st-s" style={{ marginTop: 8 }}>{summary}</div>}
+        {editing && <div className="st-s" style={{ marginTop: 6 }}>Editing changes this day’s class only.</div>}
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Field label="START TIME"><input className="st-in" type="time" value={f.startTime} onChange={(e) => set("startTime", e.target.value)} /></Field>
         <Field label="DURATION (MIN)"><input className="st-in" type="number" min={15} max={240} step={5} value={f.durationMin} onChange={(e) => set("durationMin", +e.target.value)} /></Field>
       </div>
-      <Field label="COACHES (PICK ANY NUMBER)"><Multi value={f.coaches} options={D.coachOrder.map((k: string) => [k, coachName(k)])} onChange={(v) => set("coaches", v)} /></Field>
       <Field label="LEVEL"><Chips value={f.level} options={LEVELS.map((l) => [l, l])} onChange={(v) => set("level", v)} /></Field>
       <Field label="AGE GROUP"><Chips value={f.ageGroup} options={AGES.map((l) => [l, l])} onChange={(v) => set("ageGroup", v)} /></Field>
       <Field label="CAPACITY"><input className="st-in" type="number" min={1} max={200} value={f.capacity} onChange={(e) => set("capacity", +e.target.value)} /></Field>
       {editing && <Field label="VISIBILITY"><Chips value={f.active ? "on" : "off"} options={[["on", "Shown on the site"], ["off", "Hidden"]]} onChange={(v) => set("active", v === "on")} /></Field>}
       {err && <p className="st-err" role="alert">{err}</p>}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button className="st-btn p" disabled={busy} onClick={save}>{busy ? "Saving" : editing ? "Save changes" : "Add class"}</button>
+        <button className="st-btn p" disabled={busy} onClick={save}>{busy ? "Saving" : editing ? "Save changes" : days.length > 1 ? `Add ${days.length} classes` : "Add class"}</button>
         {editing && <button className="st-btn d" onClick={del}>Delete</button>}
       </div>
     </Sheet>

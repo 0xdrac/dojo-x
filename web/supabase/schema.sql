@@ -72,6 +72,10 @@ alter table classes add column if not exists coaches     text[];
 update classes set disciplines = array[discipline] where disciplines is null;
 update classes set coaches     = array[coach]      where coaches is null;
 
+-- Optional run dates: null start = from now, null end = ongoing. A one-off class has start = end.
+alter table classes add column if not exists start_date date;
+alter table classes add column if not exists end_date   date;
+
 -- A single cancelled occurrence of a weekly class.
 create table if not exists class_cancellations (
   id         uuid primary key default gen_random_uuid(),

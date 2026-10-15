@@ -11,8 +11,15 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const g = await staffGuard(["owner"]); if (isRes(g)) return g.res;
-  const v = classRow(await body(req)); if (v.error) return fail(v.error);
-  return json({ class: await T.insert("classes", { ...v.row, active: true }) }, 201);
+  const b = await body(req);
+  // `days` creates the same class on several weekdays in one go (one row per day).
+  const days: number[] = Array.isArray(b.days) && b.days.length ? [...new Set<number>(b.days.map(Number))] : [Number(b.day)];
+  if (days.length > 7) return fail("Pick at most 7 days.");
+  const rows: Record<string, any>[] = [];
+  for (const d of days) { const v = classRow({ ...b, day: d }); if (v.error) return fail(v.error); rows.push({ ...v.row, active: true }); }
+  const created = [];
+  for (const r of rows) created.push(await T.insert("classes", r));
+  return json({ class: created[0], classes: created }, 201);
 }
 
 /** Remove every class from the weekly schedule (owner only). */

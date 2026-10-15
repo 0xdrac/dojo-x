@@ -29,6 +29,13 @@ export function classRow(b: any, partial = false): { row?: Record<string, any>; 
   if (!partial || has("ageGroup")) { if (!AGES.includes(b.ageGroup)) return { error: "Pick an age group." }; row.age_group = b.ageGroup; }
   if (!partial || has("capacity")) { const n = Number(b.capacity); if (!Number.isInteger(n) || n < 1 || n > 200) return { error: "Capacity must be 1–200." }; row.capacity = n; }
   if (has("active")) row.active = !!b.active;
+  if (has("startDate") || has("endDate")) {
+    const ok = (d: unknown) => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d);
+    const a = b.startDate ? String(b.startDate) : null, e = b.endDate ? String(b.endDate) : null;
+    if ((a && !ok(a)) || (e && !ok(e))) return { error: "Pick valid dates." };
+    if (a && e && e < a) return { error: "The end date can’t be before the start date." };
+    row.start_date = a; row.end_date = e;
+  }
   return { row };
 }
 
