@@ -21,7 +21,8 @@ class Screen extends DCLogic {
   async boot() {
     const h = (location.hash || '').slice(1);
     if (h === 'logout') { await DojoAPI.logout(); history.replaceState(null, '', '/login'); return; }
-    const r = await DojoAPI.me(); if (!r.ok) return;
+    const r = await DojoAPI.me();
+    if (!r.ok) { const st = await DojoAPI.staffMe(); if (st.ok && h !== 'onboard') DojoMotion.go(st.staff.role === 'coach' ? '/coach-app' : '/admin'); return; }
     if (h === 'family') { this.setState({ fam: r.members.filter(m => m.rel !== 'You').map(m => ({ id: m.id, name: m.name, rel: m.rel, dob: m.dob || '' })) }); return; }
     if (r.onboarded && h !== 'onboard') DojoMotion.go('/member-portal');
   }
@@ -54,6 +55,7 @@ class Screen extends DCLogic {
     this.setState({ busy: true, otpErr: '' });
     DojoAPI.verify(this.digits(), otp).then(r => {
       if (!r.ok) return this.setState({ busy: false, otpErr: r.error, otp: '' });
+      if (r.staff) return DojoMotion.go(r.staff.role === 'coach' ? '/coach-app' : '/admin');
       if (r.onboarded) return DojoMotion.go('/member-portal');
       this.setState({ busy: false, step: 'profile' });
     });

@@ -33,7 +33,7 @@ export default function CoachApp() {
         <span className="mono" style={{ font: "600 10px/1 var(--mono)", letterSpacing: ".18em", color: "var(--dim)" }}>COACH</span>
         <span style={{ marginLeft: "auto", display: "flex", gap: 14, alignItems: "center" }}>
           {staff.role === "owner" && <a href="/admin" style={{ font: "600 13px/1 var(--sans)", color: "var(--mid)" }}>Admin</a>}
-          <a href="/staff-login#logout" style={{ font: "600 13px/1 var(--sans)", color: "var(--dim)" }}>Sign out</a>
+          <a href="/login#logout" style={{ font: "600 13px/1 var(--sans)", color: "var(--dim)" }}>Sign out</a>
         </span>
       </header>
 

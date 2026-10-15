@@ -45,7 +45,7 @@ export default function AdminApp() {
         <div style={{ marginTop: "auto", padding: "0 8px", display: "flex", flexDirection: "column", gap: 10 }}>
           <div><div className="st-t">{staff.name}</div><div className="st-s">{staff.role.toUpperCase()}</div></div>
           <a href="/coach-app" style={{ font: "600 13px/1.4 var(--sans)", color: "var(--mid)" }}>Open coach app →</a>
-          <a href="/staff-login#logout" style={{ font: "600 13px/1.4 var(--sans)", color: "var(--dim)" }}>Sign out</a>
+          <a href="/login#logout" style={{ font: "600 13px/1.4 var(--sans)", color: "var(--dim)" }}>Sign out</a>
         </div>
       </aside>
       <main className="st-main" key={view}>
@@ -59,7 +59,7 @@ export default function AdminApp() {
       </main>
       <nav className="st-tabs" aria-label="Admin">
         {NAV.map(([k, l, ic]) => <button key={k} className={"st-tab" + (view === k ? " on" : "")} onClick={() => nav(k)}><Icon d={ic} />{l}</button>)}
-        <button className="st-tab" onClick={() => go("/staff-login#logout")}><Icon d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />Sign out</button>
+        <button className="st-tab" onClick={() => go("/login#logout")}><Icon d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />Sign out</button>
       </nav>
     </div>
   );

@@ -32,7 +32,7 @@ All database access goes through `app/api/*` using the service-role key; the bro
 
 ### Routes
 - Members: `/login` (phone → code → profile → waiver → family), `/member-portal`, `/free-trial`
-- Staff: `/staff-login` → `/admin` (owner, front desk) or `/coach-app` (coach). Admin and Coach App are hand-written in `components/staff/` and use the real database.
+- Staff: sign in on `/login` with the staff number (same page as members; `/staff-login` forwards there) → `/admin` (owner, front desk) or `/coach-app` (coach). Admin and Coach App are hand-written in `components/staff/` and use the real database.
 
 ## Ported screens
 Most pages under `screens/` were generated from the design prototypes by `scripts/convert.py`. Files whose header says `HAND-EDITED` (Login, FreeTrial, MemberPortal) are maintained by hand and skipped by the script.

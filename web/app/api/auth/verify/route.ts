@@ -18,6 +18,12 @@ export async function POST(req: Request) {
   const otp = checkOtp(b.code);
   if (!otp.ok) return fail(otp.error!, 401);
   const s = store();
+  // Staff numbers sign in here too and go straight to Admin / Coach App.
+  const staff = await s.staffByPhone(phone);
+  if (staff) {
+    await setSession({ sub: staff.id, kind: "staff" });
+    return json({ ok: true, staff: { name: staff.name, role: staff.role } });
+  }
   let account = await s.accountByPhone(phone);
   if (!account) {
     account = await s.createAccount(phone);

@@ -35,7 +35,6 @@ export const DojoAPI = {
   addMember: (m: any) => call("POST", "/api/me/members", m),
   removeMember: (id: string) => call("DELETE", `/api/me/members/${id}`),
   bookTrial: (t: any) => call("POST", "/api/trials", t),
-  staffLogin: (phone: string, code?: string) => call("POST", "/api/staff/login", code === undefined ? { phone } : { phone, code }),
   staffMe: () => call("GET", "/api/staff/me"),
   staffTrials: () => call("GET", "/api/staff/trials"),
   staffMembers: () => call("GET", "/api/staff/members"),
@@ -67,11 +66,11 @@ export const DojoAPI = {
     return true;
   },
 
-  /** Resolves the signed-in staff member, or sends the browser to /staff-login. */
+  /** Resolves the signed-in staff member, or sends the browser to /login. */
   async requireStaff(roles?: string[]): Promise<any | null> {
     const r = await call("GET", "/api/staff/me");
-    if (!r.ok) { (window as any).DojoMotion.go("/staff-login"); return null; }
-    if (roles && !roles.includes(r.staff.role)) { (window as any).DojoMotion.go(r.staff.role === "coach" ? "/coach-app" : "/admin"); return null; }
+    if (!r.ok) { (window as any).__dxShell?.go("/login"); return null; }
+    if (roles && !roles.includes(r.staff.role)) { (window as any).__dxShell?.go(r.staff.role === "coach" ? "/coach-app" : "/admin"); return null; }
     return r.staff;
   },
 };
