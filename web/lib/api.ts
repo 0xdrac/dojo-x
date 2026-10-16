@@ -24,9 +24,44 @@ const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString
 const age = (iso?: string | null) => { if (!iso) return 30; const d = new Date(iso), n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return Math.max(0, a); };
 const initials = (name: string) => name.split(" ").filter(Boolean).map((x) => x[0]).join("").slice(0, 2).toUpperCase();
 const fmtPhone = (p: string) => (p && p.length === 10 ? `+91 ${p.slice(0, 5)} ${p.slice(5)}` : "—");
+const todayLocal = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const dayDiff = (a: string, b: string) => Math.round((+new Date(b + "T12:00:00") - +new Date(a + "T12:00:00")) / 864e5);
+const METHOD: any = { upi: "UPI", card: "Card", netbanking: "Netbanking", wallet: "Wallet", cash: "Cash", emi: "EMI" };
+/** Builds the portal's plan object from a member's real memberships; null when they have never paid. */
+function planFromMemberships(ms: any[], orders: any[]) {
+  if (!ms.length) return null;
+  const t = todayLocal(), live = ms.filter((x) => x.ends_on >= t);
+  if (!live.length) {
+    const last = ms.map((x) => x.ends_on).sort().at(-1)!;
+    return { ...NO_PLAN(), end: fmtDate(last), via: `Plan ended ${fmtDate(last)}`, next: "Renew to start again" };
+  }
+  const end = live.map((x) => x.ends_on).sort().at(-1)!, start = live.map((x) => x.starts_on).sort()[0];
+  const daysLeft = Math.max(0, dayDiff(t, end)), longest = live.slice().sort((a, b) => b.ends_on.localeCompare(a.ends_on))[0];
+  const o = orders.filter((x) => x.status === "paid").sort((a, b) => (b.paid_at || "").localeCompare(a.paid_at || ""))[0];
+  return {
+    disc: [...new Set(live.flatMap((x) => x.disciplines))], dur: longest.duration, start: fmtDate(start), end: fmtDate(end), daysLeft, totalDays: Math.max(1, dayDiff(start, end) + 1),
+    mode: "manual", status: daysLeft <= 7 ? "expiring" : "active",
+    via: o ? (o.source === "desk" ? `Paid at the front desk · ${METHOD[o.method] || "cash"}` : `Paid online · ${METHOD[o.method] || "Razorpay"}`) : "Paid", next: `Renew by ${fmtDate(end)}`,
+  };
+}
 const NO_PLAN = () => ({ disc: [], dur: "monthly", start: "—", end: "—", daysLeft: 0, totalDays: 1, mode: "manual", via: "No plan yet", status: "none", next: "Pick a plan to get started" });
 
 export const DojoAPI = {
+  createOrder: (b: any) => call("POST", "/api/checkout/order", b),
+  verifyPayment: (b: any) => call("POST", "/api/checkout/verify", b),
+  reportPaymentFailure: (orderId: string, reason: string) => call("POST", "/api/checkout/failed", { orderId, reason }),
+  getOrder: (id: string) => call("GET", `/api/orders/${id}`),
+  /** Loads Razorpay's checkout.js once and resolves with its constructor. */
+  loadRazorpay(): Promise<any> {
+    const w = window as any;
+    if (w.Razorpay) return Promise.resolve(w.Razorpay);
+    return new Promise((resolve, reject) => {
+      const el = document.createElement("script"); el.src = "https://checkout.razorpay.com/v1/checkout.js"; el.async = true;
+      el.onload = () => (w.Razorpay ? resolve(w.Razorpay) : reject(new Error("Razorpay failed to load")));
+      el.onerror = () => reject(new Error("Razorpay failed to load"));
+      document.head.appendChild(el);
+    });
+  },
   requestOtp: (phone: string) => call("POST", "/api/auth/request", { phone }),
   verify: (phone: string, code: string) => call("POST", "/api/auth/verify", { phone, code }),
   logout: () => call("POST", "/api/auth/logout"),
@@ -57,9 +92,17 @@ export const DojoAPI = {
         waiver: m.waiver ? { signed: m.waiver.signed, by: m.waiver.by, type: m.waiver.type } : { signed: "Not signed", by: "—", type: "—" },
         plan: NO_PLAN(), streak: 0, best: 0, belt: null, bookings: 0, dbId: m.id,
       };
-      members[id] = sample ? { ...base, plan: sample.plan, streak: sample.streak, best: sample.best, belt: sample.belt, bookings: sample.bookings } : base;
+      const myOrders = (r.orders || []).filter((o: any) => o.member_ids.includes(m.id));
+      const real = planFromMemberships((r.memberships || []).filter((x: any) => x.member_id === m.id), myOrders);
+      members[id] = sample ? { ...base, plan: real || sample.plan, streak: sample.streak, best: sample.best, belt: sample.belt, bookings: sample.bookings } : { ...base, plan: real || base.plan };
       DXP.stats[id] = SAMPLE_STATS[id] || { month: 0, hours: 0, last: 0, fav: "—", split: [] };
-      DXP.payments[id] = SAMPLE_PAY[id] || [];
+      const rows = myOrders.map((o: any) => [
+        o.invoice_no || "ORD-" + o.id.slice(0, 8).toUpperCase(), fmtDate(o.paid_at || o.created_at),
+        `${DOJO.plans[o.duration]?.l ?? o.duration} · ${o.disciplines.map((k: string) => DOJO.disciplines[k]?.name ?? k).join(" + ")}`,
+        o.amount, o.status === "paid" ? "Paid" : o.status === "refunded" ? "Refunded" : "Failed", o.source === "desk" ? "Front desk" : METHOD[o.method] || "Razorpay", o.id,
+        { d: o.disciplines.join(","), dur: o.duration, p: o.people },
+      ]);
+      DXP.payments[id] = rows.length ? rows : (sample ? SAMPLE_PAY[id] || [] : []);
       order.push(id);
     }
     DXP.members = members; DXP.order = order;

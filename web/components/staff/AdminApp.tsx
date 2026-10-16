@@ -5,17 +5,23 @@ import { addDays, countSessions, endOf, nextDateOnOrAfter, occursOn, startOf, we
 import { describeRepeat, istWeekday, totalSessions } from "@/lib/recur";
 import { Chips, Multi, coachNames, coachesOf, discNames, discsOf, DAYS, DAYS_LONG, Field, Sheet, D, api, coachName, fmtDay, fmtWhen, hueColor, http, initials, nextDateFor, time12, toLocalInput, useLoad, wd, ymd } from "./ui";
 
-type View = "dash" | "members" | "checkin" | "schedule" | "events" | "coupons" | "trials";
+type View = "dash" | "members" | "checkin" | "payments" | "schedule" | "events" | "coupons" | "trials";
 const NAV: [View, string, string][] = [
   ["dash", "Dashboard", "M4 4h7v9H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 15h7v5H4z"],
   ["members", "Members", "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"],
   ["checkin", "Check-in", "M4 12l5 5L20 6"],
+  ["payments", "Payments", "M3 7h18v12H3zM3 11h18M7 15h3"],
   ["schedule", "Schedule", "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"],
   ["events", "Events", "M12 3l2.7 5.6 6.3.9-4.5 4.4 1 6.2L12 17.2 6.5 20.1l1-6.2L3 9.5l6.3-.9z"],
   ["coupons", "Coupons", "M3 9V6h18v3a3 3 0 0 0 0 6v3H3v-3a3 3 0 0 0 0-6zM9 6v12"],
   ["trials", "Trials", "M5 4h14v16H5zM9 9h6M9 13h6"],
 ];
 const Icon = ({ d }: { d: string }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>;
+
+const rupees = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
+const PLAN_TONE: Record<string, string> = { active: "oklch(0.78 0.14 150)", expiring: "oklch(0.82 0.14 75)", ended: "oklch(0.78 0.16 40)", none: "var(--dim)" };
+const planLabel = (p: any) => !p ? "NO PLAN" : p.status === "active" ? `ACTIVE · ${p.daysLeft}D LEFT` : p.status === "expiring" ? `EXPIRES IN ${p.daysLeft}D` : p.status === "ended" ? `ENDED ${fmtDay(p.endsOn).toUpperCase()}` : "NO PLAN";
+const waLink = (phone: string, text: string) => `https://wa.me/91${phone}?text=${encodeURIComponent(text)}`;
 
 export default function AdminApp() {
   const { go } = useShell();
@@ -53,6 +59,7 @@ export default function AdminApp() {
         {view === "dash" && <Dashboard go={nav} />}
         {view === "members" && <Members />}
         {view === "checkin" && <Checkin />}
+        {view === "payments" && <Payments owner={owner} />}
         {view === "schedule" && <Schedule owner={owner} />}
         {view === "events" && <Events owner={owner} />}
         {view === "coupons" && <Coupons owner={owner} />}
@@ -91,7 +98,7 @@ function Dashboard({ go }: { go: (v: View) => void }) {
     <>
       <Head title="Dashboard" />
       <div className="st-kpis">
-        {[["MEMBERS", s?.members], ["NEW THIS MONTH", s?.newThisMonth], ["CHECK-INS TODAY", s?.checkinsToday], ["CLASSES TODAY", s?.classesToday], ["TRIALS TO FOLLOW UP", s?.trialsOpen], ["UPCOMING EVENTS", s?.upcomingEvents]].map(([k, v]) => (
+        {[["COLLECTED TODAY", s ? rupees(s.revenueToday) : undefined], ["COLLECTED THIS MONTH", s ? rupees(s.revenueMonth) : undefined], ["ACTIVE MEMBERS", s?.activeMembers], ["RENEWALS DUE", s?.renewalsDue], ["CHECK-INS TODAY", s?.checkinsToday], ["CLASSES TODAY", s?.classesToday], ["NEW THIS MONTH", s?.newThisMonth], ["TRIALS TO FOLLOW UP", s?.trialsOpen], ["UPCOMING EVENTS", s?.upcomingEvents]].map(([k, v]) => (
           <div className="st-kpi" key={k as string}><small>{k}</small><b>{v ?? "–"}</b></div>
         ))}
       </div>
@@ -112,6 +119,7 @@ function Dashboard({ go }: { go: (v: View) => void }) {
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          <Renewals go={go} />
           <div>
             <div className="st-sec" style={{ display: "flex", justifyContent: "space-between" }}>RECENT TRIALS <a href="#trials" onClick={(e) => { e.preventDefault(); go("trials"); }} style={{ color: "var(--mid)" }}>ALL →</a></div>
             <div className="st-card">
@@ -142,9 +150,10 @@ function Dashboard({ go }: { go: (v: View) => void }) {
 
 /* ---------------- Members ---------------- */
 function Members() {
-  const { data, loading } = useLoad(() => http("GET", "/api/staff/members"));
+  const { data, loading, reload } = useLoad(() => http("GET", "/api/staff/members"));
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<any>(null);
+  const [pay, setPay] = useState<any[] | null>(null);
   const all = ((data as any)?.members ?? []) as any[];
   const t = q.toLowerCase().replace(/\s/g, "");
   const list = all.filter((m) => !t || (m.name + m.phone + m.memberCode).toLowerCase().replace(/\s/g, "").includes(t));
@@ -160,20 +169,22 @@ function Members() {
           <button className="st-row" key={m.id} onClick={() => setSel(m)}>
             <span className="st-av">{initials(m.name)}</span>
             <div style={{ flex: 1, minWidth: 0 }}><div className="st-t">{m.name}</div><div className="st-s">{m.memberCode} · +91 {m.phone.slice(0, 5)} {m.phone.slice(5)}</div></div>
-            <span className="st-pill">{m.rel.toUpperCase()}</span>
+            <span className="st-pill" style={{ color: PLAN_TONE[m.plan?.status ?? "none"] }}>{planLabel(m.plan)}</span>
             <span className="st-pill" style={{ color: m.waiver ? "oklch(0.78 0.14 150)" : "oklch(0.82 0.14 75)" }}>{m.waiver ? "WAIVER ✓" : "NO WAIVER"}</span>
           </button>
         ))}
       </div>
-      {sel && (
+      {pay && <DeskPayment who={pay} onClose={() => setPay(null)} onSaved={() => { setPay(null); setSel(null); reload(); }} />}
+      {sel && !pay && (
         <Sheet title={sel.name} onClose={() => setSel(null)}>
-          {[["Member ID", sel.memberCode], ["Relation", sel.rel === "You" ? "Account owner" : sel.rel], ["Phone", `+91 ${sel.phone.slice(0, 5)} ${sel.phone.slice(5)}`], ["Date of birth", sel.dob ? `${fmtDay(sel.dob)} ${sel.dob.slice(0, 4)} (${age(sel.dob)} yrs)` : "—"], ["Gender", sel.gender || "—"], ["Email", sel.email || "—"],
+          {[["Member ID", sel.memberCode], ["Plan", sel.plan?.status === "active" || sel.plan?.status === "expiring" ? `${sel.plan.disciplines.map((k: string) => D.disciplines[k]?.name ?? k).join(" + ")} until ${fmtDay(sel.plan.endsOn)} (${sel.plan.daysLeft} days)` : sel.plan?.status === "ended" ? `Ended ${fmtDay(sel.plan.endsOn)}` : "No plan yet"], ["Relation", sel.rel === "You" ? "Account owner" : sel.rel], ["Phone", `+91 ${sel.phone.slice(0, 5)} ${sel.phone.slice(5)}`], ["Date of birth", sel.dob ? `${fmtDay(sel.dob)} ${sel.dob.slice(0, 4)} (${age(sel.dob)} yrs)` : "—"], ["Gender", sel.gender || "—"], ["Email", sel.email || "—"],
             ["Emergency contact", sel.emergency ? `${sel.emergency.name} · ${sel.emergency.phone}` : "—"], ["Waiver", sel.waiver ? `Signed ${sel.waiver.signed} by ${sel.waiver.by} (${sel.waiver.type.toLowerCase()})` : "Not signed"], ["Joined", fmtDay(sel.createdAt.slice(0, 10)) + " " + sel.createdAt.slice(0, 4)]].map(([k, v]) => (
             <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "11px 0", borderBottom: "1px solid #212121" }}><span className="st-lb" style={{ margin: 0 }}>{(k as string).toUpperCase()}</span><span style={{ font: "600 14px/1.4 var(--sans)", color: "var(--fg)", textAlign: "right" }}>{v}</span></div>
           ))}
           {fam.length > 0 && <><div className="st-sec" style={{ marginTop: 22 }}>SAME ACCOUNT</div>{fam.map((f) => <button className="st-row" key={f.id} onClick={() => setSel(f)} style={{ padding: "10px 0" }}><span className="st-av">{initials(f.name)}</span><div style={{ flex: 1 }}><div className="st-t">{f.name}</div><div className="st-s">{f.rel.toUpperCase()}</div></div></button>)}</>}
           <div style={{ display: "flex", gap: 8, marginTop: 24, flexWrap: "wrap" }}>
-            <a className="st-btn p" href={`https://wa.me/91${sel.phone}`} target="_blank" rel="noopener">WhatsApp</a>
+            <button className="st-btn p" onClick={() => setPay([sel])}>Record payment</button>
+            <a className="st-btn" href={`https://wa.me/91${sel.phone}`} target="_blank" rel="noopener">WhatsApp</a>
             <a className="st-btn" href={`tel:+91${sel.phone}`}>Call</a>
           </div>
         </Sheet>
@@ -188,6 +199,7 @@ function Checkin() {
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<any[] | null>(null);
   const [classId, setClassId] = useState("");
+  const [pay, setPay] = useState<any[] | null>(null);
   const att = useLoad(() => http("GET", `/api/staff/attendance?date=${ymd()}`));
   const classes = useLoad(() => http("GET", "/api/staff/classes"));
   const todays = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && occursOn(c, ymd())).sort((a, b) => a.start_time.localeCompare(b.start_time));
@@ -209,6 +221,7 @@ function Checkin() {
   return (
     <>
       <Head title="Check-in" />
+      {pay && <DeskPayment who={pay} onClose={() => setPay(null)} onSaved={() => { setPay(null); setQ(""); toast("Payment recorded. Plan is active."); }} />}
       <div className="st-grid2">
         <div>
           <Field label="CLASS (OPTIONAL)">
@@ -225,8 +238,9 @@ function Checkin() {
                 return (
                   <div className="st-row" key={m.id}>
                     <span className="st-av">{initials(m.name)}</span>
-                    <div style={{ flex: 1, minWidth: 0 }}><div className="st-t">{m.name}</div><div className="st-s">{m.memberCode} · {m.rel.toUpperCase()}</div></div>
-                    <button className={"st-btn sm" + (done ? "" : " p")} disabled={done} onClick={() => checkIn(m)}>{done ? "Checked in ✓" : "Check in"}</button>
+                    <div style={{ flex: 1, minWidth: 0 }}><div className="st-t">{m.name}</div><div className="st-s">{m.memberCode} · {m.rel.toUpperCase()} · <span style={{ color: PLAN_TONE[m.plan?.status ?? "none"] }}>{planLabel(m.plan)}</span></div></div>
+                    {!["active", "expiring"].includes(m.plan?.status) && <button className="st-btn sm p" onClick={() => setPay([m])}>Collect payment</button>}
+                    <button className={"st-btn sm" + (done ? "" : ["active", "expiring"].includes(m.plan?.status) ? " p" : "")} disabled={done} onClick={() => checkIn(m)}>{done ? "Checked in ✓" : "Check in"}</button>
                   </div>
                 );
               })}
@@ -598,5 +612,145 @@ function Trials() {
         ))}
       </div>
     </>
+  );
+}
+
+
+/* ---------------- Renewals (dashboard) ---------------- */
+function Renewals({ go }: { go: (v: View) => void }) {
+  const { data, loading, reload } = useLoad(() => http("GET", "/api/staff/renewals"));
+  const [pay, setPay] = useState<any[] | null>(null);
+  const list = (((data as any)?.renewals ?? []) as any[]).slice(0, 6);
+  return (
+    <div>
+      <div className="st-sec">RENEWALS DUE</div>
+      <div className="st-card">
+        {loading ? <Loading /> : !list.length ? <div className="st-empty">No plans expiring in the next 7 days.</div> : list.map((r) => (
+          <div className="st-row" key={r.id} style={{ flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 150px", minWidth: 0 }}><div className="st-t">{r.name}</div><div className="st-s" style={{ color: PLAN_TONE[r.status] }}>{planLabel(r)}</div></div>
+            <a className="st-btn sm" href={waLink(r.phone, `Hi ${r.name.split(" ")[0]}, your Dojo X plan ${r.status === "ended" ? "ended on" : "ends on"} ${fmtDay(r.endsOn)}. You can renew in the member portal or at the front desk. See you on the mat! 🥊`)} target="_blank" rel="noopener">Remind</a>
+            <button className="st-btn sm p" onClick={() => setPay([{ id: r.id, name: r.name, phone: r.phone, memberCode: r.memberCode, plan: r }])}>Renew</button>
+          </div>
+        ))}
+      </div>
+      {pay && <DeskPayment who={pay} onClose={() => setPay(null)} onSaved={() => { setPay(null); reload(); }} />}
+      <span hidden>{String(!!go)}</span>
+    </div>
+  );
+}
+
+/* ---------------- Payments ---------------- */
+function Payments({ owner }: { owner: boolean }) {
+  const { data, loading, reload } = useLoad(() => http("GET", "/api/staff/payments"));
+  const stats = useLoad(() => http("GET", "/api/staff/stats"));
+  const [pay, setPay] = useState<any[] | null>(null);
+  const [pick, setPick] = useState(false);
+  const [filter, setFilter] = useState<"all" | "paid" | "failed">("all");
+  const s = stats.data as any;
+  const list = (((data as any)?.payments ?? []) as any[]).filter((p) => filter === "all" || (filter === "paid" ? p.status === "paid" : p.status !== "paid"));
+  const TONE: any = { paid: "oklch(0.78 0.14 150)", failed: "oklch(0.78 0.16 40)", refunded: "oklch(0.82 0.14 75)" };
+  return (
+    <>
+      <Head title="Payments"><button className="st-btn p" onClick={() => setPick(true)}>+ Record payment</button></Head>
+      <div className="st-kpis">
+        <div className="st-kpi"><small>COLLECTED TODAY</small><b>{s ? rupees(s.revenueToday) : "–"}</b></div>
+        <div className="st-kpi"><small>COLLECTED THIS MONTH</small><b>{s ? rupees(s.revenueMonth) : "–"}</b></div>
+        <div className="st-kpi"><small>ACTIVE MEMBERS</small><b>{s?.activeMembers ?? "–"}</b></div>
+      </div>
+      <div className="st-seg" style={{ marginBottom: 14 }}>{(["all", "paid", "failed"] as const).map((f) => <button key={f} className={filter === f ? "on" : ""} onClick={() => setFilter(f)}>{f === "failed" ? "FAILED / REFUNDED" : f.toUpperCase()}</button>)}</div>
+      <div className="st-card">
+        {loading ? <Loading /> : !list.length ? <div className="st-empty">No payments yet. Online payments and desk payments both appear here.</div> : list.map((p) => (
+          <div className="st-row" key={p.id} style={{ flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 240px", minWidth: 0 }}>
+              <div className="st-t">{p.names.join(" + ")}</div>
+              <div className="st-s">{D.plans[p.duration]?.l.toUpperCase()} · {p.disciplines.map((k: string) => (D.disciplines[k]?.name ?? k).toUpperCase()).join(" + ")}{p.coupon_code ? ` · ${p.coupon_code}` : ""}</div>
+              <div className="st-s">{p.invoice_no || "NO INVOICE"} · {fmtWhen(p.paid_at || p.created_at).toUpperCase()} · {p.source === "desk" ? "FRONT DESK" : "ONLINE"}{p.method ? ` · ${p.method.toUpperCase()}` : ""}</div>
+              {p.failure_reason && p.status !== "paid" && <div className="st-s" style={{ color: TONE.failed }}>{p.failure_reason}</div>}
+            </div>
+            <span className="anton" style={{ fontSize: 24, color: "var(--fg)" }}>{rupees(p.amount)}</span>
+            <span className="st-pill" style={{ color: TONE[p.status] }}>{p.status.toUpperCase()}</span>
+            {p.status === "paid" && <a className="st-btn sm" href={`/invoice?o=${p.id}`} target="_blank" rel="noopener">Invoice</a>}
+          </div>
+        ))}
+      </div>
+      <span hidden>{String(owner)}</span>
+      {pick && <PickMember onClose={() => setPick(false)} onPick={(m) => { setPick(false); setPay([m]); }} />}
+      {pay && <DeskPayment who={pay} onClose={() => setPay(null)} onSaved={() => { setPay(null); reload(); stats.reload(); }} />}
+    </>
+  );
+}
+
+function PickMember({ onClose, onPick }: { onClose: () => void; onPick: (m: any) => void }) {
+  const [q, setQ] = useState(""), [hits, setHits] = useState<any[] | null>(null);
+  useEffect(() => {
+    if (!q.trim()) { setHits(null); return; }
+    const t = setTimeout(async () => { const r = await http("GET", `/api/staff/members/search?q=${encodeURIComponent(q)}`); setHits(r.ok ? r.members : []); }, 220);
+    return () => clearTimeout(t);
+  }, [q]);
+  return (
+    <Sheet title="Who is paying?" onClose={onClose}>
+      <Field label="FIND A MEMBER"><input className="st-in" autoFocus placeholder="Phone, name or member ID" value={q} onChange={(e) => setQ(e.target.value)} /></Field>
+      {hits && <div className="st-card">{!hits.length ? <div className="st-empty">No member found.</div> : hits.map((m) => (
+        <button className="st-row" key={m.id} onClick={() => onPick(m)}><span className="st-av">{initials(m.name)}</span><div style={{ flex: 1, minWidth: 0 }}><div className="st-t">{m.name}</div><div className="st-s">{m.memberCode} · <span style={{ color: PLAN_TONE[m.plan?.status ?? "none"] }}>{planLabel(m.plan)}</span></div></div></button>
+      ))}</div>}
+    </Sheet>
+  );
+}
+
+/** Take a payment at the front desk. The plan becomes active the moment it's saved. */
+function DeskPayment({ who, onClose, onSaved }: { who: any[]; onClose: () => void; onSaved: () => void }) {
+  const { toast } = useShell();
+  const [people, setPeople] = useState<any[]>(who);
+  const [disc, setDisc] = useState<string[]>(who[0]?.plan?.disciplines?.length ? who[0].plan.disciplines : ["mma"]);
+  const [dur, setDur] = useState(who[0]?.plan?.duration && who[0].plan.duration !== "monthly" ? who[0].plan.duration : "monthly");
+  const [coupon, setCoupon] = useState(""), [method, setMethod] = useState("cash"), [amount, setAmount] = useState("");
+  const [q, setQ] = useState<any>(null), [err, setErr] = useState(""), [busy, setBusy] = useState(false);
+  const [add, setAdd] = useState(""), [hits, setHits] = useState<any[] | null>(null);
+  const [owner, setOwner] = useState(false);
+  useEffect(() => { api.staffMe().then((r) => setOwner(r.ok && r.staff.role === "owner")); }, []);
+
+  useEffect(() => {
+    if (!disc.length) { setQ(null); return; }
+    const t = setTimeout(async () => { const r = await http("POST", "/api/staff/quote", { disciplines: disc, duration: dur, people: people.length, couponCode: coupon }); setQ(r.ok ? r : null); }, 250);
+    return () => clearTimeout(t);
+  }, [disc, dur, people.length, coupon]);
+  useEffect(() => {
+    if (!add.trim()) { setHits(null); return; }
+    const t = setTimeout(async () => { const r = await http("GET", `/api/staff/members/search?q=${encodeURIComponent(add)}`); setHits(r.ok ? r.members.filter((m: any) => !people.some((p) => p.id === m.id)) : []); }, 220);
+    return () => clearTimeout(t);
+  }, [add, people]);
+
+  const onlyYoga = disc.length > 0 && disc.every((k) => k === "yoga");
+  const save = async () => {
+    setBusy(true); setErr("");
+    const r = await http("POST", "/api/staff/payments", { memberIds: people.map((p) => p.id), disciplines: disc, duration: onlyYoga ? "monthly" : dur, couponCode: coupon, method, amount: amount === "" ? undefined : Number(amount) });
+    setBusy(false); if (!r.ok) return setErr(r.error!);
+    toast(`${rupees(r.order.amount)} recorded · ${r.order.invoice_no}`); onSaved();
+  };
+  return (
+    <Sheet title="Record payment" onClose={onClose}>
+      <Field label="PAYING FOR">
+        <div className="st-chips">{people.map((p) => <span key={p.id} className="st-chip on" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>{p.name}{people.length > 1 && <button type="button" aria-label={`Remove ${p.name}`} onClick={() => setPeople(people.filter((x) => x.id !== p.id))} style={{ background: "none", border: 0, color: "inherit", cursor: "pointer" }}>✕</button>}</span>)}</div>
+        <input className="st-in" style={{ marginTop: 8 }} placeholder="Add another member (10% off for two)" value={add} onChange={(e) => setAdd(e.target.value)} />
+        {hits && hits.length > 0 && <div className="st-card" style={{ marginTop: 6 }}>{hits.slice(0, 5).map((m) => <button className="st-row" key={m.id} onClick={() => { setPeople([...people, m]); setAdd(""); }}><div className="st-t">{m.name}</div><div className="st-s">{m.memberCode}</div></button>)}</div>}
+      </Field>
+      <Field label="DISCIPLINES"><Multi value={disc} options={D.order.map((k: string) => [k, D.disciplines[k].name])} onChange={setDisc} /></Field>
+      {!onlyYoga && <Field label="PLAN LENGTH"><Chips value={dur} options={D.planOrder.map((k: string) => [k, D.plans[k].l])} onChange={setDur} /></Field>}
+      {onlyYoga && <p className="st-s" style={{ margin: "0 0 16px" }}>Yoga is monthly only.</p>}
+      <Field label="COUPON (OPTIONAL)"><input className="st-in" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase().replace(/\s/g, ""))} placeholder="e.g. DOJOX10" /></Field>
+      {q?.couponError && <p className="st-err">{q.couponError}</p>}
+      <Field label="PAID BY"><Chips value={method} options={[["cash", "Cash"], ["upi", "UPI"], ["card", "Card"]]} onChange={setMethod} /></Field>
+      <div className="st-card" style={{ padding: 14, marginBottom: 16 }}>
+        {q ? <>
+          <div style={{ display: "flex", justifyContent: "space-between" }} className="st-s"><span>Subtotal</span><span>{rupees(q.gross)}</span></div>
+          <div style={{ display: "flex", justifyContent: "space-between" }} className="st-s"><span>{people.length > 1 ? "10%" : "5%"} member discount</span><span>−{rupees(q.discountPeople)}</span></div>
+          {q.discountCoupon > 0 && <div style={{ display: "flex", justifyContent: "space-between" }} className="st-s"><span>Coupon</span><span>−{rupees(q.discountCoupon)}</span></div>}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 8 }}><span className="st-lb" style={{ margin: 0 }}>TO COLLECT</span><span className="anton" style={{ fontSize: 34, color: "var(--fg)" }}>{rupees(q.amount)}</span></div>
+        </> : <div className="st-s">Pick at least one discipline.</div>}
+      </div>
+      {owner && <Field label="AMOUNT RECEIVED, IF DIFFERENT (OWNER ONLY)"><input className="st-in" type="number" min={1} value={amount} placeholder={q ? String(q.amount) : ""} onChange={(e) => setAmount(e.target.value)} /></Field>}
+      {err && <p className="st-err" role="alert">{err}</p>}
+      <button className="st-btn p" disabled={busy || !q || !people.length} onClick={save}>{busy ? "Saving" : `Record ${q ? rupees(Number(amount) || q.amount) : ""} received`}</button>
+    </Sheet>
   );
 }

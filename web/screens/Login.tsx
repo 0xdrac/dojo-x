@@ -18,13 +18,15 @@ class Screen extends DCLogic {
   }
   root = React.createRef(); stepRef = React.createRef(); otpRef = React.createRef(); canvasRef = React.createRef(); doneRef = React.createRef();
   componentDidMount() { this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoReady(() => DojoMotion.init(this.root.current)); this.bindCanvas(); this.boot(); }
+  /** Back to where they were heading (e.g. checkout), otherwise the portal. */
+  afterLogin = () => { let n = null; try { n = sessionStorage.getItem('dx-next'); sessionStorage.removeItem('dx-next'); } catch (e) {} DojoMotion.go(n && n.startsWith('/') && !n.startsWith('//') ? n : '/member-portal'); };
   async boot() {
     const h = (location.hash || '').slice(1);
     if (h === 'logout') { await DojoAPI.logout(); history.replaceState(null, '', '/login'); return; }
     const r = await DojoAPI.me();
     if (!r.ok) { const st = await DojoAPI.staffMe(); if (st.ok && h !== 'onboard') DojoMotion.go(st.staff.role === 'coach' ? '/coach-app' : '/admin'); return; }
     if (h === 'family') { this.setState({ fam: r.members.filter(m => m.rel !== 'You').map(m => ({ id: m.id, name: m.name, rel: m.rel, dob: m.dob || '' })) }); return; }
-    if (r.onboarded && h !== 'onboard') DojoMotion.go('/member-portal');
+    if (r.onboarded && h !== 'onboard') this.afterLogin();
   }
   componentWillUnmount() { window.removeEventListener('resize', this._rs); clearInterval(this._t); }
   componentDidUpdate(pp, ps) {
@@ -56,7 +58,7 @@ class Screen extends DCLogic {
     DojoAPI.verify(this.digits(), otp).then(r => {
       if (!r.ok) return this.setState({ busy: false, otpErr: r.error, otp: '' });
       if (r.staff) return DojoMotion.go(r.staff.role === 'coach' ? '/coach-app' : '/admin');
-      if (r.onboarded) return DojoMotion.go('/member-portal');
+      if (r.onboarded) return this.afterLogin();
       this.setState({ busy: false, step: 'profile' });
     });
   };
@@ -103,7 +105,7 @@ class Screen extends DCLogic {
       fDob: s.fDob, setFDob: e => this.setState({ fDob: e.target.value }),
       addFam: e => { e.preventDefault(); if (!s.fName.trim()) return this.setState({ fTried: true }); const nm = s.fName.trim(); DojoAPI.addMember({ name: nm, rel: s.fRel, dob: s.fDob }).then(r => { if (!r.ok) return DojoMotion.toast(r.error); this.setState(st => ({ fam: [...st.fam, { id: r.member.id, name: nm, rel: s.fRel, dob: s.fDob }], fName: '', fDob: '', fTried: false })); DojoMotion.toast('Added ' + nm); }); },
       finishLabel: s.fromPortal ? (s.fam.length ? 'SAVE & BACK TO PORTAL →' : 'BACK TO PORTAL') : s.fam.length ? `FINISH WITH ${s.fam.length + 1} MEMBERS →` : 'SKIP, JUST ME →',
-      finish: () => s.fromPortal ? (DojoMotion.go('/member-portal#me')) : this.setState({ step: 'done' }),
+      finish: () => s.fromPortal ? (DojoMotion.go('/member-portal#me')) : (() => { let n = null; try { n = sessionStorage.getItem('dx-next'); } catch (e) {} return n ? this.afterLogin() : this.setState({ step: 'done' }); })(),
       firstName: first, memberCode: s.code || '—', doneP: s.fam.length ? `Your account has ${s.fam.length + 1} members. Joining together means 10% off for each of you. Pick a plan or try a class first.` : 'Your profile and waiver are saved. Pick a plan, or try a class free before you commit.'
     };
   }

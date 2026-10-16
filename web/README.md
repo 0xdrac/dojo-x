@@ -36,3 +36,20 @@ All database access goes through `app/api/*` using the service-role key; the bro
 
 ## Ported screens
 Most pages under `screens/` were generated from the design prototypes by `scripts/convert.py`. Files whose header says `HAND-EDITED` (Login, FreeTrial, MemberPortal) are maintained by hand and skipped by the script.
+
+## Payments (Razorpay)
+
+Members pay for plans through Razorpay's popup. The server prices every order itself (plan, 5% / 10% discount, coupon) so the browser can't change the amount, verifies Razorpay's signature, then activates the membership.
+
+1. Razorpay Dashboard in **Test Mode** -> Account & Settings -> API Keys -> Generate Test Key.
+2. Set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` (here in `.env.local` and in Vercel).
+3. Webhook: Settings -> Webhooks -> Add. URL `https://<your-site>/api/razorpay/webhook`, secret = your `RAZORPAY_WEBHOOK_SECRET`, events `payment.captured`, `payment.failed`, `order.paid`, `refund.processed`. This catches payments where the browser closed before confirming.
+4. Re-run `supabase/schema.sql` (adds `orders` and `memberships`).
+5. Test cards / UPI for test mode: https://razorpay.com/docs/payments/payments/test-card-upi-details/
+6. Going live: switch the dashboard to Live Mode, generate Live keys, replace the three variables, add the webhook again in Live Mode.
+
+- Front desk: Admin -> Payments -> Record payment (cash / UPI / card). The plan activates immediately and an invoice number is issued.
+- Refunds: do them in the Razorpay dashboard; a full refund ends the plan automatically via the webhook.
+- Plans extend: renewing before a plan ends starts the new period the day after the current one ends. Yoga is always one month.
+- Local testing without Razorpay keys: `RAZORPAY_MOCK=1 npm run dev`.
+- Not built yet: auto-renew (UPI Autopay needs Razorpay Subscriptions enabled on your account), emailed/WhatsApp receipts.

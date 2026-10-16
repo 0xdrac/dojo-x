@@ -137,6 +137,46 @@ create table if not exists class_sessions (
   unique (class_id, on_date)
 );
 
+-- Payments: one row per checkout. `amount` is in whole rupees. source 'desk' = taken at the front desk (cash / UPI / card machine).
+create table if not exists orders (
+  id                   uuid primary key default gen_random_uuid(),
+  account_id           uuid references accounts(id) on delete set null,
+  member_ids           uuid[] not null,
+  disciplines          text[] not null,
+  duration             text not null check (duration in ('monthly','quarterly','half','annual')),
+  people               int  not null default 1,
+  coupon_code          text,
+  gross                int  not null,
+  discount_people      int  not null default 0,
+  discount_coupon      int  not null default 0,
+  amount               int  not null,
+  source               text not null default 'online' check (source in ('online','desk')),
+  method               text,                      -- upi / card / netbanking / wallet / cash ...
+  status               text not null default 'created' check (status in ('created','paid','failed','refunded')),
+  razorpay_order_id    text unique,
+  razorpay_payment_id  text,
+  invoice_no           text unique,               -- e.g. DX/2026-27/00001
+  failure_reason       text,
+  recorded_by          uuid,
+  created_at           timestamptz not null default now(),
+  paid_at              timestamptz
+);
+create index if not exists orders_account_idx on orders(account_id);
+create index if not exists orders_paid_idx on orders(paid_at);
+
+-- A paid period of access for one member. A member is "active" while any membership has ends_on >= today.
+create table if not exists memberships (
+  id          uuid primary key default gen_random_uuid(),
+  member_id   uuid not null references members(id) on delete cascade,
+  order_id    uuid references orders(id) on delete set null,
+  disciplines text[] not null,
+  duration    text not null,
+  starts_on   date not null,
+  ends_on     date not null,
+  created_at  timestamptz not null default now()
+);
+create index if not exists memberships_member_idx on memberships(member_id);
+
 alter table accounts enable row level security;
 alter table members  enable row level security;
 alter table trials   enable row level security;
@@ -147,6 +187,8 @@ alter table events              enable row level security;
 alter table coupons             enable row level security;
 alter table attendance          enable row level security;
 alter table class_sessions      enable row level security;
+alter table orders              enable row level security;
+alter table memberships         enable row level security;
 
 -- Replace these placeholder staff with the real owner / coach / front-desk phone numbers.
 insert into staff (phone, name, role, coach_key) values
@@ -156,3 +198,7 @@ insert into staff (phone, name, role, coach_key) values
 on conflict (phone) do nothing;
 update staff set coach_key = 'rahul' where phone = '9000000002' and coach_key is null;
 update staff set coach_key = 'arjun' where phone = '9000000001' and coach_key is null;
+
+-- If you ran an earlier version of this file, widen the status check so refunds can be recorded:
+alter table orders drop constraint if exists orders_status_check;
+alter table orders add constraint orders_status_check check (status in ('created','paid','failed','refunded'));

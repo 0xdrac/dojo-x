@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable */
 'use client';
-// Ported from project/Checkout.dc.html by scripts/convert (template -> JSX, logic kept as-is).
+// Ported from project/Checkout.dc.html. HAND-EDITED: real Razorpay popup + server-priced orders (scripts/convert.py skips this file).
 import React from 'react';
 import '@/lib/bootstrap';
 import { DCLogic } from '@/lib/dc';
@@ -15,20 +15,46 @@ class Screen extends DCLogic {
     super(p);
     const u = new URLSearchParams(location.search);
     const portal = u.get('src') === 'portal';
-    this.state = { w: window.innerWidth, ok: false, sel: (u.get('d') || 'mma,muaythai').split(',').filter(Boolean), dur: u.get('dur') || 'half', people: +(u.get('p') || 1), mode: u.get('mode') || 'auto', src: u.get('src') || 'pricing', name: portal ? 'Aarav Sharma' : '', phone: portal ? '98450 21734' : '', email: portal ? 'aarav.sharma@gmail.com' : '', gstin: '', tried: false, method: 'upi', app: 'gpay', upi: portal ? 'aarav@okhdfc' : '', card: '', exp: '', cvv: '', bank: 'HDFC', code: (u.get('c') || ''), coupon: null, cErr: '', out: 'success', step: 'form', t: 0 };
+    this.state = { w: window.innerWidth, ok: false, sel: (u.get('d') || 'mma,muaythai').split(',').filter(Boolean), dur: u.get('dur') || 'half', people: +(u.get('p') || 1), mode: 'manual', m: u.get('m') || '', busy: false, order: null, reason: '', covers: [], src: u.get('src') || 'pricing', name: '', phone: '', email: '', gstin: '', tried: false, method: 'upi', app: 'gpay', upi: '', card: '', exp: '', cvv: '', bank: 'HDFC', code: (u.get('c') || ''), coupon: null, cErr: '', out: 'success', step: 'form', t: 0 };
   }
   root = React.createRef(); rzpRef = React.createRef(); totRef = React.createRef(); resRef = React.createRef();
-  componentDidMount() { this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoReady(() => { const c = this.state.code ? DOJO.checkCoupon(this.state.code) : null; this.setState({ ok: true, coupon: c && c.status === 'ok' ? c : null }, () => DojoMotion.init(this.root.current)); }); }
+  componentDidMount() { this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoAPI.me().then(r => {
+      const next = () => { try { sessionStorage.setItem('dx-next', location.pathname + location.search); } catch (e) {} };
+      if (!r.ok) { next(); return DojoMotion.go('/login'); }
+      if (!r.onboarded) { next(); return DojoMotion.go('/login#onboard'); }
+      const me = r.members.find(m => m.id === this.state.m) || r.members.find(m => m.rel === 'You') || r.members[0];
+      const c = this.state.code ? DOJO.checkCoupon(this.state.code) : null;
+      this.setState({ ok: true, name: me.name, phone: r.account.phone, email: me.email || '', coupon: c && c.status === 'ok' ? c : null }, () => DojoMotion.init(this.root.current));
+    }); }
   componentWillUnmount() { window.removeEventListener('resize', this._rs); clearInterval(this._iv); }
   componentDidUpdate(pp, ps) {
     ps = ps || {}; const M = window.DojoMotion; if (!M) return;
     if (this.lastT !== undefined && this.lastT !== this.tot) M.pop(this.totRef.current); this.lastT = this.tot;
     if (ps.step !== this.state.step) { window.scrollTo(0, 0); if (this.state.step === 'proc' && this.rzpRef.current && !M.reduced()) this.rzpRef.current.animate([{ opacity: 0, transform: 'translateY(24px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' }); if (this.state.step === 'done') setTimeout(() => M.punch(this.resRef.current), 120); }
   }
-  pay = () => {
+  pay = async () => {
     const s = this.state, errs = this.errs();
     if (Object.values(errs).some(Boolean)) { this.setState({ tried: true }); DojoMotion.toast(Object.values(errs).find(Boolean)); return; }
-    this.setState({ step: 'proc' });
+    if (s.busy) return;
+    this.setState({ busy: true, reason: '' }); this._done = false;
+    const o = await DojoAPI.createOrder({ disciplines: s.sel, duration: s.dur, people: s.people, couponCode: s.coupon ? s.coupon.code : '', memberId: s.m || undefined, name: s.name, email: s.email });
+    if (!o.ok) {
+      if (o.status === 401) { try { sessionStorage.setItem('dx-next', location.pathname + location.search); } catch (e) {} return DojoMotion.go('/login'); }
+      this.setState(o.status === 422 ? { busy: false, coupon: null, cErr: o.error } : { busy: false }); DojoMotion.toast(o.error); return;
+    }
+    let Rzp; try { Rzp = await DojoAPI.loadRazorpay(); } catch (e) { this.setState({ busy: false }); return DojoMotion.toast('Couldn’t load the payment window. Check your connection and try again.'); }
+    const fin = (patch) => { this._done = true; this.setState({ busy: false, step: 'done', covers: o.covers, ...patch }); };
+    const rz = new Rzp({
+      key: o.key, amount: o.amount * 100, currency: 'INR', name: 'Dojo X Fight Academy', description: o.description, order_id: o.razorpayOrderId, prefill: o.prefill, theme: { color: '#C8102E' },
+      handler: async resp => {
+        this._done = true;
+        const v = await DojoAPI.verifyPayment({ orderId: o.orderId, ...resp });
+        fin(v.ok ? { out: 'success', order: v.order } : { out: 'pending', order: { id: o.orderId }, reason: v.error });
+      },
+      modal: { ondismiss: () => { if (this._done) return; if (this.state.reason) fin({ out: 'failed', order: { id: o.orderId } }); else { this.setState({ busy: false }); DojoMotion.toast('Payment cancelled. Nothing was charged.'); } } }
+    });
+    rz.on('payment.failed', r => { const why = (r.error && r.error.description) || 'The payment didn’t go through.'; DojoAPI.reportPaymentFailure(o.orderId, why); this.setState({ reason: why }); });
+    rz.open();
   };
   errs() {
     const s = this.state, d = s.phone.replace(/\D/g, '');
@@ -50,18 +76,18 @@ class Screen extends DCLogic {
     if (s.coupon) lines.push({ k: `Coupon ${s.coupon.code}`, v: '−' + f(q.couponOff), c: 'oklch(0.78 0.14 150)', kc: '#9A9A9A' });
     const meth = s.mode === 'auto' ? 'Razorpay · UPI Autopay' : 'Razorpay';
     const planEnd = new Date(Date.now() + q.pl.m * 30.4 * 864e5).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    const inv = 'DX/2026-27/0' + (1240 + s.sel.length);
-    const invHref = `/invoice?d=${s.sel.join(',')}&dur=${s.dur}&p=${s.people}${s.coupon ? '&c=' + s.coupon.code : ''}&n=${encodeURIComponent(s.name)}&ph=${encodeURIComponent(s.phone)}&m=${encodeURIComponent(meth)}`;
+    const inv = (s.order && s.order.invoiceNo) || '—';
+    const invHref = s.order && s.order.id ? '/invoice?o=' + s.order.id : '/member-portal#pay';
     const R = {
-      success: { kicker: 'PAYMENT SUCCESSFUL', ref: inv, c: 'oklch(0.78 0.14 150)', bd: 'oklch(0.74 0.15 150 / .5)', title: `Welcome to<br>the mat.`.replace('<br>', ' '), text: auto ? `${f(q.total)} paid. Autopay is set on ${meth}; we’ll remind you 24 hours before each renewal.` : `${f(q.total)} paid via Razorpay. Receipt sent to ${s.email || 'your WhatsApp'}.`, facts: [['PLAN', q.pl.l + ' · ' + s.sel.map(k => D.disciplines[k].name).join(' + ')], ['VALID UNTIL', q.fight.length ? planEnd : 'Monthly'], ['PAID VIA', meth], ['RENEWAL', auto ? 'Auto · UPI Autopay' : 'Manual · reminder 7 days before']], acts: [['View receipt', invHref, false], [s.src === 'portal' ? 'Back to portal' : 'Go to dashboard', '/member-portal#plan', true]] },
-      failed: { kicker: 'PAYMENT FAILED', ref: 'TXN 88412093', c: 'oklch(0.75 0.17 35)', bd: 'oklch(0.70 0.19 35 / .6)', title: 'Didn’t go through.', text: `Razorpay reported that your bank declined the payment of ${f(q.total)}. No money was taken. If your account was debited, it’s automatically refunded within 5–7 working days.`, facts: [['REASON', 'Declined by issuing bank'], ['METHOD', meth], ['AMOUNT', f(q.total)], ['WHAT NEXT', 'Retry or change method']], acts: [['Retry payment', '#', true, () => this.pay()], ['Change method', '#', false, () => this.setState({ step: 'form' })]] },
-      pending: { kicker: 'PAYMENT PENDING', ref: 'TXN 88412107', c: 'oklch(0.82 0.14 75)', bd: 'oklch(0.82 0.14 75 / .6)', title: 'Waiting on your bank.', text: `Razorpay is waiting for your bank to confirm. This usually clears within 2 hours. Your spot is held, and we’ll WhatsApp you the moment it confirms. Don’t pay again.`, facts: [['AMOUNT', f(q.total)], ['METHOD', meth], ['SPOT HELD UNTIL', 'Today, 11:59 PM'], ['STATUS', 'Awaiting bank']], acts: [['Check status', '#', true, () => { this.setState({ out: 'success' }); DojoMotion.toast('Razorpay confirmed the payment'); }], ['Back to pricing', '/pricing', false]] }
+      success: { kicker: 'PAYMENT SUCCESSFUL', ref: inv, c: 'oklch(0.78 0.14 150)', bd: 'oklch(0.74 0.15 150 / .5)', title: `Welcome to<br>the mat.`.replace('<br>', ' '), text: auto ? `${f(q.total)} paid. Autopay is set on ${meth}; we’ll remind you 24 hours before each renewal.` : `${f(q.total)} paid via Razorpay. Receipt sent to ${s.email || 'your WhatsApp'}.`, facts: [['PLAN', q.pl.l + ' · ' + s.sel.map(k => D.disciplines[k].name).join(' + ')], ['FOR', (s.covers && s.covers.length ? s.covers : [s.name]).join(' + ')], ['VALID UNTIL', q.fight.length ? planEnd : 'Monthly'], ['PAID VIA', meth], ['RENEWAL', auto ? 'Auto · UPI Autopay' : 'Manual · reminder 7 days before']], acts: [['View receipt', invHref, false], [s.src === 'portal' ? 'Back to portal' : 'Go to dashboard', '/member-portal#plan', true]] },
+      failed: { kicker: 'PAYMENT FAILED', ref: s.order && s.order.id ? 'ORDER ' + s.order.id.slice(0, 8).toUpperCase() : '—', c: 'oklch(0.75 0.17 35)', bd: 'oklch(0.70 0.19 35 / .6)', title: 'Didn’t go through.', text: `${s.reason || 'The payment'} (${f(q.total)}). No money was taken. If your account was debited, it’s refunded automatically within 5–7 working days.`, facts: [['REASON', s.reason || 'Payment failed'], ['METHOD', meth], ['AMOUNT', f(q.total)], ['WHAT NEXT', 'Retry or change method']], acts: [['Retry payment', '#', true, () => this.pay()], ['Change method', '#', false, () => this.setState({ step: 'form' })]] },
+      pending: { kicker: 'PAYMENT PENDING', ref: s.order && s.order.id ? 'ORDER ' + s.order.id.slice(0, 8).toUpperCase() : '—', c: 'oklch(0.82 0.14 75)', bd: 'oklch(0.82 0.14 75 / .6)', title: 'Waiting on your bank.', text: `Razorpay is waiting for your bank to confirm. This usually clears within 2 hours. Your spot is held, and we’ll WhatsApp you the moment it confirms. Don’t pay again.`, facts: [['AMOUNT', f(q.total)], ['METHOD', meth], ['SPOT HELD UNTIL', 'Today, 11:59 PM'], ['STATUS', 'Awaiting bank']], acts: [['Check status', '#', true, () => DojoMotion.go('/member-portal#pay')], ['Back to pricing', '/pricing', false]] }
     }[s.out];
     return Object.assign(base, {
       backHref: s.src === 'portal' ? '/member-portal#plan' : '/pricing', sProc: s.step === 'proc', sDone: s.step === 'done',
       botPad: mob ? '32px' : '64px', formOrder: 0, asideOrder: 1, asidePos: desk ? 'sticky' : 'static', asideTop: desk ? '88px' : '0', deskPay: !mob, mobPay: mob,
       fields: [fld('name', 'FULL NAME', 'Aarav Sharma', 'text'), fld('phone', 'MOBILE (WHATSAPP)', '98450 21734', 'numeric'), fld('email', 'EMAIL · FOR RECEIPT', 'you@gmail.com', 'email')],
-      modes: [['auto', 'Auto-renew', 'UPI Autopay via Razorpay'], ['manual', 'Pay once', 'Renew manually next cycle']].map(([k, title, note]) => ({ title, note, on: s.mode === k, bg: s.mode === k ? 'rgba(200,16,46,.14)' : '#161616', bd: s.mode === k ? '#C8102E' : '#262626', pick: () => this.setState({ mode: k, method: k === 'auto' && s.method === 'net' ? 'upi' : s.method }) })),
+      modes: [['manual', 'Pay once', 'We remind you 7 days before your plan ends'], ['auto', 'Auto-renew', 'Coming soon']].map(([k, title, note]) => ({ title, note, on: k === 'manual', bg: k === 'manual' ? 'rgba(200,16,46,.14)' : '#161616', bd: k === 'manual' ? '#C8102E' : '#262626', pick: () => k === 'auto' && DojoMotion.toast('Auto-renew is coming soon. For now, pay once and we’ll remind you before it ends.') })),
       rzpNote: auto ? "When you tap Pay, Razorpay’s secure popup opens. Approve the UPI Autopay mandate once and every renewal is debited automatically, with a reminder 24 hours before." : "When you tap Pay, Razorpay’s secure popup opens. Pay with any UPI app, card, netbanking or wallet. Card details never touch Dojo X.",
       accepts: (auto ? ["UPI AUTOPAY", "CARD E-MANDATE"] : ["UPI", "CARDS", "NETBANKING", "WALLETS", "EMI"]).map(t => ({ t })),
       rzpDesc: `${q.fight.length ? q.pl.l : "Monthly"} · ${s.sel.map(k => D.disciplines[k].name).join(" + ")}`,
@@ -74,7 +100,7 @@ class Screen extends DCLogic {
       applyCoupon: e => { e.preventDefault(); const r = D.checkCoupon(s.code); if (r.status === 'ok') { this.setState({ coupon: r, cErr: '' }); DojoMotion.toast(`${r.code} applied · ${r.label}`); } else this.setState({ cErr: r.status === 'empty' ? 'Enter a code first.' : r.status === 'expired' ? `Expired on ${r.on}.` : 'We don’t recognise that code.' }); },
       removeCoupon: () => this.setState({ coupon: null, code: '' }),
       payLabel: `${auto ? 'PAY & SET AUTOPAY' : 'PAY'} ${f(q.total)} →`, payShort: auto ? 'PAY & AUTOPAY →' : 'PAY NOW →', pay: this.pay,
-      outs: [['success', 'Success', '#1F7A3A'], ['failed', 'Failed', '#B3261E'], ['pending', 'Pending', '#B26A00']].map(([k, label, bg]) => ({ label, bg, pick: () => this.setState({ out: k, step: 'done' }) })),
+      outs: [],
       fine: 'By paying you agree to the membership terms. Plans are non-refundable after the first class; freeze up to 30 days a year on 3+ month plans.',
             res: { ...R, facts: R.facts.map(([k, v]) => ({ k, v })), acts: R.acts.map(([label, href, pri, fn]) => ({ label, href, bg: pri ? '#C8102E' : 'transparent', bd: pri ? '#C8102E' : '#2E2E2E', go: fn ? (e => { e.preventDefault(); fn(); }) : undefined })) }
     });
