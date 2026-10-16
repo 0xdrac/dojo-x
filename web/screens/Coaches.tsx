@@ -49,7 +49,7 @@ class Screen extends DCLogic {
         tape: this.tape(c, true), weight: c.weight, stanceU: c.stance.toUpperCase(), rankU: c.rank.toUpperCase(),
         teaches: c.disc.map(k => D.disciplines[k].name.toUpperCase()).join(' · '),
         bars: c.bars.map(([k, val], j) => ({ k: k.toUpperCase(), v: val, f: (val / 100).toFixed(2), delay: `${200 + j * 90}ms` })),
-        bio: c.bio, trialHref: `/schedule?d=${c.disc[0]}`,
+        bio: c.bio, trialHref: `/free-trial?d=${c.disc[0]}`,
         creds: c.creds.map((t, i) => ({ n: String(i + 1).padStart(2, '0'), t })), tags: tags(c),
         classCount: cls.length,
         classes: cls.slice(0, 10).map(x => ({ day: D.days[x.d], time: D.time12(x.t), title: x.title, level: x.level.toUpperCase(), color: D.color(x.disc), href: `/schedule?d=${x.disc}&day=${x.d}` }))

@@ -42,13 +42,13 @@ export default function Header() {
             {NAV.map(([l, h]) => <TLink key={h} href={h} className={path === h ? "act" : undefined} aria-current={path === h ? "page" : undefined}>{l}</TLink>)}
           </nav>
           <TLink href="/login" className="dk" style={{ font: "700 12px/1 var(--sans)", letterSpacing: ".12em", textTransform: "uppercase", padding: "14px 4px", borderBottom: "1px solid #2E2E2E" }}>Member Login</TLink>
-          <TLink href="/schedule" className="btn dk" style={{ flex: "none" }}>
+          <TLink href="/free-trial" className="btn dk" style={{ flex: "none" }}>
             <span className="in" style={{ height: 44, padding: "0 18px", fontSize: 12, gap: 10, clipPath: "polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)" }}>
               <span className="fill" /><span className="shine" data-shine="" /><span className="lbl">Free Trial</span><span className="arr">→</span>
             </span>
           </TLink>
           <div className="mb" style={{ marginLeft: "auto", alignItems: "center", gap: 8 }}>
-            <TLink href="/schedule" className="pill">Free Trial</TLink>
+            <TLink href="/free-trial" className="pill">Free Trial</TLink>
             <button className="burger" onClick={toggle} aria-label={menu ? "Close menu" : "Open menu"} aria-expanded={menu}>
               <span style={{ width: 20, background: "var(--fg)", transform: menu ? "translateY(4.5px) rotate(45deg)" : "none" }} />
               <span style={{ width: menu ? 20 : 13, background: "var(--red)", transform: menu ? "translateY(-4.5px) rotate(-45deg)" : "none" }} />
@@ -66,7 +66,7 @@ export default function Header() {
             ))}
           </nav>
           <div data-menu-item="" style={{ position: "relative", marginTop: "auto", paddingTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
-            <TLink href="#pricing" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, height: 56, background: "var(--red)", color: "var(--fg)", font: "800 14px/1 var(--sans)", letterSpacing: ".1em", textTransform: "uppercase", clipPath: "polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)" }}>Book Free Trial →</TLink>
+            <TLink href="/free-trial" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, height: 56, background: "var(--red)", color: "var(--fg)", font: "800 14px/1 var(--sans)", letterSpacing: ".1em", textTransform: "uppercase", clipPath: "polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)" }}>Book Free Trial →</TLink>
             <TLink href="/login" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 56, border: "1px solid #2E2E2E", font: "700 14px/1 var(--sans)", letterSpacing: ".1em", textTransform: "uppercase" }}>Member Login</TLink>
             <div className="mono" style={{ display: "flex", justifyContent: "space-between", font: "500 12px/1.4 var(--mono)", color: "var(--dim)", paddingTop: 8 }}><span>{PHONE}</span><span>Vasundhara, GZB</span></div>
           </div>

@@ -39,7 +39,7 @@ class Screen extends DCLogic {
       h1Size: calm ? 'clamp(56px,min(11vw,22svh),180px)' : 'clamp(64px,min(14vw,24svh),230px)',
       h1bColor: calm ? col : 'transparent', h1bStroke: calm ? '0px transparent' : '2px #F5F5F5',
       intro: d.intro, ages: d.ages, classCount: classes.length, price: D.fmt(d.price),
-      trialHref: `/schedule?d=${k}`, schedHref: `/schedule?d=${k}`, pricingHref: `/pricing?d=${k}`,
+      trialHref: `/free-trial?d=${k}`, schedHref: `/schedule?d=${k}`, pricingHref: `/pricing?d=${k}`,
       learnTitle: calm ? 'Move well. Live well.' : 'Built for the fight.',
       learn: d.learn.map((l, i) => ({ n: String(i + 1).padStart(2, '0'), t: l[0], d: l[1] })),
       belts: !!d.belts, beltCols: mob ? '44px minmax(0,1fr) 64px' : '80px minmax(0,1fr) 120px',

@@ -16,7 +16,7 @@ export default function HomeFloaters() {
         aria-label="Chat with us on WhatsApp" className={"wa" + (past ? " up" : "")}>WA</a>
       <div className={"sticky" + (past ? " show" : "")}>
         <TLink href="#pricing" style={{ flex: 1, border: "1px solid #2E2E2E", color: "var(--fg)" }}>Join Now</TLink>
-        <TLink href="/schedule" style={{ flex: 1.4, position: "relative", overflow: "hidden", gap: 8, background: "var(--red)", color: "var(--fg)", clipPath: "polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)" }}>
+        <TLink href="/free-trial" style={{ flex: 1.4, position: "relative", overflow: "hidden", gap: 8, background: "var(--red)", color: "var(--fg)", clipPath: "polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)" }}>
           <span className="shine" data-shine="" /><span style={{ position: "relative" }}>Book Free Trial →</span>
         </TLink>
       </div>

@@ -30,7 +30,7 @@ export function Hero() {
             Seven disciplines. Pro fighters in your corner. Whether it&apos;s your first class or your first title fight, you start here.
           </p>
           <div data-hero-fade="" style={{ display: "flex", flexWrap: "wrap", gap: 12, flex: "1 1 320px", maxWidth: 560, pointerEvents: "auto" }}>
-            <Btn href="#pricing" h={58}>Book your free trial</Btn>
+            <Btn href="/free-trial" h={58}>Book your free trial</Btn>
             <TLink href="/schedule" className="ghost" style={{ flex: "1 1 180px" }}><span>View schedule</span></TLink>
           </div>
         </div>
@@ -89,7 +89,7 @@ export function Disciplines() {
             <div className="mono" style={{ position: "relative", font: "700 11px/1 var(--mono)", letterSpacing: ".2em", color: "var(--fg)" }}>NOT SURE?</div>
             <div style={{ position: "relative" }}>
               <div className="anton" style={{ fontSize: "clamp(26px,3vw,42px)", lineHeight: 0.95, color: "var(--fg)" }}>First class<br />is on us.</div>
-              <TLink href="#pricing" className="tb">Book trial <span>→</span></TLink>
+              <TLink href="/free-trial" className="tb">Book trial <span>→</span></TLink>
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@ export function FinalCta() {
         <div data-reveal="" className="mono" style={{ font: "700 12px/1 var(--mono)", letterSpacing: ".24em", color: "var(--fg)", marginBottom: 18 }}>NO CONTRACT · NO PAYMENT · NO EXPERIENCE NEEDED</div>
         <h2 data-reveal="" className="anton">Your first<br />round is <span style={{ color: "var(--ink)" }}>on us.</span></h2>
         <div data-reveal="" style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: "clamp(28px,4vw,44px)", maxWidth: 560 }}>
-          <Btn href="/schedule" light flex="1 1 240px">Book free trial</Btn>
+          <Btn href="/free-trial" light flex="1 1 240px">Book free trial</Btn>
           <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" className="outbtn"
             style={{ flex: "1 1 180px", height: 60, border: 0, boxShadow: "inset 0 0 2px 0 #F5F5F5, inset 0 0 0 2px #F5F5F5", fontSize: 14 }}>Ask on WhatsApp</a>
         </div>
