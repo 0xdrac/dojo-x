@@ -12,10 +12,12 @@ export async function GET() {
   if (url && !/^https:\/\/[a-z0-9]+\.supabase\.co\/?$/.test(url)) out.urlProblem = "NEXT_PUBLIC_SUPABASE_URL should look like https://<project-id>.supabase.co (no /rest/v1, no spaces)";
   if (url && key) {
     const sb = createClient(url, key, { auth: { persistSession: false } });
-    for (const t of ["accounts", "members", "trials", "staff"]) {
+    for (const t of ["accounts", "members", "trials", "staff", "classes", "class_cancellations", "events", "coupons", "attendance", "class_sessions", "orders", "memberships"]) {
       const r = await sb.from(t).select("id", { count: "exact", head: true });
       out[`table_${t}`] = r.error ? `ERROR: ${r.error.message}` : `ok (${r.count} rows)`;
     }
   }
+  const bad = Object.entries(out).filter(([k, v]) => k.startsWith("table_") && String(v).startsWith("ERROR")).map(([k]) => k.slice(6));
+  if (bad.length) out.fix = `Missing or unreadable: ${bad.join(", ")}. Open Supabase -> SQL Editor, paste all of supabase/schema.sql and click Run, then reload this page.`;
   return json(out);
 }

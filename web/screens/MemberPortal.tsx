@@ -21,7 +21,7 @@ class Screen extends DCLogic {
   componentDidMount() {
     this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
     DojoReady(() => {
-      const wait = () => DojoAPI.syncPortal().then(ok => ok ? go() : DojoMotion.go('/login'));
+      const wait = () => DojoAPI.syncPortal().then(ok => ok ? go() : DojoMotion.go('/login'), () => {});
       const go = () => {
         const b = {};
         DXP.order.forEach(id => { const m = DXP.members[id]; b[id] = DOJO.classes.filter(c => this.ok(m, c) && !this.past(c)).slice(0, m.bookings).map(c => c.id); });

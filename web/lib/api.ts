@@ -79,6 +79,7 @@ export const DojoAPI = {
   /** Loads the signed-in account into DXP (the portal's data object). Resolves false when not signed in. */
   async syncPortal(): Promise<boolean> {
     const r = await call("GET", "/api/me");
+    if (!r.ok && r.status !== 401) { (window as any).__dxShell?.toast("Something went wrong loading your account. Please try again."); throw new Error(r.error); }
     if (!r.ok || !r.members?.length) return false;
     const demo = r.account.phone === DEMO_PHONE, members: any = {}, order: string[] = [];
     for (const m of r.members) {
