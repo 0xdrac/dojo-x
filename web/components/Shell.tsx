@@ -84,9 +84,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     // fetch a page's code as soon as a pointer or finger reaches its link
     const onIntent = (e: Event) => { const a = (e.target as Element).closest?.("a[href]") as HTMLAnchorElement | null; const h = a?.getAttribute("href") || ""; if (h.startsWith("/") && !h.startsWith("//")) warm(h, router.prefetch); };
     document.addEventListener("pointerover", onIntent, { passive: true }); document.addEventListener("touchstart", onIntent, { passive: true });
-    const idle = (window as any).requestIdleCallback || ((f: () => void) => setTimeout(f, 1500));
-    const ic = idle(() => warmCommon(router.prefetch));
-    return () => { document.removeEventListener("click", onClick); document.removeEventListener("pointerover", onIntent); document.removeEventListener("touchstart", onIntent); (window as any).cancelIdleCallback?.(ic); };
+    // Warm the other pages only once this one has fully loaded, so it never competes with what the visitor is waiting for.
+    const idle = (window as any).requestIdleCallback || ((f: () => void) => setTimeout(f, 1));
+    let ic: any; const later = () => { ic = setTimeout(() => idle(() => warmCommon(router.prefetch)), 3000); };
+    if (document.readyState === "complete") later(); else window.addEventListener("load", later, { once: true });
+    return () => { document.removeEventListener("click", onClick); document.removeEventListener("pointerover", onIntent); document.removeEventListener("touchstart", onIntent); clearTimeout(ic); window.removeEventListener("load", later); };
   }, [go, toast, router]);
 
   // slash-out after a route change
