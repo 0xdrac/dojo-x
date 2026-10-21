@@ -1,6 +1,6 @@
 import { store } from "@/lib/server/store";
 import { getSession } from "@/lib/server/session";
-import { body, digits, fail, json, str } from "@/lib/server/util";
+import { body, digits, fail, json, str, validPhone } from "@/lib/server/util";
 
 /** Create or update the account owner's own profile (step 1 of onboarding, and Profile edits in the portal). */
 export async function PUT(req: Request) {
@@ -13,7 +13,14 @@ export async function PUT(req: Request) {
     name, dob: str(b.dob, 10) || null, email: email || null, gender: str(b.gender, 20) || null,
     emergency: b.ename || b.ephone ? { name: str(b.ename), phone: digits(b.ephone) } : null,
   };
-  const s = store(), me = (await s.members(sess.sub)).find((m) => m.rel === "You");
+  const s = store();
+  if (b.mobile !== undefined) {
+    const ph = digits(b.mobile); if (!validPhone(ph)) return fail("Enter a valid 10-digit mobile number.");
+    const acc = await s.accountById(sess.sub), other = await s.accountByPhone(ph);
+    if (other && other.id !== sess.sub) return fail("That mobile number is already used by another account.", 409);
+    if (acc && acc.phone !== ph) await s.setAccountPhone(sess.sub, ph);
+  }
+  const me = (await s.members(sess.sub)).find((m) => m.rel === "You");
   const m = me ? await s.updateMember(sess.sub, me.id, patch) : await s.addMember({ accountId: sess.sub, rel: "You", ...patch });
   return json({ member: m });
 }

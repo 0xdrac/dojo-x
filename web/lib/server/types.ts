@@ -4,18 +4,20 @@ export type Member = {
   id: string; accountId: string; rel: string; name: string; dob?: string | null; email?: string | null; gender?: string | null;
   memberCode: string; emergency?: Emergency | null; waiver?: Waiver | null; createdAt: string;
 };
-export type Account = { id: string; phone: string; createdAt: string };
+export type Account = { id: string; phone: string; email?: string | null; createdAt: string };
 export type Trial = {
   id: string; accountId?: string | null; name: string; phone: string; email?: string | null; discipline: string; ageGroup?: string | null;
   experience?: string | null; slot?: { classId?: string; date?: string; title: string; day: string; time: string; coach?: string } | null; status: string; createdAt: string;
 };
-export type Staff = { id: string; phone: string; name: string; role: "owner" | "coach" | "frontdesk"; coachKey?: string | null };
+export type Staff = { id: string; phone: string; email?: string | null; name: string; role: "owner" | "coach" | "frontdesk"; coachKey?: string | null };
 
 export interface Store {
   accountByPhone(phone: string): Promise<Account | null>;
   accountById(id: string): Promise<Account | null>;
   setAccountPhone(id: string, phone: string): Promise<Account | null>;
-  createAccount(phone: string): Promise<Account>;
+  createAccount(phone: string, email?: string | null): Promise<Account>;
+  accountByEmail(email: string): Promise<Account | null>;
+  staffByEmail(email: string): Promise<Staff | null>;
   members(accountId: string): Promise<Member[]>;
   allMembers(): Promise<(Member & { phone: string })[]>;
   addMember(m: Omit<Member, "id" | "memberCode" | "createdAt">): Promise<Member>;

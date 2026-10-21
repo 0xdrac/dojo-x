@@ -23,40 +23,42 @@ async function getAuth() {
 const friendly = (e: any) => {
   const c = String(e?.code || "");
   if (c.includes("too-many-requests")) return "Too many attempts. Please wait a few minutes and try again.";
-  if (c.includes("invalid-phone-number")) return "That mobile number doesn’t look right.";
+  if (c.includes("invalid-email")) return "That email address doesn’t look right.";
+  if (c.includes("invalid-action-code") || c.includes("expired-action-code")) return "That link has expired or was already used. Request a new one.";
   if (c.includes("invalid-verification-code")) return "That code doesn’t match. Check it and try again.";
   if (c.includes("code-expired")) return "That code has expired. Request a new one.";
   if (c.includes("captcha")) return "Couldn’t verify you’re human. Refresh the page and try again.";
-  if (c.includes("billing-not-enabled")) return "SMS isn’t switched on for this project yet (Firebase billing). [auth/billing-not-enabled]";
+  if (c.includes("billing-not-enabled")) return "Email sign-in isn’t set up in Firebase yet. [auth/billing-not-enabled]";
   if (c.includes("unauthorized-domain")) return "This website isn’t allowed to use Firebase sign-in yet. [auth/unauthorized-domain]";
-  if (c.includes("operation-not-allowed")) return "Phone sign-in is switched off in Firebase. [auth/operation-not-allowed]";
-  if (c.includes("quota-exceeded")) return "The SMS limit has been reached. Try again later. [auth/quota-exceeded]";
-  return `Couldn’t send the code right now. Please try again. [${c || String(e?.message || "unknown").slice(0, 60)}]`;
+  if (c.includes("operation-not-allowed")) return "Email-link sign-in is switched off in Firebase. [auth/operation-not-allowed]";
+  if (c.includes("quota-exceeded")) return "Too many emails were requested today. Try again later. [auth/quota-exceeded]";
+  return `Couldn’t send the sign-in link right now. Please try again. [${c || String(e?.message || "unknown").slice(0, 60)}]`;
 };
 
-/** Sends the SMS code to +91<phone10>. */
-export async function sendFirebaseCode(phone10: string): Promise<{ ok: boolean; error?: string }> {
+const LS = "dx-signin-email";
+const rem = (v?: string) => { try { v ? localStorage.setItem(LS, v) : localStorage.removeItem(LS); } catch {} };
+const recall = () => { try { return localStorage.getItem(LS) || ""; } catch { return ""; } };
+
+/** Emails a one-tap sign-in link. */
+export async function sendEmailLink(email: string): Promise<{ ok: boolean; error?: string }> {
   try {
-    const auth = await getAuth(), { RecaptchaVerifier, signInWithPhoneNumber } = await import("firebase/auth");
-    if (!verifier) {
-      let el = document.getElementById("dx-recaptcha");
-      if (!el) { el = document.createElement("div"); el.id = "dx-recaptcha"; document.body.appendChild(el); }
-      verifier = new RecaptchaVerifier(auth, el, { size: "invisible" });
-    }
-    confirmation = await signInWithPhoneNumber(auth, "+91" + phone10, verifier);
-    return { ok: true };
-  } catch (e: any) {
-    console.error("[firebase] send failed", e);
-    try { verifier?.clear(); } catch {} verifier = null;
-    return { ok: false, error: friendly(e) };
-  }
+    const auth = await getAuth(), { sendSignInLinkToEmail } = await import("firebase/auth");
+    await sendSignInLinkToEmail(auth, email, { url: location.origin + "/login", handleCodeInApp: true });
+    rem(email); return { ok: true };
+  } catch (e: any) { console.error("[firebase] send link failed", e); return { ok: false, error: friendly(e) }; }
 }
 
-/** Checks the code the member typed and returns Firebase's signed ID token. */
-export async function confirmFirebaseCode(code: string): Promise<{ ok: boolean; idToken?: string; error?: string }> {
+/** True when the current page was opened from a sign-in email. */
+export async function isEmailLink(): Promise<boolean> {
+  try { const auth = await getAuth(), { isSignInWithEmailLink } = await import("firebase/auth"); return isSignInWithEmailLink(auth, location.href); } catch { return false; }
+}
+export const rememberedEmail = recall;
+
+/** Finishes sign-in from the emailed link and returns Firebase's signed ID token. */
+export async function completeEmailLink(email: string): Promise<{ ok: boolean; idToken?: string; error?: string }> {
   try {
-    if (!confirmation) return { ok: false, error: "Request a new code first." };
-    const cred = await confirmation.confirm(code);
+    const auth = await getAuth(), { signInWithEmailLink } = await import("firebase/auth");
+    const cred = await signInWithEmailLink(auth, email, location.href); rem();
     return { ok: true, idToken: await cred.user.getIdToken() };
   } catch (e: any) { return { ok: false, error: friendly(e) }; }
 }

@@ -209,6 +209,13 @@ alter table bookings            enable row level security;
 alter table coupons drop constraint if exists coupons_type_check;
 alter table coupons add constraint coupons_type_check check (type in ('pct','flat','set'));
 
+-- Email-link sign-in: accounts are identified by email, and the mobile number is collected during sign-up (so it can start empty).
+alter table accounts alter column phone drop not null;
+alter table accounts add column if not exists email text;
+create unique index if not exists accounts_email_key on accounts (lower(email));
+alter table staff add column if not exists email text;
+create unique index if not exists staff_email_key on staff (lower(email));
+
 -- Replace these placeholder staff with the real owner / coach / front-desk phone numbers.
 insert into staff (phone, name, role, coach_key) values
   ('9000000001', 'Owner',         'owner',     'aman'),

@@ -2,7 +2,7 @@
 // @ts-nocheck
 // Browser-side client for the /api routes. Exposed to the ported screens as window.DojoAPI (see bootstrap.ts).
 import DXP from "./portal";
-import { confirmFirebaseCode, firebaseEnabled, sendFirebaseCode } from "./firebase";
+import { firebaseEnabled } from "./firebase";
 import DOJO from "./dojo";
 import { addDays, normalizeClasses, occursOn, weekdayOf } from "./classes";
 
@@ -68,12 +68,9 @@ export const DojoAPI = {
   cancelBooking: (id: string) => call("DELETE", `/api/me/bookings/${id}`),
   loadSchedule,
   realOtp: firebaseEnabled(),
-  requestOtp: async (phone: string) => (firebaseEnabled() ? { ...(await sendFirebaseCode(phone)), status: 200 } : call("POST", "/api/auth/request", { phone })),
-  verify: async (phone: string, code: string) => {
-    if (!firebaseEnabled()) return call("POST", "/api/auth/verify", { phone, code });
-    const c = await confirmFirebaseCode(code);
-    return c.ok ? call("POST", "/api/auth/verify", { phone, idToken: c.idToken }) : { ok: false, status: 401, error: c.error };
-  },
+  requestOtp: (phone: string) => call("POST", "/api/auth/request", { phone }),
+  verify: (phone: string, code: string) => call("POST", "/api/auth/verify", { phone, code }),
+  verifyToken: (idToken: string) => call("POST", "/api/auth/verify", { idToken }),
   logout: () => call("POST", "/api/auth/logout"),
   me: () => call("GET", "/api/me"),
   saveProfile: (f: any) => call("PUT", "/api/me/profile", f),
