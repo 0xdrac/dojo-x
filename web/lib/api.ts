@@ -110,7 +110,7 @@ export const DojoAPI = {
       DXP.payments[id] = rows.length ? rows : (sample ? SAMPLE_PAY[id] || [] : []);
       order.push(id);
     }
-    DXP.members = members; DXP.order = order;
+    DXP.members = members; DXP.order = order; DXP.trials = r.trials || [];
     if (!members[DXP.current()]) DXP.set(order[0]);
     await loadSchedule();
     return true;
