@@ -223,3 +223,10 @@ where not (coaches <@ array['aman', 'vishal']) or coach not in ('aman', 'vishal'
 -- If you ran an earlier version of this file, widen the status check so refunds can be recorded:
 alter table orders drop constraint if exists orders_status_check;
 alter table orders add constraint orders_status_check check (status in ('created','paid','failed','refunded'));
+
+-- Which standard evening batch a member trains in: 'amateur' (7-8 PM) or 'pro' (8-9 PM, intermediate & pro). Members with an active plan are auto-booked into it every week.
+create table if not exists batch_prefs (
+  member_id uuid primary key references members(id) on delete cascade,
+  batch     text not null default 'amateur'
+);
+alter table batch_prefs enable row level security;

@@ -62,6 +62,7 @@ export const DojoAPI = {
       document.head.appendChild(el);
     });
   },
+  setBatch: (memberId: string, batch: string) => call("POST", "/api/batch", { memberId, batch }),
   bookClass: (memberId: string, classId: string, date: string) => call("POST", "/api/me/bookings", { memberId, classId, date }),
   cancelBooking: (id: string) => call("DELETE", `/api/me/bookings/${id}`),
   loadSchedule,
@@ -94,7 +95,7 @@ export const DojoAPI = {
         rel: m.rel === "You" ? "You · Account owner" : m.rel === "Child" ? `Child · ${age(m.dob)} yrs` : m.rel,
         emergency: m.emergency ? { name: m.emergency.name, rel: "Contact", phone: fmtPhone(m.emergency.phone) } : { name: "—", rel: "", phone: "—" },
         waiver: m.waiver ? { signed: m.waiver.signed, by: m.waiver.by, type: m.waiver.type } : { signed: "Not signed", by: "—", type: "—" },
-        plan: NO_PLAN(), streak: 0, best: 0, belt: null, bookings: 0, dbId: m.id,
+        plan: NO_PLAN(), streak: 0, best: 0, belt: null, bookings: 0, dbId: m.id, batch: m.batch || "amateur",
       };
       const myOrders = (r.orders || []).filter((o: any) => o.member_ids.includes(m.id));
       const real = planFromMemberships((r.memberships || []).filter((x: any) => x.member_id === m.id), myOrders);
