@@ -19,3 +19,6 @@ export const today = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().sli
 export const isDate = (s: unknown): s is string => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
 /** 0 = Monday ... 6 = Sunday for a YYYY-MM-DD date (calendar date, no timezone shift). */
 export const weekday = (d: string) => (new Date(d + "T12:00:00Z").getUTCDay() + 6) % 7;
+
+/** Current time in India: today's date and minutes since midnight. */
+export const istNow = () => { const d = new Date(Date.now() + 5.5 * 3600e3); return { date: d.toISOString().slice(0, 10), minutes: d.getUTCHours() * 60 + d.getUTCMinutes() }; };

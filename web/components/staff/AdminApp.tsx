@@ -85,11 +85,13 @@ function Dashboard({ go }: { go: (v: View) => void }) {
   const stats = useLoad(() => http("GET", "/api/staff/stats"));
   const classes = useLoad(() => http("GET", "/api/staff/classes"));
   const att = useLoad(() => http("GET", `/api/staff/attendance?date=${ymd()}`));
+  const bks = useLoad(() => http("GET", `/api/staff/bookings?date=${ymd()}`));
   const trials = useLoad(() => http("GET", "/api/staff/trials"));
   const events = useLoad(() => http("GET", "/api/staff/events"));
   const s = stats.data as any, today = ymd();
   const cancelled = new Set(((classes.data as any)?.cancellations ?? []).filter((c: any) => c.on_date === today).map((c: any) => c.class_id));
   const todays = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && occursOn(c, today)).sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const bookedBy = (id: string) => (((bks.data as any)?.bookings ?? []) as any[]).filter((b) => b.classId === id && b.status === "booked").length;
   const attBy = (id: string) => (((att.data as any)?.attendance ?? []) as any[]).filter((a) => a.class_id === id && a.status !== "absent").length;
   const upcoming = (((events.data as any)?.events ?? []) as any[]).filter((e) => e.next).sort((a, b) => a.next.localeCompare(b.next)).slice(0, 3);
   const setStatus = async (id: string, status: string) => { const r = await api.setTrialStatus(id, status); if (!r.ok) return toast(r.error!); trials.reload(); };
@@ -113,7 +115,7 @@ function Dashboard({ go }: { go: (v: View) => void }) {
                   <div className="st-t" style={{ textDecoration: cancelled.has(c.id) ? "line-through" : "none" }}>{c.title}</div>
                   <div className="st-s">{time12(c.start_time)} · {c.duration_min} MIN · {coachNames(c).toUpperCase()}</div>
                 </div>
-                {cancelled.has(c.id) ? <span className="st-pill">CANCELLED</span> : <span className="st-pill">{attBy(c.id)} / {c.capacity} IN</span>}
+                {cancelled.has(c.id) ? <span className="st-pill">CANCELLED</span> : <span className="st-pill">{bookedBy(c.id)} BOOKED · {attBy(c.id)} IN · CAP {c.capacity}</span>}
               </div>
             ))}
           </div>
@@ -277,6 +279,8 @@ function Schedule({ owner }: { owner: boolean }) {
   const list = classes.filter((c) => c.day === day).sort((a, b) => a.start_time.localeCompare(b.start_time));
   const date = nextDateFor(day);
   const todayStr = ymd();
+  const bks = useLoad(() => http("GET", `/api/staff/bookings?date=${date}`), [date]);
+  const seats = (id: string) => (((bks.data as any)?.bookings ?? []) as any[]).filter((b) => b.classId === id);
   /** The next date this class actually runs (respecting its start/end dates), or null when it has finished. */
   const nextRun = (c: any): string | null => {
     const a = startOf(c), b = endOf(c), from = a && a > todayStr ? a : todayStr;
@@ -321,6 +325,7 @@ function Schedule({ owner }: { owner: boolean }) {
                 <div className="st-t" style={{ textDecoration: off ? "line-through" : "none" }}>{c.title}</div>
                 <div className="st-s">{discNames(c).toUpperCase()} · {time12(c.start_time)} · {c.duration_min} MIN · {coachNames(c).toUpperCase()} · {c.level.toUpperCase()} · {c.age_group.toUpperCase()} · CAP {c.capacity}</div>
               </div>
+              {c.active && !off && <span className="st-pill">{seats(c.id).filter((b) => b.status === "booked").length}/{c.capacity} BOOKED{seats(c.id).some((b) => b.status === "waitlist") ? ` · ${seats(c.id).filter((b) => b.status === "waitlist").length} WAITING` : ""}</span>}
               {!c.active && <span className="st-pill">HIDDEN</span>}
               {ended && <span className="st-pill">ENDED</span>}
               {once ? <span className="st-pill">ONE DATE · {fmtDay(a!).toUpperCase()}</span> : <>

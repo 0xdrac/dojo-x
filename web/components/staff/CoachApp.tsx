@@ -81,7 +81,7 @@ function Register({ cls, date, coach, onBack }: { cls: any; date: string; coach:
   const [note, setNote] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<any[] | null>(null);
-  const rows = (((att.data as any)?.attendance ?? []) as any[]);
+  const rows = (((att.data as any)?.roster ?? []) as any[]);
   const session = (sess.data as any)?.session;
   const submitted = !!session?.submitted_at;
   const noteVal = note ?? session?.note ?? "";
@@ -98,8 +98,8 @@ function Register({ cls, date, coach, onBack }: { cls: any; date: string; coach:
   };
   const add = async (m: any) => { await mark(m.id, "present"); toast(`${m.name} added`); setQ(""); };
   const remove = async (id: string) => { await http("DELETE", `/api/staff/attendance?id=${id}`); att.reload(); };
-  const unmarked = rows.filter((r) => !["present", "late", "absent"].includes(r.status));
-  void unmarked;
+  const markAll = async () => { for (const r of rows.filter((x) => !x.status)) await http("POST", "/api/staff/attendance", { memberId: r.memberId, classId: cls.id, date, status: "present" }); att.reload(); toast("Everyone booked marked present"); };
+  const unmarked = rows.filter((r) => !r.status).length, booked = rows.filter((r) => r.booked && !r.waitlist).length;
   const submit = async () => {
     const r = await http("PUT", "/api/staff/sessions", { classId: cls.id, date, note: noteVal, submit: true });
     if (!r.ok) return toast(r.error!);
@@ -114,7 +114,7 @@ function Register({ cls, date, coach, onBack }: { cls: any; date: string; coach:
       <div className="mono" style={{ font: "700 12px/1 var(--mono)", letterSpacing: ".14em", color: "var(--dim)" }}>{discNames(cls).toUpperCase()} · {time12(cls.start_time).toUpperCase()} – {fmtDay(date).toUpperCase()}</div>
       <h1 className="anton" style={{ margin: "10px 0 14px", fontSize: "clamp(34px,6vw,52px)", lineHeight: 0.95, color: "var(--fg)" }}>{cls.title}</h1>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-        <span className="st-pill">{present} PRESENT</span><span className="st-pill">{late} LATE</span><span className="st-pill">{absent} ABSENT</span><span className="st-pill">CAP {cls.capacity}</span>
+        <span className="st-pill">{booked} BOOKED</span><span className="st-pill">{present} PRESENT</span><span className="st-pill">{late} LATE</span><span className="st-pill">{absent} ABSENT</span><span className="st-pill">CAP {cls.capacity}</span>
         {submitted && <span className="st-pill" style={{ color: "oklch(0.78 0.14 150)" }}>SUBMITTED ✓</span>}
       </div>
 
@@ -128,14 +128,14 @@ function Register({ cls, date, coach, onBack }: { cls: any; date: string; coach:
         </div>
       )}
 
-      <div className="st-sec" style={{ marginTop: 22 }}>REGISTER · {rows.length}</div>
+      <div className="st-sec" style={{ marginTop: 22, display: "flex", justifyContent: "space-between", alignItems: "center" }}>REGISTER · {rows.length}{unmarked > 0 && <button className="st-btn sm" onClick={markAll}>Mark {unmarked} unmarked present</button>}</div>
       <div className="st-card">
-        {att.loading ? <div className="st-empty mono">Loading…</div> : !rows.length ? <div className="st-empty">Nobody on the register yet. Search above to add members as they arrive.</div> : rows.map((r) => (
-          <div className="st-row" key={r.id} style={{ flexWrap: "wrap" }}>
+        {att.loading ? <div className="st-empty mono">Loading…</div> : !rows.length ? <div className="st-empty">Nobody has booked yet. Search above to add members as they arrive.</div> : rows.map((r) => (
+          <div className="st-row" key={r.memberId} style={{ flexWrap: "wrap" }}>
             <span className="st-av">{initials(r.name)}</span>
-            <div style={{ flex: "1 1 140px", minWidth: 0 }}><div className="st-t">{r.name}</div><div className="st-s">{r.memberCode}</div></div>
-            <div className="st-att">{(["present", "late", "absent"] as Status[]).map((s) => <button key={s} className={(r.status === s ? "on " : "") + s} onClick={() => mark(r.member_id, s)}>{s.toUpperCase()}</button>)}</div>
-            <button className="st-btn sm" onClick={() => remove(r.id)} aria-label={`Remove ${r.name}`}>✕</button>
+            <div style={{ flex: "1 1 140px", minWidth: 0 }}><div className="st-t">{r.name}</div><div className="st-s">{r.memberCode}{r.waitlist ? " · WAITLIST" : r.booked ? " · BOOKED" : " · WALK-IN"}</div></div>
+            <div className="st-att">{(["present", "late", "absent"] as Status[]).map((s) => <button key={s} className={(r.status === s ? "on " : "") + s} onClick={() => mark(r.memberId, s)}>{s.toUpperCase()}</button>)}</div>
+            {r.attendanceId && !r.booked && <button className="st-btn sm" onClick={() => remove(r.attendanceId)} aria-label={`Remove ${r.name}`}>✕</button>}
           </div>
         ))}
       </div>

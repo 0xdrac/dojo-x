@@ -3,7 +3,7 @@
 // Browser-side client for the /api routes. Exposed to the ported screens as window.DojoAPI (see bootstrap.ts).
 import DXP from "./portal";
 import DOJO from "./dojo";
-import { normalizeClasses } from "./classes";
+import { addDays, normalizeClasses, occursOn, weekdayOf } from "./classes";
 
 type R = { ok: boolean; status: number; error?: string; [k: string]: any };
 
@@ -62,6 +62,9 @@ export const DojoAPI = {
       document.head.appendChild(el);
     });
   },
+  bookClass: (memberId: string, classId: string, date: string) => call("POST", "/api/me/bookings", { memberId, classId, date }),
+  cancelBooking: (id: string) => call("DELETE", `/api/me/bookings/${id}`),
+  loadSchedule,
   requestOtp: (phone: string) => call("POST", "/api/auth/request", { phone }),
   verify: (phone: string, code: string) => call("POST", "/api/auth/verify", { phone, code }),
   logout: () => call("POST", "/api/auth/logout"),
@@ -95,7 +98,7 @@ export const DojoAPI = {
       };
       const myOrders = (r.orders || []).filter((o: any) => o.member_ids.includes(m.id));
       const real = planFromMemberships((r.memberships || []).filter((x: any) => x.member_id === m.id), myOrders);
-      members[id] = sample ? { ...base, plan: real || sample.plan, streak: sample.streak, best: sample.best, belt: sample.belt, bookings: sample.bookings } : { ...base, plan: real || base.plan };
+      members[id] = sample ? { ...base, plan: real || base.plan, streak: sample.streak, best: sample.best, belt: sample.belt, bookings: sample.bookings } : { ...base, plan: real || base.plan };
       DXP.stats[id] = SAMPLE_STATS[id] || { month: 0, hours: 0, last: 0, fav: "—", split: [] };
       const rows = myOrders.map((o: any) => [
         o.invoice_no || "ORD-" + o.id.slice(0, 8).toUpperCase(), fmtDate(o.paid_at || o.created_at),
@@ -108,6 +111,7 @@ export const DojoAPI = {
     }
     DXP.members = members; DXP.order = order;
     if (!members[DXP.current()]) DXP.set(order[0]);
+    await loadSchedule();
     return true;
   },
 
@@ -120,6 +124,26 @@ export const DojoAPI = {
   },
 };
 
+/**
+ * Builds the portal's list of bookable classes: every class occurrence in the next 7 days with its live seat count,
+ * plus this account's bookings. Stored on DXP.schedule.
+ */
+async function loadSchedule(): Promise<boolean> {
+  const r = await call("GET", "/api/me/schedule");
+  if (!r.ok) return false;
+  const off: Set<string> = DOJO.cancelledSet || new Set(), occ: any[] = [];
+  for (let i = 0; i < 7; i++) {
+    const date = addDays(r.today, i);
+    for (const c of DOJO.classes) {
+      if (!occursOn(c, date) || off.has(`${c.id}|${date}`)) continue;
+      const ct = r.counts[`${c.id}|${date}`] || { booked: 0, waitlist: 0 };
+      occ.push({ ...c, id: `${c.id}|${date}`, cid: c.id, date, off: i, d: weekdayOf(date), booked: ct.booked, waitN: ct.waitlist });
+    }
+  }
+  DXP.schedule = { ...r, loadedAt: Date.now(), occ };
+  return true;
+}
+
 let publicLoad: Promise<void> | null = null;
 /** Replaces the prototype's sample timetable / coupons / announcements with the live ones from /api/public (once per page load). */
 export function loadPublic(): Promise<void> {
@@ -129,6 +153,7 @@ export function loadPublic(): Promise<void> {
     if (!r.ok || !r.classes) return;           // keep the sample data if the API is unavailable
     const todayIdx = (new Date().getDay() + 6) % 7, d = new Date(), iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const off = new Set(r.cancelled || []);
+    DOJO.cancelledSet = new Set(r.cancelled || []);
     DOJO.classes = normalizeClasses(r.classes, DOJO).filter((c: any) => !(c.d === todayIdx && off.has(`${c.id}|${iso}`)));
     DOJO.coupons = Object.fromEntries((r.coupons || []).map((c: any) => [c.code, { type: c.type, v: c.v, label: c.type === "pct" ? `${c.v}% off` : `₹${c.v} off` }]));
     DXP.announcements = (r.events || []).slice(0, 3).map((e: any) => [

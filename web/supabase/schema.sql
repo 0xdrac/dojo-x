@@ -177,6 +177,20 @@ create table if not exists memberships (
 );
 create index if not exists memberships_member_idx on memberships(member_id);
 
+-- Class bookings: one row per member per occurrence (class + date). 'waitlist' rows are promoted to 'booked' when a seat frees up.
+create table if not exists bookings (
+  id            uuid primary key default gen_random_uuid(),
+  member_id     uuid not null references members(id) on delete cascade,
+  class_id      uuid not null references classes(id) on delete cascade,
+  on_date       date not null,
+  status        text not null default 'booked' check (status in ('booked','waitlist','cancelled')),
+  cancel_reason text,
+  created_at    timestamptz not null default now(),
+  unique (member_id, class_id, on_date)
+);
+create index if not exists bookings_class_date_idx on bookings(class_id, on_date);
+create index if not exists bookings_member_idx on bookings(member_id, on_date);
+
 alter table accounts enable row level security;
 alter table members  enable row level security;
 alter table trials   enable row level security;
@@ -189,6 +203,7 @@ alter table attendance          enable row level security;
 alter table class_sessions      enable row level security;
 alter table orders              enable row level security;
 alter table memberships         enable row level security;
+alter table bookings            enable row level security;
 
 -- Replace these placeholder staff with the real owner / coach / front-desk phone numbers.
 insert into staff (phone, name, role, coach_key) values

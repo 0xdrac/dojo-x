@@ -10,7 +10,14 @@ export async function GET(req: Request) {
   if (!isDate(date)) return fail("Bad date");
   const rows = await T.list("attendance", { eq: { on_date: date, ...(classId ? { class_id: classId } : {}) }, order: ["created_at", false] });
   const members = new Map((await store().allMembers()).map((m) => [m.id, m]));
-  return json({ attendance: rows.map((r) => ({ ...r, name: members.get(r.member_id)?.name ?? "Unknown", memberCode: members.get(r.member_id)?.memberCode ?? "" })) });
+  let roster: any[] | undefined;
+  if (classId) {
+    const bk = (await T.list("bookings", { eq: { class_id: classId, on_date: date } })).filter((b) => b.status !== "cancelled");
+    const seen = new Set<string>();
+    roster = rows.map((r) => { seen.add(r.member_id); const bb = bk.find((b) => b.member_id === r.member_id); return { memberId: r.member_id, attendanceId: r.id, status: r.status, booked: !!bb, waitlist: bb?.status === "waitlist", name: members.get(r.member_id)?.name ?? "Unknown", memberCode: members.get(r.member_id)?.memberCode ?? "" }; });
+    for (const b of bk) if (!seen.has(b.member_id)) roster.push({ memberId: b.member_id, attendanceId: null, status: null, booked: true, waitlist: b.status === "waitlist", name: members.get(b.member_id)?.name ?? "Unknown", memberCode: members.get(b.member_id)?.memberCode ?? "" });
+  }
+  return json({ roster, attendance: rows.map((r) => ({ ...r, name: members.get(r.member_id)?.name ?? "Unknown", memberCode: members.get(r.member_id)?.memberCode ?? "" })) });
 }
 
 /** POST {memberId, classId?, date?, status, source?} → mark (or change) one member's attendance. */

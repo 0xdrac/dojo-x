@@ -53,3 +53,16 @@ Members pay for plans through Razorpay's popup. The server prices every order it
 - Plans extend: renewing before a plan ends starts the new period the day after the current one ends. Yoga is always one month.
 - Local testing without Razorpay keys: `RAZORPAY_MOCK=1 npm run dev`.
 - Not built yet: auto-renew (UPI Autopay needs Razorpay Subscriptions enabled on your account), emailed/WhatsApp receipts.
+
+## Class booking
+
+Members book from the portal (Classes tab) for the next 7 days. A booking is a class + a date, stored in `bookings`.
+
+- Needs an active plan that covers one of the class's disciplines on that date; kids (under 13) only book Kids classes.
+- Seats = class capacity. When full, members join a waitlist; when someone cancels, the oldest waitlisted member is promoted automatically.
+- Members can cancel up to 2 hours before class (`CUTOFF_MIN` in `lib/server/bookings.ts`); after that, the front desk handles it.
+- No double-booking at overlapping times, no booking classes that started or were cancelled.
+- When the owner cancels a date in Admin -> Schedule, every booking for it is cancelled.
+- Coach App: the register starts with everyone booked (plus walk-ins you add); mark present / late / absent. Admin shows seats booked on the dashboard and Schedule.
+- Re-run `supabase/schema.sql` once to add the `bookings` table.
+- Still sample data in the portal: streaks, "classes this month", hours trained and belt progress.

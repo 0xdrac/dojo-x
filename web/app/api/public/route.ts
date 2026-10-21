@@ -2,7 +2,8 @@ import { T } from "@/lib/server/tables";
 import { today } from "@/lib/server/guard";
 import { json } from "@/lib/server/util";
 import { describeRepeat, nextOccurrence } from "@/lib/recur";
-import { addDays, coachesOf, discsOf, occursOn } from "@/lib/classes";
+import { addDays, coachesOf, discsOf, endOf, occursOn, startOf } from "@/lib/classes";
+import { countsBetween } from "@/lib/server/bookings";
 
 /** Data the public pages need: the weekly timetable, live coupons and upcoming events. No auth. */
 export async function GET() {
@@ -14,10 +15,11 @@ export async function GET() {
     ]);
     const d = today();
     const window7 = Array.from({ length: 7 }, (_, i) => addDays(d, i));
+    const counts = await countsBetween(d, addDays(d, 6));
     const running = classes.filter((c) => window7.some((x) => occursOn(c, x)));
     const cancelled = (await T.list("class_cancellations", { gte: ["on_date", d] })).map((c) => `${c.class_id}|${c.on_date}`);
     return json({
-      classes: running.map((c) => ({ id: c.id, d: c.day, t: c.start_time, dur: c.duration_min, disc: discsOf(c)[0], discs: discsOf(c), title: c.title, coach: coachesOf(c)[0], coaches: coachesOf(c), level: c.level, age: c.age_group, cap: c.capacity, booked: 0 })),
+      classes: running.map((c) => ({ id: c.id, d: c.day, t: c.start_time, dur: c.duration_min, disc: discsOf(c)[0], discs: discsOf(c), title: c.title, coach: coachesOf(c)[0], coaches: coachesOf(c), level: c.level, age: c.age_group, cap: c.capacity, from: startOf(c), to: endOf(c), booked: window7.reduce((n, x) => n + (occursOn(c, x) ? counts[`${c.id}|${x}`]?.booked ?? 0 : 0), 0) })),
       coupons: coupons
         .filter((c) => (!c.valid_until || c.valid_until >= d) && (!c.cap || c.uses < c.cap))
         .map((c) => ({ code: c.code, type: c.type, v: c.value, until: c.valid_until })),
