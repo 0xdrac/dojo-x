@@ -4,7 +4,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * Razorpay Standard Checkout, server side. Uses the REST API directly (no SDK).
  * RAZORPAY_MOCK=1 fakes Razorpay for local development; it is ignored in production.
  */
-const mock = () => process.env.RAZORPAY_MOCK === "1" && process.env.NODE_ENV !== "production";
+const mock = () => process.env.RAZORPAY_MOCK === "1" && (process.env.NODE_ENV !== "production" || process.env.DOJO_LOCAL_PROD === "1");
 export const razorpayConfigured = () => mock() || !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 export const keyId = () => (mock() ? "rzp_test_mock" : process.env.RAZORPAY_KEY_ID!);
 const secret = () => (mock() ? "mock_secret" : process.env.RAZORPAY_KEY_SECRET!);

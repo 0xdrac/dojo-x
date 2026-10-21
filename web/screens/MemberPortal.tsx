@@ -20,6 +20,7 @@ class Screen extends DCLogic {
   root = React.createRef(); viewRef = React.createRef(); sheetRef = React.createRef(); rTotRef = React.createRef();
   componentDidMount() {
     this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
+    this._hc = () => { const v = location.hash.slice(1); if (['home', 'classes', 'plan', 'pay', 'progress', 'me'].includes(v) && v !== this.state.view) this.setState({ view: v, sheet: null }); }; window.addEventListener('hashchange', this._hc);
     DojoReady(() => {
       const wait = () => DojoAPI.syncPortal().then(ok => ok ? go() : DojoMotion.go('/login'), () => {});
       const go = () => {
@@ -29,7 +30,7 @@ class Screen extends DCLogic {
       wait();
     });
   }
-  componentWillUnmount() { window.removeEventListener('resize', this._rs); this._off && this._off(); }
+  componentWillUnmount() { window.removeEventListener('resize', this._rs); window.removeEventListener('hashchange', this._hc); this._off && this._off(); }
   componentDidUpdate(pp, ps) {
     const M = window.DojoMotion; if (!M) return; ps = ps || {};
     if ((ps.view !== this.state.view || ps.id !== this.state.id) && this.viewRef.current && !M.reduced()) this.viewRef.current.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
@@ -108,7 +109,7 @@ class Screen extends DCLogic {
       const booked = mine.includes(c.id), ok = this.ok(m, c), past = this.past(c), taken = c.booked, full = taken >= c.cap, onWait = !!(s.wait[id] && s.wait[id][c.id]);
       const left = c.cap - taken;
       let label, act = () => {}, dis = false, bg = 'transparent', bd = '#2E2E2E', fg = '#F5F5F5';
-      if (past) { label = booked ? 'ATTENDED' : 'ENDED'; dis = true; fg = '#9A9A9A'; }
+      if (past) { const S0 = DXP.schedule, nowM = S0.nowMinutes + (Date.now() - S0.loadedAt) / 60000, live = c.date === S0.today && +c.t.slice(0, 2) * 60 + +c.t.slice(3, 5) + (c.dur || 60) > nowM; label = live ? (booked ? 'IN CLASS NOW' : 'IN PROGRESS') : booked ? 'ATTENDED' : 'ENDED'; dis = true; fg = '#9A9A9A'; }
       else if (!ok) { label = this.covers(m, c) ? 'NOT FOR AGE' : 'ADD TO PLAN'; act = () => this.covers(m, c) ? null : (this.setState({ rSel: [...p0.disc, c.disc] }), this.go('plan')); fg = '#C9C9C9'; dis = this.covers(m, c); }
       else if (frozen) { label = 'FROZEN'; dis = true; fg = '#9A9A9A'; }
       else if (booked) { label = 'BOOKED ✓'; bg = 'oklch(0.74 0.15 150 / .15)'; bd = 'oklch(0.74 0.15 150)'; act = () => this.setState({ sheet: 'cancel', cx: c.id }); }

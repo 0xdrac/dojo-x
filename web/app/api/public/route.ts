@@ -32,7 +32,7 @@ export async function GET() {
         .slice(0, 12),
       cancelled,
     });
-    res.headers.set("Cache-Control", "public, s-maxage=20, stale-while-revalidate=120");
+    res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
     return res;
   } catch (e: any) {
     return json({ error: e.message }, 500);

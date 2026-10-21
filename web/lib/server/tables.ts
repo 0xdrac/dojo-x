@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { usingSupabase } from "./store";
 
-const needSupabase = () => { if (process.env.NODE_ENV === "production" && !usingSupabase()) throw new Error("Supabase is not configured: set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."); };
+const needSupabase = () => { if (process.env.NODE_ENV === "production" && !usingSupabase() && process.env.DOJO_LOCAL_PROD !== "1") throw new Error("Supabase is not configured: set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."); };
 
 /**
  * Generic row access for the schedule/events/coupons/attendance tables (snake_case columns, same names in both backends).
