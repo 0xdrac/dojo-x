@@ -31,3 +31,6 @@ export function countSessions(day: number, from: string, to: string): number {
 }
 export const nextDateOnOrAfter = (from: string, day: number) => { let d = from; for (let k = 0; k < 7 && weekdayOf(d) !== day; k++) d = addDays(d, 1); return d; };
 export { addDays };
+
+/** Free trials can only be booked for these weekdays (0 = Monday ... 3 = Thursday). */
+export const TRIAL_WEEKDAYS = [0, 1, 2, 3];

@@ -66,3 +66,9 @@ Members book from the portal (Classes tab) for the next 7 days. A booking is a c
 - Coach App: the register starts with everyone booked (plus walk-ins you add); mark present / late / absent. Admin shows seats booked on the dashboard and Schedule.
 - Re-run `supabase/schema.sql` once to add the `bookings` table.
 - Still sample data in the portal: streaks, "classes this month", hours trained and belt progress.
+
+## Standard weekday batches and free trials
+
+- Admin -> Schedule -> **Set up Mon-Fri batches** (owner) replaces all boxing / kickboxing / Muay Thai / MMA classes with the standard evening timetable, teens and adults together: 7-8 PM Amateur (Beginner) and 8-9 PM Intermediate & Pro. Mon Boxing, Tue Kickboxing & Muay Thai, Wed Jiu-Jitsu (MMA), Thu MMA Fundamentals, Fri Sparring (all four disciplines). Karate, gymnastics and yoga are untouched. Edit any class afterwards (coaches, times, capacity) in the same screen.
+- Age groups are Kids, Teens, Adults, or **Teens & Adults** (one class for both).
+- The free-trial page lists the next 7 real days, **Monday to Thursday only** (`TRIAL_WEEKDAYS` in `lib/classes.ts`; the API enforces it too). Advanced-level classes are not offered for trials. Trial bookings do not take a seat from the class yet.

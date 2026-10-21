@@ -4,7 +4,7 @@ import { istDate, istWeekday } from "@/lib/recur";
 
 const DISCS = DOJO.order as string[];
 const COACHES = DOJO.coachOrder as string[];
-const AGES = ["Kids", "Teens", "Adults"];
+const AGES = ["Kids", "Teens", "Adults", "Teens & Adults"];
 const LEVELS = ["All levels", "Beginner", "Intermediate", "Advanced"];
 
 /** Validates a weekly class payload. Returns the DB row, or an error message. */

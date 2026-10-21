@@ -266,7 +266,7 @@ function Checkin() {
 }
 
 /* ---------------- Schedule ---------------- */
-const LEVELS = ["All levels", "Beginner", "Intermediate", "Advanced"], AGES = ["Kids", "Teens", "Adults"];
+const LEVELS = ["All levels", "Beginner", "Intermediate", "Advanced"], AGES = ["Kids", "Teens", "Adults", "Teens & Adults"];
 const blankClass = (day: number) => ({ day, days: [day], mode: "ongoing", startDate: ymd(), endDate: "", date: nextDateFor(day), startTime: "18:30", durationMin: 60, disciplines: ["mma"], title: "", coaches: ["arjun"], level: "All levels", ageGroup: "Adults", capacity: 20 });
 
 function Schedule({ owner }: { owner: boolean }) {
@@ -294,6 +294,12 @@ function Schedule({ owner }: { owner: boolean }) {
     const r = await http("DELETE", "/api/staff/classes"); if (!r.ok) return toast(r.error!);
     toast("Schedule cleared"); reload();
   };
+  const setupStandard = async () => {
+    const replace = classes.filter((c) => discsOf(c).every((d: string) => ["mma", "boxing", "kickboxing", "muaythai"].includes(d))).length;
+    if (!confirm(`Set up the standard Mon–Fri evening batches?\n\n7–8 PM Amateur and 8–9 PM Intermediate & Pro, teens and adults together:\nMon Boxing · Tue Kickboxing & Muay Thai · Wed Jiu-Jitsu · Thu MMA Fundamentals · Fri Sparring\n\nThis REPLACES your ${replace} existing boxing / kickboxing / Muay Thai / MMA class${replace === 1 ? "" : "es"} (and their bookings). Karate, gymnastics and yoga are not touched.`)) return;
+    const r = await http("POST", "/api/staff/classes/standard"); if (!r.ok) return toast(r.error!);
+    toast(`10 classes set up${r.removed ? ` · ${r.removed} replaced` : ""}`); reload();
+  };
   const loadSample = async () => { const r = await http("POST", "/api/staff/classes/sample"); if (!r.ok) return toast(r.error!); toast("Sample timetable loaded"); reload(); };
 
   const toggleCancel = async (c: any) => {
@@ -306,6 +312,7 @@ function Schedule({ owner }: { owner: boolean }) {
   return (
     <>
       <Head title="Schedule">
+        {owner && <button className="st-btn" onClick={setupStandard}>Set up Mon–Fri batches</button>}
         {owner && classes.length > 0 && <button className="st-btn d" onClick={clearAll}>Clear all classes</button>}
         {owner && <button className="st-btn p" onClick={() => setForm(blankClass(day))}>+ Add class</button>}
       </Head>

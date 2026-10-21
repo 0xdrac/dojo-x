@@ -15,7 +15,7 @@ class Screen extends DCLogic {
     super(p);
     const q = new URLSearchParams(location.search);
     const d = q.get('d'), day = q.get('day');
-    this.state = { w: window.innerWidth, ready: !!window.DOJO, day: day != null ? +day : 3, disc: d ? [d] : [], level: 'All', age: 'All', sheet: false, sel: null, member: false, book: {}, loading: false };
+    this.state = { w: window.innerWidth, ready: !!window.DOJO, day: day != null ? +day : (new Date().getDay() + 6) % 7, disc: d ? [d] : [], level: 'All', age: 'All', sheet: false, sel: null, member: false, book: {}, loading: false };
   }
   root = React.createRef(); gridRef = React.createRef(); sheetRef = React.createRef(); detailRef = React.createRef();
   componentDidMount() {
@@ -48,9 +48,11 @@ class Screen extends DCLogic {
     const desk = w >= 1180, mob = w < 768;
     const v = { root: this.root, gridRef: this.gridRef, sheetRef: this.sheetRef, detailRef: this.detailRef, desk, notDesk: !desk };
     if (!D) return v;
-    const dates = [12, 13, 14, 15, 16, 17, 18];
+    // The real current week (Mon-Sun) and today's weekday.
+    const nw = new Date(), todayIdx = (nw.getDay() + 6) % 7, wk = Array.from({ length: 7 }, (_, i) => new Date(nw.getFullYear(), nw.getMonth(), nw.getDate() - todayIdx + i));
+    const dates = wk.map(d => d.getDate()), mons = wk.map(d => d.toLocaleDateString('en-GB', { month: 'short' }));
     const chip = (on, label, pick, color) => ({ label, on, pick, color, bg: on ? 'rgba(200,16,46,.16)' : '#161616', bd: on ? '#C8102E' : '#2E2E2E', fg: on ? '#F5F5F5' : '#C9C9C9' });
-    const match = c => (!disc.length || c.discs.some(x => disc.includes(x))) && (level === 'All' || c.level === level || c.level === 'All levels') && (age === 'All' || c.age === age);
+    const match = c => (!disc.length || c.discs.some(x => disc.includes(x))) && (level === 'All' || c.level === level || c.level === 'All levels') && (age === 'All' || c.age === age || (c.age === 'Teens & Adults' && (age === 'Teens' || age === 'Adults')));
     const all = D.classes.filter(match);
     const card = c => {
       const left = c.cap - c.booked - (book[c.id] === 'done' ? 1 : 0), full = left <= 0, st = book[c.id];
@@ -66,7 +68,7 @@ class Screen extends DCLogic {
       };
     };
     const dayIdx = desk ? [0, 1, 2, 3, 4, 5, 6] : [day];
-    const cols = dayIdx.map(di => { const items = all.filter(c => c.d === di).map(card); return { dow: D.days[di], date: dates[di], items, none: !items.length && desk, bd: di === 3 ? '#C8102E' : '#262626', tag: di === 3 ? 'TODAY' : `${items.length}`, tagFg: di === 3 ? '#F5F5F5' : '#9A9A9A' }; });
+    const cols = dayIdx.map(di => { const items = all.filter(c => c.d === di).map(card); return { dow: D.days[di], date: dates[di], items, none: !items.length && desk, bd: di === todayIdx ? '#C8102E' : '#262626', tag: di === todayIdx ? 'TODAY' : `${items.length}`, tagFg: di === todayIdx ? '#F5F5F5' : '#9A9A9A' }; });
     const dayCount = all.filter(c => c.d === day).length;
     const filterCount = disc.length + (level !== 'All') + (age !== 'All');
     const c = sel != null ? D.classes.find(x => x.id === sel) : null;
@@ -75,8 +77,8 @@ class Screen extends DCLogic {
       const st = book[c.id], left = c.cap - c.booked - (st === 'done' ? 1 : 0), full = left <= 0 && st !== 'done';
       dt = {
         title: c.title, disc: c.discNames.toUpperCase(), color: D.color(c.disc),
-        when: `${D.daysLong[c.d]} ${dates[c.d]} Oct · ${D.time12(c.t)} · ${c.dur} min`, coach: c.coaches.map(k => `${D.coaches[k].first} ${D.coaches[k].last}`).join(' & '), coachHref: `/coaches?c=${c.coach}`,
-        level: c.level, age: c.age === 'Kids' ? 'Kids 5–12' : c.age === 'Teens' ? 'Teens 13–17' : 'Adults 18+',
+        when: `${D.daysLong[c.d]} ${dates[c.d]} ${mons[c.d]} · ${D.time12(c.t)} · ${c.dur} min`, coach: c.coaches.map(k => `${D.coaches[k].first} ${D.coaches[k].last}`).join(' & '), coachHref: `/coaches?c=${c.coach}`,
+        level: c.level, age: c.age === 'Kids' ? 'Kids 5–12' : c.age === 'Teens' ? 'Teens 13–17' : c.age === 'Teens & Adults' ? 'Teens & Adults 13+' : 'Adults 18+',
         spots: full ? 'CLASS FULL' : `${left} OF ${c.cap} SPOTS LEFT`, cap: `${c.cap - left}/${c.cap} BOOKED`, pctW: `${Math.min(100, (c.cap - left) / c.cap * 100)}%`,
         spotFg: full ? '#9A9A9A' : left <= 4 ? 'oklch(0.86 0.12 80)' : '#F5F5F5', fill: left <= 4 ? 'oklch(0.82 0.14 80)' : '#C8102E',
         desc: D.disciplines[c.disc].one,
@@ -99,7 +101,7 @@ class Screen extends DCLogic {
       discChips: [chip(!disc.length, 'All', () => this.filt({ disc: [] }), '#9A9A9A')].concat(D.order.map(k => chip(disc.includes(k), D.disciplines[k].name, () => this.filt(s => ({ disc: s.disc.includes(k) ? s.disc.filter(x => x !== k) : [...s.disc, k] })), D.color(k)))),
       levelChips: ['All', 'Beginner', 'Intermediate', 'Advanced'].map(l => chip(level === l, l, () => this.filt({ level: l }))),
       ageChips: ['All', 'Kids', 'Teens', 'Adults'].map(a => chip(age === a, a, () => this.filt({ age: a }))),
-      dayTabs: D.days.map((dow, i) => ({ dow: dow.toUpperCase(), date: dates[i], on: day === i, fg: day === i ? '#F5F5F5' : '#9A9A9A', bar: day === i ? 'scaleX(1)' : 'scaleX(0)', dot: i === 3 ? '#C8102E' : 'transparent', pick: () => this.setState({ day: i }) })),
+      dayTabs: D.days.map((dow, i) => ({ dow: dow.toUpperCase(), date: dates[i], on: day === i, fg: day === i ? '#F5F5F5' : '#9A9A9A', bar: day === i ? 'scaleX(1)' : 'scaleX(0)', dot: i === todayIdx ? '#C8102E' : 'transparent', pick: () => this.setState({ day: i }) })),
       dayLabel: `${D.daysLong[day].toUpperCase()} ${dates[day]} OCT`,
       resultLabel: desk ? `${all.length} CLASSES THIS WEEK` : `${dayCount} CLASSES`,
       weekCountU: `${dayCount} CLASSES ON ${D.days[day].toUpperCase()}`,
