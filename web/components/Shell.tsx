@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { EASE, MOTION } from "@/lib/config";
+import { warm, warmCommon } from "@/lib/warm";
 
 type Ctx = { go: (href: string) => void; toast: (m: string) => void; reduced: () => boolean };
 const ShellCtx = createContext<Ctx>({ go: () => {}, toast: () => {}, reduced: () => false });
@@ -34,10 +35,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     toastT.current = setTimeout(() => setToastMsg(""), 2400);
   }, []);
 
+  const slashIn = useRef<Animation | null>(null);
   const slashOut = useCallback(() => {
     const s = slashRef.current; if (!s || reduced()) return;
-    s.style.transform = IN;
-    s.animate([{ transform: IN }, { transform: OUT }], { duration: 380, delay: 80, easing: EASE, fill: "forwards" });
+    const out = () => { s.style.transform = IN; s.animate([{ transform: IN }, { transform: OUT }], { duration: 300, easing: EASE, fill: "forwards" }); };
+    const a = slashIn.current; slashIn.current = null;
+    if (a && a.playState === "running") a.finished.then(out, out); else out();
   }, [reduced]);
 
   const go = useCallback((href: string) => {
@@ -60,7 +63,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     if (href.startsWith("/") && href.split(/[?#]/)[0] === path && href.includes("#")) return go(href.slice(href.indexOf("#")));
     if (reduced() || !s) return router.push(href);
     pending.current = true;
-    s.animate([{ transform: START }, { transform: IN }], { duration: 260, easing: EASE, fill: "forwards" }).onfinish = () => router.push(href);
+    slashIn.current = s.animate([{ transform: START }, { transform: IN }], { duration: 200, easing: EASE, fill: "forwards" });
+    router.push(href);
   }, [path, reduced, router]);
 
   // API for the ported screens (lib/motion.ts) + delegated clicks for [data-toast] and plain internal links
@@ -77,8 +81,13 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       if (href.startsWith("/") && !href.startsWith("//")) { e.preventDefault(); go(href); }
     };
     document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
-  }, [go, toast]);
+    // fetch a page's code as soon as a pointer or finger reaches its link
+    const onIntent = (e: Event) => { const a = (e.target as Element).closest?.("a[href]") as HTMLAnchorElement | null; const h = a?.getAttribute("href") || ""; if (h.startsWith("/") && !h.startsWith("//")) warm(h, router.prefetch); };
+    document.addEventListener("pointerover", onIntent, { passive: true }); document.addEventListener("touchstart", onIntent, { passive: true });
+    const idle = (window as any).requestIdleCallback || ((f: () => void) => setTimeout(f, 1500));
+    const ic = idle(() => warmCommon(router.prefetch));
+    return () => { document.removeEventListener("click", onClick); document.removeEventListener("pointerover", onIntent); document.removeEventListener("touchstart", onIntent); (window as any).cancelIdleCallback?.(ic); };
+  }, [go, toast, router]);
 
   // slash-out after a route change
   useEffect(() => { if (pending.current) { pending.current = false; slashOut(); } window.scrollTo(0, 0); }, [path, slashOut]);
@@ -91,14 +100,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     const sc = () => { scrollV.current += Math.abs(window.scrollY - lastY); lastY = window.scrollY; };
     window.addEventListener("resize", rs); window.addEventListener("scroll", sc, { passive: true });
 
-    let gi: ReturnType<typeof setInterval> | undefined;
     const g = grainRef.current;
     if (g && MOTION.grain) {
       const c = document.createElement("canvas"); c.width = c.height = 160;
       const x = c.getContext("2d")!, d = x.createImageData(160, 160);
       for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
       x.putImageData(d, 0, 0); g.style.backgroundImage = `url(${c.toDataURL()})`; g.style.opacity = "0.06";
-      if (!reduced()) gi = setInterval(() => { g.style.backgroundPosition = `${(Math.random() * 160) | 0}px ${(Math.random() * 160) | 0}px`; }, 90);
+      // The flicker is a transform animation on its own layer (no repaints); phones get a still grain to save battery.
+      if (!reduced() && window.matchMedia("(hover:hover) and (pointer:fine)").matches) g.classList.add("live");
     }
 
     const fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
@@ -136,36 +145,59 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       window.addEventListener("mousemove", mm);
     }
 
-    // rAF loop: marquee, parallax, cursor easing
-    const tracks = new Map<Element, number>();
-    let boost = 0, raf = 0;
+    // Marquees run as browser (compositor) animations; scrolling only nudges their speed. The rAF loop below handles
+    // parallax and the cursor, and sleeps whenever nothing is moving.
+    const anims = new Map<Element, Animation>();
+    let boost = 0, raf = 0, pars: HTMLElement[] = [];
+    const widths = new Map<Element, number>();
+    const scan = () => {   // pages render after their data loads, so look for animated elements twice a second
+      const red = reduced();
+      const m = [...document.querySelectorAll<HTMLElement>("[data-marquee]")];
+      anims.forEach((a, el) => { if (!m.includes(el as HTMLElement)) { a.cancel(); anims.delete(el); } });
+      if (!red) m.forEach((el) => {
+        const half = el.scrollWidth / 2; if (!half) return;
+        if (anims.has(el)) { if (Math.abs((widths.get(el) || 0) - half) < 2) return; anims.get(el)!.cancel(); }   // re-measure after fonts load or a resize
+        widths.set(el, half);
+        const dir = +(el.dataset.dir || 1), from = dir > 0 ? 0 : -half, to = dir > 0 ? -half : 0;
+        anims.set(el, el.animate([{ transform: `translate3d(${from}px,0,0)` }, { transform: `translate3d(${to}px,0,0)` }], { duration: (half / 0.7) * 16.7, iterations: Infinity }));
+      });
+      pars = red ? [] : [...document.querySelectorAll<HTMLElement>("[data-parallax]")];
+    };
+    scan();
+    const scanT = setInterval(scan, 500);
     const tick = () => {
-      const red = reduced(), vh = window.innerHeight;
+      raf = 0;
+      const vh = window.innerHeight;
       boost = boost * 0.9 + scrollV.current * 0.08; scrollV.current = 0;
-      document.querySelectorAll<HTMLElement>("[data-marquee]").forEach((el) => {
-        let x = tracks.get(el) ?? 0; const dir = +(el.dataset.dir || 1), half = el.scrollWidth / 2;
-        if (!red && half) { x -= dir * (0.7 + Math.min(boost, 18)); if (x <= -half) x += half; if (x > 0) x -= half; }
-        tracks.set(el, x); el.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
-      });
-      document.querySelectorAll<HTMLElement>("[data-parallax]").forEach((el) => {
-        if (red) { el.style.translate = "0 0"; return; }
-        const b = el.parentElement!.getBoundingClientRect();
-        if (b.bottom < -200 || b.top > vh + 200) return;
-        el.style.translate = `0 ${(-(b.top + b.height / 2 - vh / 2) * parseFloat(el.dataset.parallax!)).toFixed(1)}px`;
-      });
+      const rate = 1 + Math.min(boost, 18) / 0.7;
+      anims.forEach((a) => { if (Math.abs(a.playbackRate - rate) > 0.05) a.playbackRate = rate; });
+      if (pars.length) {
+        // read every position first, then write, so the browser lays out once per frame
+        const rects = pars.map((el) => el.parentElement!.getBoundingClientRect());
+        pars.forEach((el, i) => {
+          const b = rects[i]; if (b.bottom < -200 || b.top > vh + 200) return;
+          el.style.translate = `0 ${(-(b.top + b.height / 2 - vh / 2) * parseFloat(el.dataset.parallax!)).toFixed(1)}px`;
+        });
+      }
+      let moving = boost > 0.05;
       if (mm) {
         m.rx += (m.x - m.rx) * 0.22; m.ry += (m.y - m.ry) * 0.22;
         if (ringRef.current) ringRef.current.style.transform = `translate3d(${m.rx}px,${m.ry}px,0) translate(-50%,-50%)`;
         if (dotRef.current) dotRef.current.style.transform = `translate3d(${m.x}px,${m.y}px,0) translate(-50%,-50%)`;
+        if (Math.abs(m.x - m.rx) + Math.abs(m.y - m.ry) > 0.5) moving = true;
       }
-      raf = requestAnimationFrame(tick);
+      if (moving) raf = requestAnimationFrame(tick);
     };
-    tick();
+    const wake = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    window.addEventListener("scroll", wake, { passive: true });
+    if (mm) window.addEventListener("mousemove", wake, { passive: true });
+    wake();
     return () => {
+      clearInterval(scanT); anims.forEach((a) => a.cancel()); window.removeEventListener("scroll", wake); if (mm) window.removeEventListener("mousemove", wake);
       window.removeEventListener("resize", rs); window.removeEventListener("scroll", sc);
       if (mm) window.removeEventListener("mousemove", mm);
       document.removeEventListener("focusin", onFocusIn); document.removeEventListener("focusout", onFocusOut);
-      cancelAnimationFrame(raf); clearInterval(gi); document.body.classList.remove("kc-cursor");
+      if (raf) cancelAnimationFrame(raf); document.body.classList.remove("kc-cursor");
     };
   }, [reduced]);
 
@@ -195,7 +227,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const firstLoad = useRef(true);
   useEffect(() => {
     if (!firstLoad.current) return; firstLoad.current = false;
-    if (path !== "/" || !MOTION.intro || reduced()) { introDone.current = true; slam(); return; }
+    let seen = false; try { seen = localStorage.getItem("dx-intro-seen") === "1"; localStorage.setItem("dx-intro-seen", "1"); } catch {}
+    if (path !== "/" || !MOTION.intro || reduced() || seen) { introDone.current = true; slam(); return; }
     setIntro(true);
     requestAnimationFrame(() => {
       const o = introRef.current, s = introS.current, l = introL.current; if (!o || !s || !l) return endIntro();

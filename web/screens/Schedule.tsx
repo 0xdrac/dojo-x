@@ -19,7 +19,7 @@ class Screen extends DCLogic {
   }
   root = React.createRef(); gridRef = React.createRef(); sheetRef = React.createRef(); detailRef = React.createRef();
   componentDidMount() {
-    this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
+    this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
     this._kd = e => { if (e.key === 'Escape') this.setState({ sel: null, sheet: false }); };
     window.addEventListener('keydown', this._kd);
     DojoReady(() => this.setState({ ready: true }, () => DojoMotion.init(this.root.current)));

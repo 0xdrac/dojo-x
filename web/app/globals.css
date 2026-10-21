@@ -52,7 +52,11 @@ body.kc-cursor,body.kc-cursor *{cursor:none!important}
 
 /* overlays */
 .slash{position:fixed;top:-10%;bottom:-10%;left:-30%;width:160%;z-index:95;background:var(--red);transform:translateX(-130%) skewX(-18deg);pointer-events:none}
-.grain{position:fixed;inset:0;z-index:80;pointer-events:none}
+.grain{position:fixed;inset:-160px;z-index:80;pointer-events:none;transform:translateZ(0)}
+.grain.live{will-change:transform;animation:grain 1s steps(1) infinite}
+@keyframes grain{0%{transform:translate3d(0,0,0)}10%{transform:translate3d(-37px,52px,0)}20%{transform:translate3d(81px,-14px,0)}30%{transform:translate3d(-120px,96px,0)}40%{transform:translate3d(23px,140px,0)}50%{transform:translate3d(-66px,-88px,0)}60%{transform:translate3d(112px,31px,0)}70%{transform:translate3d(-8px,-130px,0)}80%{transform:translate3d(150px,73px,0)}90%{transform:translate3d(-101px,9px,0)}100%{transform:translate3d(0,0,0)}}
+/* Frosted-glass blur is costly to repaint while scrolling on phones; the bars are already nearly opaque there. */
+@media (max-width:1023px),(hover:none){*{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
 .intro{position:fixed;inset:0;z-index:300;background:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .intro .s{position:absolute;top:-10%;bottom:-10%;left:-30%;width:160%;background:var(--red);transform:translateX(-120%) skewX(-18deg)}
 .intro .l{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0}

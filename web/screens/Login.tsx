@@ -17,7 +17,7 @@ class Screen extends DCLogic {
     this.state = { w: window.innerWidth, step: h === 'family' ? 'family' : 'profile', fromPortal: h === 'family', busy: false, f: { name: '', dob: '', email: '', ename: '', ephone: '', mobile: '' }, gender: '', tried: false, read: false, sig: 'draw', drawn: false, typed: '', agree: false, fam: [], fName: '', fRel: 'Child', fDob: '', fTried: false };
   }
   root = React.createRef(); stepRef = React.createRef(); canvasRef = React.createRef(); doneRef = React.createRef();
-  componentDidMount() { this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoReady(() => DojoMotion.init(this.root.current)); this.bindCanvas(); this.boot(); }
+  componentDidMount() { this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoReady(() => DojoMotion.init(this.root.current)); this.bindCanvas(); this.boot(); }
   /** Back to where they were heading (e.g. checkout), otherwise the portal. */
   afterLogin = () => { let n = null; try { n = sessionStorage.getItem('dx-next'); sessionStorage.removeItem('dx-next'); } catch (e) {} DojoMotion.go(n && n.startsWith('/') && !n.startsWith('//') ? n : '/member-portal'); };
   async boot() {

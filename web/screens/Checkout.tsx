@@ -18,7 +18,7 @@ class Screen extends DCLogic {
     this.state = { w: window.innerWidth, ok: false, sel: (u.get('d') || 'mma,muaythai').split(',').filter(Boolean), dur: u.get('dur') || 'half', people: +(u.get('p') || 1), mode: 'manual', m: u.get('m') || '', busy: false, order: null, reason: '', covers: [], src: u.get('src') || 'pricing', name: '', phone: '', email: '', gstin: '', tried: false, method: 'upi', app: 'gpay', upi: '', card: '', exp: '', cvv: '', bank: 'HDFC', code: (u.get('c') || ''), coupon: null, cErr: '', out: 'success', step: 'form', t: 0 };
   }
   root = React.createRef(); rzpRef = React.createRef(); totRef = React.createRef(); resRef = React.createRef();
-  componentDidMount() { this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoAPI.me().then(r => {
+  componentDidMount() { this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoAPI.me().then(r => {
       const next = () => { try { sessionStorage.setItem('dx-next', location.pathname + location.search); } catch (e) {} };
       if (!r.ok) { next(); return DojoMotion.go('/login'); }
       if (!r.onboarded) { next(); return DojoMotion.go('/login#onboard'); }

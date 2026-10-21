@@ -19,7 +19,7 @@ class Screen extends DCLogic {
   }
   root = React.createRef(); viewRef = React.createRef(); sheetRef = React.createRef(); rTotRef = React.createRef();
   componentDidMount() {
-    this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
+    this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
     this._hc = () => { const v = location.hash.slice(1); if (['home', 'classes', 'plan', 'pay', 'progress', 'me'].includes(v) && v !== this.state.view) this.setState({ view: v, sheet: null }); }; window.addEventListener('hashchange', this._hc);
     DojoReady(() => {
       const wait = () => DojoAPI.syncPortal().then(ok => ok ? go() : DojoMotion.go('/login'), () => {});

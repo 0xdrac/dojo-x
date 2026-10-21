@@ -21,7 +21,7 @@ class Screen extends DCLogic {
     Freezing: [['How long can I freeze?', 'Up to 30 days per year on quarterly and annual plans, in blocks of at least 7 days.'], ['How do I freeze my membership?', 'Member portal → My Plan → Freeze. Pick start and end dates and see your new expiry before confirming.'], ['What happens to auto-renew during a freeze?', 'The UPI mandate is paused automatically and resumes on your new renewal date.'], ['Can I freeze for an injury beyond 30 days?', 'With a doctor’s note, yes. Speak to the front desk and we’ll extend it.']]
   };
   componentDidMount() {
-    this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
+    this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
     DojoReady(() => DojoMotion.init(this.root.current));
   }
   componentWillUnmount() { window.removeEventListener('resize', this._rs); }

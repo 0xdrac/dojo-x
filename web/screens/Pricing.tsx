@@ -18,7 +18,7 @@ class Screen extends DCLogic {
   }
   root = React.createRef(); priceRef = React.createRef(); dueRef = React.createRef();
   componentDidMount() {
-    this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
+    this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
     DojoReady(() => this.setState({ ready: true }, () => DojoMotion.init(this.root.current)));
   }
   componentWillUnmount() { window.removeEventListener('resize', this._rs); }

@@ -13,7 +13,7 @@ class Screen extends DCLogic {
   static defaultProps = {"cta": true, "sticky": true, "barOffset": false};
   state = { w: window.innerWidth, past: false };
   componentDidMount() {
-    this._rs = () => this.setState({ w: window.innerWidth });
+    this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth });
     this._sc = () => { const p = window.scrollY > window.innerHeight * 0.6; if (p !== this.state.past) this.setState({ past: p }); };
     window.addEventListener('resize', this._rs); window.addEventListener('scroll', this._sc, { passive: true });
   }

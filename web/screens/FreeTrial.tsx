@@ -14,7 +14,7 @@ class Screen extends DCLogic {
   static defaultProps = {};
   state = { w: window.innerWidth, step: 1, age: 'Adults', disc: new URLSearchParams(location.search).get('d'), slot: null, name: '', phone: '', ageNum: '', parent: '', exp: 'None', tried: false, busy: false };
   root = React.createRef(); stepRef = React.createRef(); ticketRef = React.createRef();
-  componentDidMount() { this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoReady(() => { this.forceUpdate(); DojoMotion.init(this.root.current); }); }
+  componentDidMount() { this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoReady(() => { this.forceUpdate(); DojoMotion.init(this.root.current); }); }
   componentWillUnmount() { window.removeEventListener('resize', this._rs); }
   componentDidUpdate(pp, ps) {
     ps = ps || {};

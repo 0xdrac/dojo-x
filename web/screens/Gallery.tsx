@@ -21,7 +21,7 @@ class Screen extends DCLogic {
     ['Muay Thai', 'PAD ROUNDS', '4/5'], ['Events', 'STATE CHAMPIONSHIP · 3 GOLDS', '4/3']
   ];
   componentDidMount() {
-    this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
+    this._rs = () => window.innerWidth !== this.state.w && this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs);
     this._kd = e => { if (this.state.open < 0) return; if (e.key === 'Escape') this.close(); if (e.key === 'ArrowRight') this.step(1); if (e.key === 'ArrowLeft') this.step(-1); };
     window.addEventListener('keydown', this._kd);
     DojoReady(() => this.setState({ ready: true }, () => DojoMotion.init(this.root.current)));
