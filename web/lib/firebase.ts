@@ -27,7 +27,11 @@ const friendly = (e: any) => {
   if (c.includes("invalid-verification-code")) return "That code doesn’t match. Check it and try again.";
   if (c.includes("code-expired")) return "That code has expired. Request a new one.";
   if (c.includes("captcha")) return "Couldn’t verify you’re human. Refresh the page and try again.";
-  return "Couldn’t send the code right now. Please try again.";
+  if (c.includes("billing-not-enabled")) return "SMS isn’t switched on for this project yet (Firebase billing). [auth/billing-not-enabled]";
+  if (c.includes("unauthorized-domain")) return "This website isn’t allowed to use Firebase sign-in yet. [auth/unauthorized-domain]";
+  if (c.includes("operation-not-allowed")) return "Phone sign-in is switched off in Firebase. [auth/operation-not-allowed]";
+  if (c.includes("quota-exceeded")) return "The SMS limit has been reached. Try again later. [auth/quota-exceeded]";
+  return `Couldn’t send the code right now. Please try again. [${c || String(e?.message || "unknown").slice(0, 60)}]`;
 };
 
 /** Sends the SMS code to +91<phone10>. */
@@ -42,6 +46,7 @@ export async function sendFirebaseCode(phone10: string): Promise<{ ok: boolean; 
     confirmation = await signInWithPhoneNumber(auth, "+91" + phone10, verifier);
     return { ok: true };
   } catch (e: any) {
+    console.error("[firebase] send failed", e);
     try { verifier?.clear(); } catch {} verifier = null;
     return { ok: false, error: friendly(e) };
   }

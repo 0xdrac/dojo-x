@@ -67,6 +67,7 @@ export const DojoAPI = {
   bookClass: (memberId: string, classId: string, date: string) => call("POST", "/api/me/bookings", { memberId, classId, date }),
   cancelBooking: (id: string) => call("DELETE", `/api/me/bookings/${id}`),
   loadSchedule,
+  realOtp: firebaseEnabled(),
   requestOtp: async (phone: string) => (firebaseEnabled() ? { ...(await sendFirebaseCode(phone)), status: 200 } : call("POST", "/api/auth/request", { phone })),
   verify: async (phone: string, code: string) => {
     if (!firebaseEnabled()) return call("POST", "/api/auth/verify", { phone, code });
