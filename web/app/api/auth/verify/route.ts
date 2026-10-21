@@ -1,6 +1,7 @@
 import { store } from "@/lib/server/store";
 import { setSession } from "@/lib/server/session";
 import { body, checkOtp, digits, fail, json, validPhone } from "@/lib/server/util";
+import { firebaseMode, verifyFirebasePhone } from "@/lib/server/firebase";
 import { T } from "@/lib/server/tables";
 import { today } from "@/lib/server/guard";
 import { addDays } from "@/lib/classes";
@@ -28,23 +29,33 @@ async function seedDemo(accountId: string) {
 }
 
 export async function POST(req: Request) {
-  const b = await body(req), phone = digits(b.phone);
-  if (!validPhone(phone)) return fail("Enter a valid 10-digit Indian mobile number.");
-  const otp = checkOtp(b.code);
-  if (!otp.ok) return fail(otp.error!, 401);
+  const b = await body(req);
+  let phone = digits(b.phone);
+  const real = firebaseMode();
+  if (real) {
+    // Real SMS sign-in: the number comes from Firebase's signed token, never from what the browser says.
+    const v = await verifyFirebasePhone(b.idToken);
+    if (!v.phone) return fail(v.error!, 401);
+    phone = v.phone;
+  } else {
+    if (!validPhone(phone)) return fail("Enter a valid 10-digit Indian mobile number.");
+    const otp = checkOtp(b.code);
+    if (!otp.ok) return fail(otp.error!, 401);
+  }
   const s = store();
   // Staff numbers sign in here too and go straight to Admin / Coach App.
   const staff = await s.staffByPhone(phone);
   if (staff) {
+    if (real && /^9000000\d{3}$/.test(staff.phone)) return fail("This staff login still uses a placeholder number. Set the real number first.", 403);
     await setSession({ sub: staff.id, kind: "staff" });
     return json({ ok: true, staff: { name: staff.name, role: staff.role } });
   }
   let account = await s.accountByPhone(phone);
   if (!account) {
     account = await s.createAccount(phone);
-    if (phone === DEMO_PHONE && process.env.DEMO_OTP !== "0") await seedDemo(account.id);
+    if (!real && phone === DEMO_PHONE && process.env.DEMO_OTP !== "0") await seedDemo(account.id);
   }
-  if (phone === DEMO_PHONE && process.env.DEMO_OTP !== "0") await ensureDemoPlans(account.id);
+  if (!real && phone === DEMO_PHONE && process.env.DEMO_OTP !== "0") await ensureDemoPlans(account.id);
   await setSession({ sub: account.id, kind: "member" });
   const members = await s.members(account.id);
   return json({ ok: true, onboarded: members.some((m) => m.rel === "You") });

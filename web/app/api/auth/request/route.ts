@@ -4,5 +4,5 @@ import { body, digits, fail, json, validPhone } from "@/lib/server/util";
 export async function POST(req: Request) {
   const phone = digits((await body(req)).phone);
   if (!validPhone(phone)) return fail("Enter a valid 10-digit Indian mobile number.");
-  return json({ ok: true, demo: process.env.DEMO_OTP !== "0" });
+  return json({ ok: true, demo: process.env.DEMO_OTP !== "0" && !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID });
 }
