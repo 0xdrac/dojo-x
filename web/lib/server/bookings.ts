@@ -62,6 +62,19 @@ export async function bookSeat(member: Member, classId: string, date: string): P
     return { error: plans.some((p) => p.ends_on >= date) || plans.length ? "Your plan doesn’t cover this class on that date. Renew or add the discipline in My Plan." : "You need an active plan to book. Pick a plan in My Plan.", code: 402 };
   }
 
+  // the two standard evening batches are alternatives: booking one moves the member out of the other for that day
+  const BATCHES = ["19:00", "20:00"];
+  if (cls.age_group === "Teens & Adults" && BATCHES.includes(cls.start_time)) {
+    for (const b of await T.list("bookings", { eq: { member_id: member.id, on_date: date } })) {
+      if (b.class_id === classId || b.status === "cancelled") continue;
+      const o = await T.get("classes", { id: b.class_id });
+      if (o && o.age_group === "Teens & Adults" && BATCHES.includes(o.start_time) && o.start_time !== cls.start_time) {
+        await T.update("bookings", { id: b.id }, { status: "cancelled", cancel_reason: "Switched batch" });
+        if (b.status === "booked") await fillSeats(b.class_id, date);
+      }
+    }
+  }
+
   // can't be in two places at once
   const mine = (await T.list("bookings", { eq: { member_id: member.id, on_date: date, status: "booked" } })).filter((b) => b.class_id !== classId);
   for (const b of mine) {

@@ -113,7 +113,7 @@ class Screen extends DCLogic {
       else if (frozen) { label = 'FROZEN'; dis = true; fg = '#9A9A9A'; }
       else if (booked) { label = 'BOOKED ✓'; bg = 'oklch(0.74 0.15 150 / .15)'; bd = 'oklch(0.74 0.15 150)'; act = () => this.setState({ sheet: 'cancel', cx: c.id }); }
       else if (full) { label = onWait ? 'ON WAITLIST · #' + s.wait[id][c.id] : 'JOIN WAITLIST'; bd = onWait ? 'oklch(0.82 0.14 75)' : '#2E2E2E'; act = () => onWait ? this.leaveWait(c) : this.book(c); }
-      else { label = 'BOOK'; bg = '#C8102E'; bd = '#C8102E'; act = () => this.book(c); }
+      else { const sib = c.age === 'Teens & Adults' && OCC.some(o => o.id !== c.id && o.date === c.date && o.age === 'Teens & Adults' && ['19:00', '20:00'].includes(o.t) && mine.includes(o.id)); label = sib ? 'SWITCH TO THIS BATCH' : 'BOOK'; bg = '#C8102E'; bd = '#C8102E'; act = () => this.book(c); }
       return { id: c.id, time: D.time12(c.t), dur: c.dur, title: c.title, disc: c.discNames, color: D.color(c.disc), coach: coach(c), level: c.level, age: c.age, spots: past ? '—' : full ? 'FULL' : `${left} SPOT${left > 1 ? 'S' : ''} LEFT`, spotsC: full ? 'oklch(0.80 0.14 45)' : left <= 3 ? 'oklch(0.82 0.14 75)' : '#9A9A9A', fill: Math.min(100, taken / c.cap * 100) + '%', fillC: full ? 'oklch(0.70 0.19 45)' : '#C9C9C9', label, act, dis, bg, bd, fg, cur: dis ? 'default' : 'pointer', op: ok && !past ? 1 : .55, rowBg: booked ? '#1A1A1A' : '#161616', rowBd: booked ? 'oklch(0.74 0.15 150 / .5)' : '#262626' };
     };
     const nx = myList.find(c => !this.past(c));

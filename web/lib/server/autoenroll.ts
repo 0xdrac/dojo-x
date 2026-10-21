@@ -27,6 +27,8 @@ export async function autoEnroll(force = false) {
     for (const m of members.filter((m) => ids.has(m.id))) {
       const time = BATCH_TIME[pref.get(m.id) || "amateur"] || BATCH_TIME.amateur;
       for (const c of std.filter((c) => c.start_time === time)) for (const date of dates) {
+        const other = std.find((o) => o.start_time !== time && occursOn(o, date) && o.title.split(" · ")[0] === c.title.split(" · ")[0]);
+        if (other && await T.get("bookings", { member_id: m.id, class_id: other.id, on_date: date })) continue; // already chose the other batch that day
         if (!occursOn(c, date) || await T.get("bookings", { member_id: m.id, class_id: c.id, on_date: date })) continue;
         await bookSeat({ id: m.id, dob: m.dob } as any, c.id, date);
       }
