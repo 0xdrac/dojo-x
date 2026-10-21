@@ -205,6 +205,10 @@ alter table orders              enable row level security;
 alter table memberships         enable row level security;
 alter table bookings            enable row level security;
 
+-- Coupons can also set the whole plan to a fixed price ('set').
+alter table coupons drop constraint if exists coupons_type_check;
+alter table coupons add constraint coupons_type_check check (type in ('pct','flat','set'));
+
 -- Replace these placeholder staff with the real owner / coach / front-desk phone numbers.
 insert into staff (phone, name, role, coach_key) values
   ('9000000001', 'Owner',         'owner',     'aman'),

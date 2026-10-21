@@ -156,7 +156,7 @@ export function loadPublic(): Promise<void> {
     const off = new Set(r.cancelled || []);
     DOJO.cancelledSet = new Set(r.cancelled || []);
     DOJO.classes = normalizeClasses(r.classes, DOJO).filter((c: any) => !(c.d === todayIdx && off.has(`${c.id}|${iso}`)));
-    DOJO.coupons = Object.fromEntries((r.coupons || []).map((c: any) => [c.code, { type: c.type, v: c.v, label: c.type === "pct" ? `${c.v}% off` : `₹${c.v} off` }]));
+    DOJO.coupons = Object.fromEntries((r.coupons || []).map((c: any) => [c.code, { type: c.type, v: c.v, label: c.type === "pct" ? `${c.v}% off` : c.type === "set" ? `Plan for ₹${c.v}` : `₹${c.v} off` }]));
     DXP.announcements = (r.events || []).slice(0, 3).map((e: any) => [
       e.kind.toUpperCase(), e.title,
       `${new Date(e.startsAt).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true })}${e.repeat ? " · " + e.repeat.toLowerCase() : ""}${e.location ? " · " + e.location : ""}${e.price ? " · ₹" + e.price : " · Free"}`, "",

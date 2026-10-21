@@ -156,7 +156,7 @@
     const perPerson = fightCycle + yogaM;
     const gross = perPerson * people, pd = D.peopleOff(people), peopleOff = Math.round(gross * pd);
     const afterPeople = gross - peopleOff;
-    const couponOff = coupon && coupon.status === 'ok' ? (coupon.type === 'pct' ? Math.round(afterPeople * coupon.v / 100) : Math.min(coupon.v, afterPeople)) : 0;
+    const couponOff = coupon && coupon.status === 'ok' ? (coupon.type === 'pct' ? Math.round(afterPeople * coupon.v / 100) : coupon.type === 'set' ? Math.max(0, afterPeople - coupon.v) : Math.min(coupon.v, afterPeople)) : 0;
     const sub = afterPeople - couponOff, gst = 0;
     const listMonthly = fight.length * D.plans.monthly.p + yogaM;
     const effMonthly = Math.round((fightCycle / pl.m + yogaM) * (1 - pd));

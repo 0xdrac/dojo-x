@@ -537,7 +537,7 @@ function Coupons({ owner }: { owner: boolean }) {
             <div className="st-row" key={c.code} style={{ flexWrap: "wrap", opacity: st === "ACTIVE" ? 1 : 0.6 }}>
               <div style={{ flex: "1 1 220px", minWidth: 0 }}>
                 <div className="anton" style={{ fontSize: 24, color: "var(--fg)", letterSpacing: ".04em" }}>{c.code}</div>
-                <div className="st-s">{c.type === "pct" ? `${c.value}% OFF` : `₹${c.value} OFF`} · {c.scope.toUpperCase()} · {c.cap ? `${c.uses}/${c.cap} USED` : `${c.uses} USED · NO LIMIT`}{c.valid_until ? ` · UNTIL ${c.valid_until}` : ""}</div>
+                <div className="st-s">{c.type === "pct" ? `${c.value}% OFF` : c.type === "set" ? `PLAN FOR ₹${c.value}` : `₹${c.value} OFF`} · {c.scope.toUpperCase()} · {c.cap ? `${c.uses}/${c.cap} USED` : `${c.uses} USED · NO LIMIT`}{c.valid_until ? ` · UNTIL ${c.valid_until}` : ""}</div>
               </div>
               <span className="st-pill" style={{ color: st === "ACTIVE" ? "oklch(0.78 0.14 150)" : undefined }}>{st}</span>
               {owner && <><button className="st-btn sm" onClick={() => toggle(c)}>{c.status === "active" ? "Pause" : "Resume"}</button><button className="st-btn sm d" onClick={() => del(c)}>Delete</button></>}
@@ -560,12 +560,12 @@ function CouponSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
     setBusy(false); if (!r.ok) return setErr(r.error!);
     toast(`${f.code.toUpperCase()} is live`); onSaved();
   };
-  const ex = D.quote(["mma"], "half", 1, null), off = f.type === "pct" ? Math.round((ex.sub * f.value) / 100) : Number(f.value);
+  const ex = D.quote(["mma"], "half", 1, null), off = f.type === "pct" ? Math.round((ex.sub * f.value) / 100) : f.type === "set" ? Math.max(0, ex.sub - Number(f.value)) : Number(f.value);
   return (
     <Sheet title="New coupon" onClose={onClose}>
       <Field label="CODE"><input className="st-in" value={f.code} onChange={(e) => set("code", e.target.value.toUpperCase().replace(/\s/g, ""))} placeholder="e.g. FIGHTNIGHT15" maxLength={16} /></Field>
-      <Field label="DISCOUNT TYPE"><Chips value={f.type} options={[["pct", "% off"], ["flat", "₹ off"]]} onChange={(v) => { set("type", v); set("value", v === "pct" ? 10 : 500); }} /></Field>
-      <Field label={f.type === "pct" ? "PERCENT OFF" : "RUPEES OFF"}><input className="st-in" type="number" min={1} value={f.value} onChange={(e) => set("value", e.target.value)} /></Field>
+      <Field label="DISCOUNT TYPE"><Chips value={f.type} options={[["pct", "% off"], ["flat", "₹ off"], ["set", "Set price"]]} onChange={(v) => { set("type", v); set("value", v === "pct" ? 10 : v === "set" ? 1 : 500); }} /></Field>
+      <Field label={f.type === "pct" ? "PERCENT OFF" : f.type === "set" ? "PLAN COSTS (₹)" : "RUPEES OFF"}><input className="st-in" type="number" min={1} value={f.value} onChange={(e) => set("value", e.target.value)} /></Field>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Field label="USAGE LIMIT (OPTIONAL)"><input className="st-in" type="number" min={1} value={f.cap} onChange={(e) => set("cap", e.target.value)} /></Field>
         <Field label="VALID UNTIL (OPTIONAL)"><input className="st-in" type="date" value={f.validUntil} onChange={(e) => set("validUntil", e.target.value)} /></Field>
