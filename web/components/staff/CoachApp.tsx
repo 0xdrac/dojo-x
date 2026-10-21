@@ -13,7 +13,7 @@ export default function CoachApp() {
   const [open, setOpen] = useState<any>(null);   // class being registered
 
   useEffect(() => {
-    api.requireStaff().then((s) => { if (s) { setStaff(s); setCoach(s.coachKey || (s.role === "owner" ? "arjun" : "")); } });
+    api.requireStaff().then((s) => { if (s) { setStaff(s); setCoach(s.coachKey || (s.role === "owner" ? "aman" : "")); } });
   }, []);
   const classes = useLoad(() => http("GET", "/api/staff/classes"), [staff?.id]);
   const att = useLoad(() => http("GET", `/api/staff/attendance?date=${date}`), [date, staff?.id]);

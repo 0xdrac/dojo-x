@@ -7,8 +7,8 @@ type DB = { accounts: Account[]; members: Member[]; trials: Trial[]; staff: Staf
 const FILE = path.join(process.cwd(), ".data", "dojo.json");
 
 const SEED_STAFF: Staff[] = [
-  { id: "staff-owner", phone: "9000000001", name: "Arjun Rathore", role: "owner", coachKey: "arjun" },
-  { id: "staff-coach", phone: "9000000002", name: "Rahul Sandhu", role: "coach", coachKey: "rahul" },
+  { id: "staff-owner", phone: "9000000001", name: "Owner", role: "owner", coachKey: "aman" },
+  { id: "staff-coach", phone: "9000000002", name: "Vishal", role: "coach", coachKey: "vishal" },
   { id: "staff-desk", phone: "9000000003", name: "Front Desk", role: "frontdesk" },
 ];
 

@@ -267,7 +267,7 @@ function Checkin() {
 
 /* ---------------- Schedule ---------------- */
 const LEVELS = ["All levels", "Beginner", "Intermediate", "Advanced"], AGES = ["Kids", "Teens", "Adults", "Teens & Adults"];
-const blankClass = (day: number) => ({ day, days: [day], mode: "ongoing", startDate: ymd(), endDate: "", date: nextDateFor(day), startTime: "18:30", durationMin: 60, disciplines: ["mma"], title: "", coaches: ["arjun"], level: "All levels", ageGroup: "Adults", capacity: 20 });
+const blankClass = (day: number) => ({ day, days: [day], mode: "ongoing", startDate: ymd(), endDate: "", date: nextDateFor(day), startTime: "18:30", durationMin: 60, disciplines: ["mma"], title: "", coaches: ["vishal"], level: "All levels", ageGroup: "Adults", capacity: 20 });
 
 function Schedule({ owner }: { owner: boolean }) {
   const { toast } = useShell();

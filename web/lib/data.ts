@@ -31,18 +31,8 @@ export const STATS = [
 ];
 
 export const COACHES = [
-  { id: "arjun", num: "01", first: "Arjun", nick: "THE HAMMER", last: "Rathore", role: "HEAD COACH · MMA",
-    ph: "ARJUN · waist-up, gloves up, hard side light", rec: [14, 3, 0],
-    info: [["WEIGHT", "77 KG · WELTER"], ["STANCE", "ORTHODOX"], ["RANK", "BJJ BROWN BELT"], ["COACHING", "16 YEARS"]],
-    bars: [["STRIKING", 88], ["GRAPPLING", 94], ["CARDIO", 91]], tags: ["MMA", "Kickboxing"] },
-  { id: "kavya", num: "02", first: "Kavya", nick: "VIPER", last: "Menon", role: "LEAD · MUAY THAI",
-    ph: "KAVYA · mid-teep on pads, side-lit", rec: [22, 4, 1],
-    info: [["WEIGHT", "52 KG · FLY"], ["STANCE", "SOUTHPAW"], ["RANK", "KRU · LEVEL 3"], ["TITLES", "2× NATIONAL"]],
-    bars: [["STRIKING", 95], ["CLINCH", 90], ["CARDIO", 93]], tags: ["Muay Thai", "Kickboxing"] },
-  { id: "rahul", num: "03", first: "Rahul", nick: "IRON", last: "Sandhu", role: "LEAD · BOXING",
-    ph: "RAHUL · slipping a jab, sweat spray", rec: [31, 6, 0],
-    info: [["WEIGHT", "81 KG · LT HEAVY"], ["STANCE", "ORTHODOX"], ["RANK", "NIS CERTIFIED"], ["RECORD", "AMATEUR"]],
-    bars: [["POWER", 93], ["FOOTWORK", 86], ["DEFENSE", 90]], tags: ["Boxing"] },
+  { id: "aman", num: "01", first: "Aman", nick: "", last: "", role: "COACH", ph: "AMAN · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["MMA", "Boxing", "Kickboxing", "Muay Thai"] },
+  { id: "vishal", num: "02", first: "Vishal", nick: "", last: "", role: "COACH · EVENING BATCHES", ph: "VISHAL · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["MMA", "Boxing", "Kickboxing", "Muay Thai"] },
 ] as const;
 
 export const REVIEWS = [

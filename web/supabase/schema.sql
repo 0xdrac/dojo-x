@@ -46,7 +46,7 @@ create table if not exists staff (
   phone       text not null unique,
   name        text not null,
   role        text not null check (role in ('owner','coach','frontdesk')),
-  coach_key   text                              -- which coach profile this login is (arjun, kavya, rahul, meera, vikram, tanvi, ananya)
+  coach_key   text                              -- which coach profile this login is (aman or vishal)
 );
 alter table staff add column if not exists coach_key text;
 
@@ -207,12 +207,18 @@ alter table bookings            enable row level security;
 
 -- Replace these placeholder staff with the real owner / coach / front-desk phone numbers.
 insert into staff (phone, name, role, coach_key) values
-  ('9000000001', 'Arjun Rathore', 'owner',     'arjun'),
-  ('9000000002', 'Rahul Sandhu',  'coach',     'rahul'),
+  ('9000000001', 'Owner',         'owner',     'aman'),
+  ('9000000002', 'Vishal',        'coach',     'vishal'),
   ('9000000003', 'Front Desk',    'frontdesk', null)
 on conflict (phone) do nothing;
-update staff set coach_key = 'rahul' where phone = '9000000002' and coach_key is null;
-update staff set coach_key = 'arjun' where phone = '9000000001' and coach_key is null;
+-- The academy's coaches are Aman and Vishal (Vishal takes the evening batches). Move anything that still points at the old sample coaches.
+update staff set name = 'Owner',  coach_key = 'aman'   where phone = '9000000001' and name = 'Arjun Rathore';
+update staff set name = 'Vishal', coach_key = 'vishal' where phone = '9000000002' and name = 'Rahul Sandhu';
+update staff set coach_key = null where coach_key is not null and coach_key not in ('aman', 'vishal');
+update classes set
+  coaches = case when start_time >= '16:00' then array['vishal'] else array['aman'] end,
+  coach   = case when start_time >= '16:00' then 'vishal'        else 'aman'        end
+where not (coaches <@ array['aman', 'vishal']) or coach not in ('aman', 'vishal');
 
 -- If you ran an earlier version of this file, widen the status check so refunds can be recorded:
 alter table orders drop constraint if exists orders_status_check;

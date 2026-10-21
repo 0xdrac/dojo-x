@@ -33,13 +33,13 @@ export default function Coaches() {
                 <div aria-hidden="true" className="big">{c.num}</div>
               </div>
               <div className="body">
-                <div className="anton" style={{ fontSize: 22, lineHeight: 1, color: "var(--mid)" }}>{c.first}</div>
-                <div className="mono" style={{ margin: "6px 0 4px", font: "500 13px/1 var(--mono)", color: "var(--fg)" }}>“{c.nick}”</div>
-                <div className="anton" style={{ fontSize: "clamp(48px,5vw,64px)", lineHeight: 0.95, color: "var(--fg)" }}>{c.last}</div>
-                <div className="rec">
-                  {["WINS", "LOSSES", "DRAWS"].map((l, i) => <div key={l}><b>{c.rec[i]}</b><span>{l}</span></div>)}
-                </div>
-                <div className="info">{c.info.map(([k, v]) => <div key={k}><small>{k}</small><span>{v}</span></div>)}</div>
+                <div className="anton" style={{ fontSize: c.last ? 22 : "clamp(48px,5vw,64px)", lineHeight: c.last ? 1 : 0.95, color: c.last ? "var(--mid)" : "var(--fg)" }}>{c.first}</div>
+                {c.nick && <div className="mono" style={{ margin: "6px 0 4px", font: "500 13px/1 var(--mono)", color: "var(--fg)" }}>“{c.nick}”</div>}
+                {c.last && <div className="anton" style={{ fontSize: "clamp(48px,5vw,64px)", lineHeight: 0.95, color: "var(--fg)" }}>{c.last}</div>}
+                {c.rec && <div className="rec">
+                  {["WINS", "LOSSES", "DRAWS"].map((l, i) => <div key={l}><b>{c.rec![i]}</b><span>{l}</span></div>)}
+                </div>}
+                {c.info.length > 0 && <div className="info">{c.info.map(([k, v]) => <div key={k}><small>{k}</small><span>{v}</span></div>)}</div>}
                 <div className="bars">
                   {c.bars.map(([k, v], i) => (
                     <div className="bar3" key={k}>{k}<span className="tr"><i style={{ ["--v" as string]: v + "%", transitionDelay: i * 0.06 + "s" }} /></span><b>{v}</b></div>

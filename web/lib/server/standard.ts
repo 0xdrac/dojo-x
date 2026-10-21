@@ -6,11 +6,11 @@ const BATCHES: { time: string; label: string; level: string }[] = [
   { time: "20:00", label: "Intermediate & Pro", level: "Intermediate" },
 ];
 const DAYS: { day: number; name: string; disciplines: string[]; coaches: string[] }[] = [
-  { day: 0, name: "Boxing", disciplines: ["boxing"], coaches: ["rahul"] },
-  { day: 1, name: "Kickboxing & Muay Thai", disciplines: ["kickboxing", "muaythai"], coaches: ["kavya"] },
-  { day: 2, name: "Jiu-Jitsu", disciplines: ["mma"], coaches: ["arjun", "vikram"] },
-  { day: 3, name: "MMA Fundamentals", disciplines: ["mma"], coaches: ["arjun"] },
-  { day: 4, name: "Sparring", disciplines: ["mma", "boxing", "kickboxing", "muaythai"], coaches: ["arjun", "kavya", "rahul"] },
+  { day: 0, name: "Boxing", disciplines: ["boxing"], coaches: ["vishal"] },
+  { day: 1, name: "Kickboxing & Muay Thai", disciplines: ["kickboxing", "muaythai"], coaches: ["vishal"] },
+  { day: 2, name: "Jiu-Jitsu", disciplines: ["mma"], coaches: ["vishal"] },
+  { day: 3, name: "MMA Fundamentals", disciplines: ["mma"], coaches: ["vishal"] },
+  { day: 4, name: "Sparring", disciplines: ["mma", "boxing", "kickboxing", "muaythai"], coaches: ["vishal"] },
 ];
 
 export const standardClasses = () =>
