@@ -2,7 +2,6 @@
 // @ts-nocheck
 // Browser-side client for the /api routes. Exposed to the ported screens as window.DojoAPI (see bootstrap.ts).
 import DXP from "./portal";
-import { firebaseEnabled } from "./firebase";
 import DOJO from "./dojo";
 import { addDays, normalizeClasses, occursOn, weekdayOf } from "./classes";
 
@@ -20,7 +19,6 @@ export async function call(method: string, url: string, data?: any): Promise<R> 
 
 const SAMPLE = Object.fromEntries(Object.entries(DXP.members).map(([k, v]) => [k, JSON.parse(JSON.stringify(v))]));
 const SAMPLE_STATS = { ...DXP.stats }, SAMPLE_PAY = { ...DXP.payments };
-const DEMO_PHONE = "9845021734";
 const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—");
 const age = (iso?: string | null) => { if (!iso) return 30; const d = new Date(iso), n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return Math.max(0, a); };
 const initials = (name: string) => name.split(" ").filter(Boolean).map((x) => x[0]).join("").slice(0, 2).toUpperCase();
@@ -67,16 +65,7 @@ export const DojoAPI = {
   bookClass: (memberId: string, classId: string, date: string) => call("POST", "/api/me/bookings", { memberId, classId, date }),
   cancelBooking: (id: string) => call("DELETE", `/api/me/bookings/${id}`),
   loadSchedule,
-  askMobile: process.env.NEXT_PUBLIC_AUTH_MODE !== "pin" && firebaseEnabled(),
-  realOtp: process.env.NEXT_PUBLIC_AUTH_MODE === "pin" || firebaseEnabled(),
-  requestOtp: (phone: string) => call("POST", "/api/auth/request", { phone }),
-  verify: (phone: string, code: string) => call("POST", "/api/auth/verify", { phone, code }),
   verifyToken: (idToken: string) => call("POST", "/api/auth/verify", { idToken }),
-  pinStatus: (phone: string) => call("POST", "/api/auth/pin/status", { phone }),
-  pinSend: (phone: string) => call("POST", "/api/auth/pin/send", { phone }),
-  pinCheck: (phone: string, code: string) => call("POST", "/api/auth/pin/check", { phone, code }),
-  pinSet: (setupToken: string, pin: string) => call("POST", "/api/auth/pin/set", { setupToken, pin }),
-  pinLogin: (phone: string, pin: string) => call("POST", "/api/auth/pin/login", { phone, pin }),
   logout: () => call("POST", "/api/auth/logout"),
   me: () => call("GET", "/api/me"),
   saveProfile: (f: any) => call("PUT", "/api/me/profile", f),
@@ -94,7 +83,7 @@ export const DojoAPI = {
     const r = await (takePre("me") ?? call("GET", "/api/me"));
     if (!r.ok && r.status !== 401) { (window as any).__dxShell?.toast("Something went wrong loading your account. Please try again."); throw new Error(r.error); }
     if (!r.ok || !r.members?.length) return false;
-    const demo = r.account.phone === DEMO_PHONE, members: any = {}, order: string[] = [];
+    const demo = false, members: any = {}, order: string[] = [];
     for (const m of r.members) {
       const first = m.name.split(" ")[0], sid = demo ? first.toLowerCase() : "", sample = SAMPLE[sid];
       const id = sample ? sid : m.id;

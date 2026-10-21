@@ -39,7 +39,10 @@ export default function EmailLogin() {
       const gr = await googleRedirectResult();
       if (gr?.idToken) { setMode("working"); return finish(gr.idToken); }
       if (gr?.error) setErr(gr.error);
-      const me = await DojoAPI.me(); if (me.ok) { if (!me.onboarded) history.replaceState(null, "", "/login#onboard"); return setMode("app"); }
+      const me = await DojoAPI.me(); if (me.ok) {
+        if (me.onboarded) { let n: string | null = null; try { n = sessionStorage.getItem("dx-next"); sessionStorage.removeItem("dx-next"); } catch {} location.replace(n && n.startsWith("/") && !n.startsWith("//") ? n : "/member-portal"); return; }
+        history.replaceState(null, "", "/login#onboard"); return setMode("app");
+      }
       const st = await DojoAPI.staffMe(); if (st.ok) { location.href = st.staff.role === "coach" ? "/coach-app" : "/admin"; return; }
       setMode("form");
     })();

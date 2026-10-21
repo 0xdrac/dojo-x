@@ -11,7 +11,7 @@ export async function verifyFirebaseEmail(idToken: unknown): Promise<{ email?: s
   const project = firebaseProject();
   if (!project || typeof idToken !== "string") return { error: "Sign-in isn’t available right now." };
   try {
-    const keys = process.env.FIREBASE_JWKS_JSON && process.env.NODE_ENV !== "production" ? createLocalJWKSet(JSON.parse(process.env.FIREBASE_JWKS_JSON)) : remote;
+    const keys = process.env.FIREBASE_JWKS_JSON && (process.env.NODE_ENV !== "production" || process.env.DOJO_LOCAL_PROD === "1") ? createLocalJWKSet(JSON.parse(process.env.FIREBASE_JWKS_JSON)) : remote;
     const { payload } = await jwtVerify(idToken, keys, { issuer: `https://securetoken.google.com/${project}`, audience: project });
     const email = String(payload.email || "").trim().toLowerCase();
     if (!email || payload.email_verified !== true) return { error: "That email isn’t verified." };
