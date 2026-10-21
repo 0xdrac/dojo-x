@@ -35,11 +35,16 @@ export async function POST(req: Request) {
     // Real sign-in by emailed link: the address comes from Firebase's signed token, never from what the browser says.
     const v = await verifyFirebaseEmail(b.idToken);
     if (!v.email) return fail(v.error!, 401);
-    const s = store(), staff = await s.staffByEmail(v.email);
-    if (staff) { await setSession({ sub: staff.id, kind: "staff" }); return json({ ok: true, staff: { name: staff.name, role: staff.role } }); }
-    const account = (await s.accountByEmail(v.email)) ?? (await s.createAccount("", v.email));
-    await setSession({ sub: account.id, kind: "member" });
-    return json({ ok: true, onboarded: (await s.members(account.id)).some((m) => m.rel === "You") });
+    try {
+      const s = store(), staff = await s.staffByEmail(v.email);
+      if (staff) { await setSession({ sub: staff.id, kind: "staff" }); return json({ ok: true, staff: { name: staff.name, role: staff.role } }); }
+      const account = (await s.accountByEmail(v.email)) ?? (await s.createAccount("", v.email));
+      await setSession({ sub: account.id, kind: "member" });
+      return json({ ok: true, onboarded: (await s.members(account.id)).some((m) => m.rel === "You") });
+    } catch (e: any) {
+      console.error("[auth/verify]", e);
+      return fail(/email|column|null value/i.test(String(e?.message)) ? "Sign-in is almost ready: the database needs the email update. Run the email SQL in Supabase, then try again." : "We couldn’t finish signing you in. Please try again.", 500);
+    }
   }
   const phone = digits(b.phone);
   if (!validPhone(phone)) return fail("Enter a valid 10-digit Indian mobile number.");
