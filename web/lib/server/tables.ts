@@ -12,7 +12,7 @@ const needSupabase = () => { if (process.env.NODE_ENV === "production" && !using
  */
 export type Row = Record<string, any>;
 type Eq = Record<string, any>;
-type ListOpts = { eq?: Eq; order?: [string, boolean?]; gte?: [string, any]; lte?: [string, any]; limit?: number };
+type ListOpts = { eq?: Eq; order?: [string, boolean?]; gte?: [string, any]; lte?: [string, any]; limit?: number; in?: [string, any[]] };
 
 const FILE = path.join(process.cwd(), ".data", "tables.json");
 const load = (): Record<string, Row[]> => { try { return JSON.parse(fs.readFileSync(FILE, "utf8")); } catch { return {}; } };
@@ -30,10 +30,12 @@ export const T = {
       if (o.gte) q = q.gte(o.gte[0], o.gte[1]);
       if (o.lte) q = q.lte(o.lte[0], o.lte[1]);
       if (o.order) q = q.order(o.order[0], { ascending: o.order[1] !== false });
+      if (o.in) q = q.in(o.in[0], o.in[1]);
       if (o.limit) q = q.limit(o.limit);
       return must(await q);
     }
     let rows = (load()[table] ?? []).filter((r) => match(r, o.eq));
+    if (o.in) rows = rows.filter((r) => o.in![1].includes(r[o.in![0]]));
     if (o.gte) rows = rows.filter((r) => r[o.gte![0]] >= o.gte![1]);
     if (o.lte) rows = rows.filter((r) => r[o.lte![0]] <= o.lte![1]);
     if (o.order) { const [c, asc] = o.order; rows = rows.slice().sort((a, b) => (a[c] < b[c] ? -1 : a[c] > b[c] ? 1 : 0) * (asc === false ? -1 : 1)); }

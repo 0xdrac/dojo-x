@@ -4,14 +4,12 @@ import { json } from "@/lib/server/util";
 import { describeRepeat, nextOccurrence } from "@/lib/recur";
 import { addDays, coachesOf, discsOf, endOf, occursOn, startOf } from "@/lib/classes";
 import { ensureSchedule } from "@/lib/server/standard";
-import { autoEnroll } from "@/lib/server/autoenroll";
 import { countsBetween } from "@/lib/server/bookings";
 
 /** Data the public pages need: the weekly timetable, live coupons and upcoming events. No auth. */
 export async function GET() {
   try {
     await ensureSchedule();
-    await autoEnroll();
     const [classes, coupons, events] = await Promise.all([
       T.list("classes", { eq: { active: true }, order: ["start_time"] }),
       T.list("coupons", { eq: { status: "active" } }),

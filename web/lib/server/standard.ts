@@ -23,6 +23,6 @@ export const standardClasses = () =>
 /** Members should always see a weekly timetable: if the academy has no classes at all, create the standard batches once. */
 export async function ensureSchedule() {
   const { T } = await import("./tables");
-  if ((await T.list("classes")).length) return;
+  if ((await T.list("classes", { limit: 1 })).length) return;
   for (const row of standardClasses()) await T.insert("classes", row);
 }
