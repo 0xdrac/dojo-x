@@ -18,8 +18,9 @@ const FILE = path.join(process.cwd(), ".data", "tables.json");
 const load = (): Record<string, Row[]> => { try { return JSON.parse(fs.readFileSync(FILE, "utf8")); } catch { return {}; } };
 const save = (db: Record<string, Row[]>) => { fs.mkdirSync(path.dirname(FILE), { recursive: true }); fs.writeFileSync(FILE, JSON.stringify(db, null, 2)); };
 const match = (r: Row, eq?: Eq) => !eq || Object.entries(eq).every(([k, v]) => r[k] === v);
-const sb = () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
-const must = <T,>(r: { data: T | null; error: { message: string } | null }): T => { if (r.error) throw new Error(r.error.message); return r.data as T; };
+let _sb: any = null;
+const sb = (): any => (_sb ??= createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } }));
+const must = (r: { data: any; error: { message: string } | null }): any => { if (r.error) throw new Error(r.error.message); return r.data; };
 
 export const T = {
   async list(table: string, o: ListOpts = {}): Promise<Row[]> {

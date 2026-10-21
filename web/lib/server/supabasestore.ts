@@ -1,8 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Account, Member, Staff, Store, Trial } from "./types";
 
-const sb = () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
-const must = <T,>(r: { data: T | null; error: { message: string } | null }): T => { if (r.error) throw new Error(r.error.message); return r.data as T; };
+let _sb: any = null;
+const sb = (): any => (_sb ??= createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } }));
+const must = (r: { data: any; error: { message: string } | null }): any => { if (r.error) throw new Error(r.error.message); return r.data; };
 
 const toAccount = (r: any): Account => ({ id: r.id, phone: r.phone, createdAt: r.created_at });
 const toMember = (r: any): Member => ({ id: r.id, accountId: r.account_id, rel: r.rel, name: r.name, dob: r.dob, email: r.email, gender: r.gender, memberCode: r.member_code, emergency: r.emergency, waiver: r.waiver, createdAt: r.created_at });

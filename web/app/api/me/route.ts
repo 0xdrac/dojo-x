@@ -7,9 +7,8 @@ import { T } from "@/lib/server/tables";
 export async function GET() {
   const sess = await getSession("member");
   if (!sess) return fail("Not signed in", 401);
-  const s = store(), account = await s.accountById(sess.sub);
+  const s = store(), [account, members] = await Promise.all([s.accountById(sess.sub), s.members(sess.sub)]);
   if (!account) return fail("Not signed in", 401);
-  const members = await s.members(account.id);
   const ids = new Set(members.map((m) => m.id)), idList = [...ids];
   // Plans and payments come from tables added with the payments update. If the database hasn't been migrated yet, sign-in must still work.
   const soft = async <T,>(p: Promise<T[]>): Promise<T[]> => { try { return await p; } catch (e: any) { console.warn("[api/me] " + e.message + " — run supabase/schema.sql"); return []; } };

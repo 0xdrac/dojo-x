@@ -10,17 +10,17 @@ import { countsBetween } from "@/lib/server/bookings";
 export async function GET() {
   try {
     await ensureSchedule();
-    const [classes, coupons, events] = await Promise.all([
+    const d = today(), window7 = Array.from({ length: 7 }, (_, i) => addDays(d, i));
+    const [classes, coupons, events, counts, cancelledRows] = await Promise.all([
       T.list("classes", { eq: { active: true }, order: ["start_time"] }),
       T.list("coupons", { eq: { status: "active" } }),
       T.list("events", { eq: { published: true } }),
+      countsBetween(d, addDays(d, 6)),
+      T.list("class_cancellations", { gte: ["on_date", d] }),
     ]);
-    const d = today();
-    const window7 = Array.from({ length: 7 }, (_, i) => addDays(d, i));
-    const counts = await countsBetween(d, addDays(d, 6));
     const running = classes.filter((c) => window7.some((x) => occursOn(c, x)));
-    const cancelled = (await T.list("class_cancellations", { gte: ["on_date", d] })).map((c) => `${c.class_id}|${c.on_date}`);
-    return json({
+    const cancelled = cancelledRows.map((c) => `${c.class_id}|${c.on_date}`);
+    const res = json({
       classes: running.map((c) => ({ id: c.id, d: c.day, t: c.start_time, dur: c.duration_min, disc: discsOf(c)[0], discs: discsOf(c), title: c.title, coach: coachesOf(c)[0], coaches: coachesOf(c), level: c.level, age: c.age_group, cap: c.capacity, from: startOf(c), to: endOf(c), booked: window7.reduce((n, x) => n + (occursOn(c, x) ? counts[`${c.id}|${x}`]?.booked ?? 0 : 0), 0) })),
       coupons: coupons
         .filter((c) => (!c.valid_until || c.valid_until >= d) && (!c.cap || c.uses < c.cap))
@@ -32,6 +32,8 @@ export async function GET() {
         .slice(0, 12),
       cancelled,
     });
+    res.headers.set("Cache-Control", "public, s-maxage=20, stale-while-revalidate=120");
+    return res;
   } catch (e: any) {
     return json({ error: e.message }, 500);
   }

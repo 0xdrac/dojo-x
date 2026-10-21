@@ -82,7 +82,7 @@ export const DojoAPI = {
 
   /** Loads the signed-in account into DXP (the portal's data object). Resolves false when not signed in. */
   async syncPortal(): Promise<boolean> {
-    const r = await call("GET", "/api/me");
+    const r = await (takePre("me") ?? call("GET", "/api/me"));
     if (!r.ok && r.status !== 401) { (window as any).__dxShell?.toast("Something went wrong loading your account. Please try again."); throw new Error(r.error); }
     if (!r.ok || !r.members?.length) return false;
     const demo = r.account.phone === DEMO_PHONE, members: any = {}, order: string[] = [];
@@ -130,7 +130,7 @@ export const DojoAPI = {
  * plus this account's bookings. Stored on DXP.schedule.
  */
 async function loadSchedule(): Promise<boolean> {
-  const r = await call("GET", "/api/me/schedule");
+  const [r] = await Promise.all([takePre("sched") ?? call("GET", "/api/me/schedule"), loadPublic()]);
   if (!r.ok) return false;
   const off: Set<string> = DOJO.cancelledSet || new Set(), occ: any[] = [];
   for (let i = 0; i < 7; i++) {
@@ -143,6 +143,15 @@ async function loadSchedule(): Promise<boolean> {
   }
   DXP.schedule = { ...r, loadedAt: Date.now(), occ };
   return true;
+}
+
+/** Requests the portal needs, started before its code has even loaded so they run in parallel instead of one after another. */
+const pre: Record<string, { p: Promise<R>; t: number }> = {};
+const takePre = (k: string) => { const x = pre[k]; delete pre[k]; return x && Date.now() - x.t < 15000 ? x.p : null; };
+export function prefetchPortal() {
+  if (typeof window === "undefined") return;
+  pre.me = { p: call("GET", "/api/me"), t: Date.now() }; pre.sched = { p: call("GET", "/api/me/schedule"), t: Date.now() };
+  loadPublic();
 }
 
 let publicLoad: Promise<void> | null = null;
