@@ -23,6 +23,8 @@ async function getAuth() {
 const friendly = (e: any) => {
   const c = String(e?.code || "");
   if (c.includes("too-many-requests")) return "Too many attempts. Please wait a few minutes and try again.";
+  if (c.includes("account-exists-with-different-credential")) return "This email is already registered another way. Use the email link instead.";
+  if (c.includes("network-request-failed")) return "Network problem. Check your connection and try again.";
   if (c.includes("invalid-email")) return "That email address doesn’t look right.";
   if (c.includes("invalid-action-code") || c.includes("expired-action-code")) return "That link has expired or was already used. Request a new one.";
   if (c.includes("invalid-verification-code")) return "That code doesn’t match. Check it and try again.";
@@ -61,4 +63,32 @@ export async function completeEmailLink(email: string): Promise<{ ok: boolean; i
     const cred = await signInWithEmailLink(auth, email, location.href); rem();
     return { ok: true, idToken: await cred.user.getIdToken() };
   } catch (e: any) { return { ok: false, error: friendly(e) }; }
+}
+
+/** Google sign-in: a popup, or a full-page redirect where popups are blocked (some phone browsers). */
+export async function signInWithGoogle(): Promise<{ ok: boolean; idToken?: string; redirecting?: boolean; error?: string }> {
+  try {
+    const auth = await getAuth(), { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import("firebase/auth");
+    const provider = new GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
+    try {
+      const cred = await signInWithPopup(auth, provider);
+      return { ok: true, idToken: await cred.user.getIdToken() };
+    } catch (e: any) {
+      const c = String(e?.code || "");
+      if (c.includes("popup-closed-by-user") || c.includes("cancelled-popup-request")) return { ok: false };
+      if (c.includes("popup-blocked") || c.includes("operation-not-supported")) { try { sessionStorage.setItem("dx-g-redirect", "1"); } catch {} await signInWithRedirect(auth, provider); return { ok: true, redirecting: true }; }
+      throw e;
+    }
+  } catch (e: any) { console.error("[firebase] google sign-in failed", e); return { ok: false, error: friendly(e) }; }
+}
+
+/** After a Google redirect sign-in, picks up the result when the page loads again. */
+export async function googleRedirectResult(): Promise<{ idToken?: string; error?: string } | null> {
+  try {
+    if (sessionStorage.getItem("dx-g-redirect") !== "1") return null;
+    sessionStorage.removeItem("dx-g-redirect");
+    const auth = await getAuth(), { getRedirectResult } = await import("firebase/auth");
+    const cred = await Promise.race([getRedirectResult(auth), new Promise<null>((r) => setTimeout(() => r(null), 8000))]);
+    return cred ? { idToken: await cred.user.getIdToken() } : null;
+  } catch (e: any) { return { error: friendly(e) }; }
 }
