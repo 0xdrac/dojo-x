@@ -159,8 +159,6 @@ function Members() {
   const all = ((data as any)?.members ?? []) as any[];
   const t = q.toLowerCase().replace(/\s/g, "");
   const list = all.filter((m) => !t || (m.name + m.phone + m.memberCode).toLowerCase().replace(/\s/g, "").includes(t));
-  const fam = sel ? all.filter((m) => m.accountId === sel.accountId && m.id !== sel.id) : [];
-  const age = (d?: string) => (d ? Math.floor((Date.now() - +new Date(d)) / 31557600000) : null);
   return (
     <>
       <Head title="Members" />
@@ -177,20 +175,7 @@ function Members() {
         ))}
       </div>
       {pay && <DeskPayment who={pay} onClose={() => setPay(null)} onSaved={() => { setPay(null); setSel(null); reload(); }} />}
-      {sel && !pay && (
-        <Sheet title={sel.name} onClose={() => setSel(null)}>
-          {[["Member ID", sel.memberCode], ["Plan", sel.plan?.status === "active" || sel.plan?.status === "expiring" ? `${sel.plan.disciplines.map((k: string) => D.disciplines[k]?.name ?? k).join(" + ")} until ${fmtDay(sel.plan.endsOn)} (${sel.plan.daysLeft} days)` : sel.plan?.status === "ended" ? `Ended ${fmtDay(sel.plan.endsOn)}` : "No plan yet"], ["Relation", sel.rel === "You" ? "Account owner" : sel.rel], ["Phone", `+91 ${sel.phone.slice(0, 5)} ${sel.phone.slice(5)}`], ["Date of birth", sel.dob ? `${fmtDay(sel.dob)} ${sel.dob.slice(0, 4)} (${age(sel.dob)} yrs)` : "—"], ["Gender", sel.gender || "—"], ["Email", sel.email || "—"],
-            ["Emergency contact", sel.emergency ? `${sel.emergency.name} · ${sel.emergency.phone}` : "—"], ["Waiver", sel.waiver ? `Signed ${sel.waiver.signed} by ${sel.waiver.by} (${sel.waiver.type.toLowerCase()})` : "Not signed"], ["Joined", fmtDay(sel.createdAt.slice(0, 10)) + " " + sel.createdAt.slice(0, 4)]].map(([k, v]) => (
-            <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "11px 0", borderBottom: "1px solid #212121" }}><span className="st-lb" style={{ margin: 0 }}>{(k as string).toUpperCase()}</span><span style={{ font: "600 14px/1.4 var(--sans)", color: "var(--fg)", textAlign: "right" }}>{v}</span></div>
-          ))}
-          {fam.length > 0 && <><div className="st-sec" style={{ marginTop: 22 }}>SAME ACCOUNT</div>{fam.map((f) => <button className="st-row" key={f.id} onClick={() => setSel(f)} style={{ padding: "10px 0" }}><span className="st-av">{initials(f.name)}</span><div style={{ flex: 1 }}><div className="st-t">{f.name}</div><div className="st-s">{f.rel.toUpperCase()}</div></div></button>)}</>}
-          <div style={{ display: "flex", gap: 8, marginTop: 24, flexWrap: "wrap" }}>
-            <button className="st-btn p" onClick={() => setPay([sel])}>Record payment</button>
-            <a className="st-btn" href={`https://wa.me/91${sel.phone}`} target="_blank" rel="noopener">WhatsApp</a>
-            <a className="st-btn" href={`tel:+91${sel.phone}`}>Call</a>
-          </div>
-        </Sheet>
-      )}
+      {sel && !pay && <MemberSheet id={sel.id} onClose={() => setSel(null)} onPay={(m) => setPay([m])} onChanged={reload} onOpen={(id) => setSel({ id })} />}
     </>
   );
 }
@@ -758,5 +743,127 @@ function DeskPayment({ who, onClose, onSaved }: { who: any[]; onClose: () => voi
       {err && <p className="st-err" role="alert">{err}</p>}
       <button className="st-btn p" disabled={busy || !q || !people.length} onClick={save}>{busy ? "Saving" : `Record ${q ? rupees(Number(amount) || q.amount) : ""} received`}</button>
     </Sheet>
+  );
+}
+
+/* ---------------- Member editor: everything about one student ---------------- */
+const RELS = ["You", "Child", "Spouse", "Parent", "Sibling"];
+function MemberSheet({ id, onClose, onPay, onChanged, onOpen }: { id: string; onClose: () => void; onPay: (m: any) => void; onChanged: () => void; onOpen: (id: string) => void }) {
+  const { toast } = useShell();
+  const { data, loading, reload } = useLoad(() => http("GET", "/api/staff/members/" + id), [id]);
+  const [tab, setTab] = useState<"profile" | "plans" | "classes" | "payments">("profile");
+  const d = data as any;
+  const [f, setF] = useState<any>(null);
+  useEffect(() => { if (d?.member) { const m = d.member; setF({ name: m.name, phone: m.phone, dob: m.dob || "", email: m.email || "", gender: m.gender || "", rel: m.rel, ename: m.emergency?.name || "", ephone: m.emergency?.phone || "", waiver: !!m.waiver }); } }, [d?.member?.id, d?.member?.name]);
+  const set = (k: string, v: any) => setF((x: any) => ({ ...x, [k]: v }));
+  const done = (m: string) => { toast(m); reload(); onChanged(); };
+  const save = async () => {
+    const m = d.member;
+    const body: any = { name: f.name, phone: f.phone, dob: f.dob, email: f.email, gender: f.gender, rel: f.rel, emergency: { name: f.ename, phone: f.ephone } };
+    if (!f.waiver && m.waiver) body.waiver = null; else if (f.waiver && !m.waiver) body.waiver = { by: f.name, type: "Typed" };
+    const r = await http("PATCH", "/api/staff/members/" + id, body); if (!r.ok) return toast(r.error!); done("Saved");
+  };
+  const remove = async () => {
+    if (!confirm(`Delete ${d.member.name} for good? Their plans, bookings and attendance are removed too. Payment records stay.`)) return;
+    const r = await http("DELETE", "/api/staff/members/" + id); if (!r.ok) return toast(r.error!); toast("Member deleted"); onChanged(); onClose();
+  };
+  const staff = useLoad(() => http("GET", "/api/staff/me"));
+  const owner = (staff.data as any)?.staff?.role === "owner" || (staff.data as any)?.role === "owner";
+  return (
+    <Sheet title={d?.member?.name ?? "Member"} onClose={onClose}>
+      {loading || !d || !f ? <Loading /> : (
+        <>
+          <div className="st-s" style={{ marginBottom: 12 }}>{d.member.memberCode} · +91 {d.member.phone}</div>
+          <div className="st-seg" style={{ marginBottom: 18 }}>{(["profile", "plans", "classes", "payments"] as const).map((k) => <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{k.toUpperCase()}</button>)}</div>
+          {tab === "profile" && (
+            <>
+              <Field label="FULL NAME"><input className="st-in" value={f.name} onChange={(e) => set("name", e.target.value)} /></Field>
+              <Field label="MOBILE (WHOLE ACCOUNT LOGS IN WITH THIS)"><input className="st-in" inputMode="numeric" value={f.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
+              <Field label="DATE OF BIRTH"><input className="st-in" type="date" value={f.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
+              <Field label="EMAIL"><input className="st-in" value={f.email} onChange={(e) => set("email", e.target.value)} /></Field>
+              <Field label="GENDER"><Chips value={f.gender} options={[["Male", "Male"], ["Female", "Female"], ["Other", "Other"], ["", "—"]]} onChange={(v) => set("gender", v)} /></Field>
+              <Field label="RELATIONSHIP TO ACCOUNT HOLDER"><Chips value={f.rel} options={RELS.map((r) => [r, r] as [string, string])} onChange={(v) => set("rel", v)} /></Field>
+              <Field label="EMERGENCY CONTACT NAME"><input className="st-in" value={f.ename} onChange={(e) => set("ename", e.target.value)} /></Field>
+              <Field label="EMERGENCY CONTACT PHONE"><input className="st-in" inputMode="numeric" value={f.ephone} onChange={(e) => set("ephone", e.target.value)} /></Field>
+              <Field label="WAIVER"><Chips value={f.waiver ? "yes" : "no"} options={[["yes", "Signed"], ["no", "Not signed"]]} onChange={(v) => set("waiver", v === "yes")} /></Field>
+              {d.family.length > 0 && <><div className="st-sec" style={{ marginTop: 18 }}>SAME ACCOUNT</div>{d.family.map((x: any) => <button className="st-row" key={x.id} onClick={() => onOpen(x.id)} style={{ padding: "10px 0" }}><span className="st-av">{initials(x.name)}</span><div style={{ flex: 1 }}><div className="st-t">{x.name}</div><div className="st-s">{x.rel.toUpperCase()}</div></div></button>)}</>}
+              <div style={{ display: "flex", gap: 8, marginTop: 22, flexWrap: "wrap" }}>
+                <button className="st-btn p" onClick={save}>Save changes</button>
+                <button className="st-btn" onClick={() => onPay(d.member)}>Record payment</button>
+                <a className="st-btn" href={`https://wa.me/91${d.member.phone}`} target="_blank" rel="noopener">WhatsApp</a>
+                <a className="st-btn" href={`tel:+91${d.member.phone}`}>Call</a>
+                {owner && <button className="st-btn d" onClick={remove}>Delete member</button>}
+              </div>
+            </>
+          )}
+          {tab === "plans" && <PlansTab d={d} id={id} done={done} />}
+          {tab === "classes" && <ClassesTab d={d} id={id} done={done} />}
+          {tab === "payments" && (
+            <div className="st-card">{!d.orders.length ? <div className="st-empty">No payments recorded.</div> : d.orders.map((o: any) => (
+              <div className="st-row" key={o.id} style={{ flexWrap: "wrap" }}>
+                <div style={{ flex: 1 }}><div className="st-t">{D.plans[o.duration]?.l} · {o.disciplines.map((k: string) => D.disciplines[k]?.name ?? k).join(" + ")}</div><div className="st-s">{o.invoice_no || "NO INVOICE"} · {fmtWhen(o.created_at).toUpperCase()}</div></div>
+                <span className="anton" style={{ fontSize: 20 }}>{rupees(o.amount)}</span><span className="st-pill">{o.status.toUpperCase()}</span>
+                {o.status === "paid" && <a className="st-btn sm" href={`/invoice?o=${o.id}`} target="_blank" rel="noopener">Invoice</a>}
+              </div>))}</div>
+          )}
+        </>
+      )}
+    </Sheet>
+  );
+}
+
+const iso = (s: string) => s.slice(0, 10);
+function PlansTab({ d, id, done }: { d: any; id: string; done: (m: string) => void }) {
+  const { toast } = useShell();
+  const [form, setForm] = useState<any>(null);
+  const blank = () => ({ disciplines: ["boxing"], starts_on: ymd(), ends_on: ymd(new Date(Date.now() + 30 * 864e5)), duration: "monthly" });
+  const save = async () => {
+    const r = form.id ? await http("PATCH", "/api/staff/memberships/" + form.id, form) : await http("POST", `/api/staff/members/${id}/memberships`, form);
+    if (!r.ok) return toast(r.error!); setForm(null); done(form.id ? "Plan updated" : "Plan added");
+  };
+  const del = async (m: any) => { if (!confirm("Remove this plan period?")) return; const r = await http("DELETE", "/api/staff/memberships/" + m.id); if (!r.ok) return toast(r.error!); done("Plan removed"); };
+  const batch = async (b: string) => { const r = await http("POST", `/api/staff/members/${id}/batch`, { batch: b }); if (!r.ok) return toast(r.error!); done("Batch updated"); };
+  const set = (k: string, v: any) => setForm((x: any) => ({ ...x, [k]: v }));
+  return (
+    <>
+      <div className="st-sec">PLAN PERIODS</div>
+      <div className="st-card">{!d.memberships.length ? <div className="st-empty">No plans yet.</div> : d.memberships.map((m: any) => (
+        <div className="st-row" key={m.id} style={{ flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 180 }}><div className="st-t">{m.disciplines.map((k: string) => D.disciplines[k]?.name ?? k).join(" + ")}</div><div className="st-s">{fmtDay(iso(m.starts_on)).toUpperCase()} → {fmtDay(iso(m.ends_on)).toUpperCase()}{m.order_id ? "" : " · ADDED BY STAFF"}</div></div>
+          <button className="st-btn sm" onClick={() => setForm({ id: m.id, disciplines: m.disciplines, starts_on: iso(m.starts_on), ends_on: iso(m.ends_on), duration: m.duration })}>Edit</button>
+          <button className="st-btn sm d" onClick={() => del(m)}>Remove</button>
+        </div>))}</div>
+      {!form && <button className="st-btn p" style={{ marginTop: 12 }} onClick={() => setForm(blank())}>+ Add plan period</button>}
+      {form && (
+        <div className="st-card" style={{ padding: 16, marginTop: 12 }}>
+          <Field label="DISCIPLINES"><Multi value={form.disciplines} options={D.order.map((k: string) => [k, D.disciplines[k].name])} onChange={(v) => set("disciplines", v)} /></Field>
+          <Field label="STARTS"><input className="st-in" type="date" value={form.starts_on} onChange={(e) => set("starts_on", e.target.value)} /></Field>
+          <Field label="ENDS (LAST DAY)"><input className="st-in" type="date" value={form.ends_on} onChange={(e) => set("ends_on", e.target.value)} /></Field>
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}><button className="st-btn p" onClick={save}>{form.id ? "Save plan" : "Add plan"}</button><button className="st-btn" onClick={() => setForm(null)}>Cancel</button></div>
+        </div>
+      )}
+      <div className="st-sec" style={{ marginTop: 22 }}>EVENING BATCH (AUTO-BOOKED WEEKLY)</div>
+      <Chips value={d.batch} options={[["amateur", "7–8 PM Amateur"], ["pro", "8–9 PM Intermediate & Pro"]]} onChange={batch} />
+    </>
+  );
+}
+
+function ClassesTab({ d, id, done }: { d: any; id: string; done: (m: string) => void }) {
+  const { toast } = useShell();
+  const pub = useLoad(() => http("GET", "/api/staff/classes"));
+  const [cid, setCid] = useState(""), [date, setDate] = useState(ymd());
+  const classes = (((pub.data as any)?.classes ?? []) as any[]).filter((c) => c.active && occursOn(c, date));
+  const add = async () => { const r = await http("POST", `/api/staff/members/${id}/bookings`, { classId: cid, date }); if (!r.ok) return toast(r.error!); done((r as any).status === "waitlist" ? "Added to the waitlist" : "Booked"); };
+  const cancel = async (b: any) => { const r = await http("DELETE", `/api/staff/members/${id}/bookings?booking=${b.id}`); if (!r.ok) return toast(r.error!); done("Booking cancelled"); };
+  return (
+    <>
+      <div className="st-sec">UPCOMING BOOKINGS</div>
+      <div className="st-card">{!d.bookings.length ? <div className="st-empty">Nothing booked.</div> : d.bookings.map((b: any) => (
+        <div className="st-row" key={b.id}><div style={{ flex: 1 }}><div className="st-t">{b.title}</div><div className="st-s">{fmtDay(b.date).toUpperCase()} · {b.time ? time12(b.time) : ""}{b.status === "waitlist" ? " · WAITLIST" : ""}</div></div><button className="st-btn sm d" onClick={() => cancel(b)}>Cancel</button></div>))}</div>
+      <div className="st-sec" style={{ marginTop: 22 }}>BOOK INTO A CLASS</div>
+      <Field label="DATE"><input className="st-in" type="date" value={date} onChange={(e) => { setDate(e.target.value); setCid(""); }} /></Field>
+      <Field label="CLASS"><Chips value={cid} options={classes.length ? classes.map((c: any) => [c.id, `${time12(c.start_time)} · ${c.title}`] as [string, string]) : [["", "No classes that day"]]} onChange={setCid} /></Field>
+      <button className="st-btn p" style={{ marginTop: 12 }} disabled={!cid} onClick={add}>Book member</button>
+    </>
   );
 }

@@ -23,6 +23,7 @@ const code = (db: DB) => `DX-${String(new Date().getFullYear()).slice(2)}-${Stri
 export const fileStore: Store = {
   async accountByPhone(phone) { return load().accounts.find((a) => a.phone === phone) ?? null; },
   async accountById(id) { return load().accounts.find((a) => a.id === id) ?? null; },
+  async setAccountPhone(id, phone) { const db = load(); const a = db.accounts.find((x) => x.id === id); if (!a) return null; a.phone = phone; save(db); return a; },
   async createAccount(phone) { const db = load(); const a = { id: randomUUID(), phone, createdAt: now() }; db.accounts.push(a); save(db); return a; },
   async members(accountId) { return load().members.filter((m) => m.accountId === accountId); },
   async allMembers() { const db = load(); return db.members.map((m) => ({ ...m, phone: db.accounts.find((a) => a.id === m.accountId)?.phone ?? "" })); },

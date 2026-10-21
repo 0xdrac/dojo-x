@@ -14,6 +14,7 @@ export type Staff = { id: string; phone: string; name: string; role: "owner" | "
 export interface Store {
   accountByPhone(phone: string): Promise<Account | null>;
   accountById(id: string): Promise<Account | null>;
+  setAccountPhone(id: string, phone: string): Promise<Account | null>;
   createAccount(phone: string): Promise<Account>;
   members(accountId: string): Promise<Member[]>;
   allMembers(): Promise<(Member & { phone: string })[]>;

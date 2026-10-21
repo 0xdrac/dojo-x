@@ -67,3 +67,14 @@ export function eventRow(b: any, partial = false): { row?: Record<string, any>; 
   }
   return { row };
 }
+
+const ALL_DISC = ["mma", "boxing", "kickboxing", "muaythai", "karate", "gymnastics", "yoga"];
+/** A hand-edited plan period: which disciplines, from / to dates (inclusive). */
+export function membershipRow(b: any): { row?: Record<string, any>; error?: string } {
+  const disciplines = Array.isArray(b.disciplines) ? [...new Set<string>(b.disciplines.map(String))] : [];
+  if (!disciplines.length || disciplines.some((d) => !ALL_DISC.includes(d))) return { error: "Pick at least one discipline." };
+  const date = (s: any) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+  if (!date(b.starts_on) || !date(b.ends_on)) return { error: "Enter start and end dates." };
+  if (b.ends_on < b.starts_on) return { error: "The end date is before the start date." };
+  return { row: { disciplines, duration: ["monthly", "quarterly", "half", "annual"].includes(b.duration) ? b.duration : "monthly", starts_on: b.starts_on, ends_on: b.ends_on } };
+}

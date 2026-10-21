@@ -12,6 +12,7 @@ const toStaff = (r: any): Staff => ({ id: r.id, phone: r.phone, name: r.name, ro
 export const supabaseStore: Store = {
   async accountByPhone(phone) { const r = await sb().from("accounts").select("*").eq("phone", phone).maybeSingle(); return r.data ? toAccount(must(r)) : null; },
   async accountById(id) { const r = await sb().from("accounts").select("*").eq("id", id).maybeSingle(); return r.data ? toAccount(must(r)) : null; },
+  async setAccountPhone(id, phone) { const r = await sb().from("accounts").update({ phone }).eq("id", id).select().maybeSingle(); return r.data ? toAccount(must(r)) : null; },
   async createAccount(phone) { return toAccount(must(await sb().from("accounts").insert({ phone }).select().single())); },
   async members(accountId) { return must(await sb().from("members").select("*").eq("account_id", accountId).order("created_at")).map(toMember); },
   async allMembers() {
