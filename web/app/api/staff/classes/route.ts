@@ -1,10 +1,12 @@
 import { T } from "@/lib/server/tables";
 import { isRes, staffGuard } from "@/lib/server/guard";
 import { classRow } from "@/lib/server/validate";
+import { ensureSchedule } from "@/lib/server/standard";
 import { body, fail, json } from "@/lib/server/util";
 
 export async function GET() {
   const g = await staffGuard(); if (isRes(g)) return g.res;
+  await ensureSchedule();
   const [classes, cancellations] = await Promise.all([T.list("classes", { order: ["start_time"] }), T.list("class_cancellations")]);
   return json({ classes, cancellations });
 }

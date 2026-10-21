@@ -289,11 +289,6 @@ function Schedule({ owner }: { owner: boolean }) {
   };
   const isCancelled = (c: any) => { const n = nextRun(c); return !!n && cancels.some((x) => x.class_id === c.id && x.on_date === n); };
 
-  const clearAll = async () => {
-    if (!confirm(`Delete all ${classes.length} classes from the weekly schedule? This can't be undone.`)) return;
-    const r = await http("DELETE", "/api/staff/classes"); if (!r.ok) return toast(r.error!);
-    toast("Schedule cleared"); reload();
-  };
   const setupStandard = async () => {
     const replace = classes.filter((c) => discsOf(c).every((d: string) => ["mma", "boxing", "kickboxing", "muaythai"].includes(d))).length;
     if (!confirm(`Set up the standard Mon–Fri evening batches?\n\n7–8 PM Amateur and 8–9 PM Intermediate & Pro, teens and adults together:\nMon Boxing · Tue Kickboxing & Muay Thai · Wed Jiu-Jitsu · Thu MMA Fundamentals · Fri Sparring\n\nThis REPLACES your ${replace} existing boxing / kickboxing / Muay Thai / MMA class${replace === 1 ? "" : "es"} (and their bookings). Karate, gymnastics and yoga are not touched.`)) return;
@@ -312,8 +307,7 @@ function Schedule({ owner }: { owner: boolean }) {
   return (
     <>
       <Head title="Schedule">
-        {owner && <button className="st-btn" onClick={setupStandard}>Set up Mon–Fri batches</button>}
-        {owner && classes.length > 0 && <button className="st-btn d" onClick={clearAll}>Clear all classes</button>}
+        {owner && <button className="st-btn" onClick={setupStandard}>Reset to standard batches</button>}
         {owner && <button className="st-btn p" onClick={() => setForm(blankClass(day))}>+ Add class</button>}
       </Head>
       {!owner && <ReadOnly />}

@@ -19,3 +19,10 @@ export const standardClasses = () =>
     discipline: d.disciplines[0], disciplines: d.disciplines, coach: d.coaches[0], coaches: d.coaches,
     level: b.level, age_group: "Teens & Adults", capacity: 25, active: true,
   })));
+
+/** Members should always see a weekly timetable: if the academy has no classes at all, create the standard batches once. */
+export async function ensureSchedule() {
+  const { T } = await import("./tables");
+  if ((await T.list("classes")).length) return;
+  for (const row of standardClasses()) await T.insert("classes", row);
+}
