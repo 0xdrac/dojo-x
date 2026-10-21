@@ -23,7 +23,7 @@ export default function PhoneLogin() {
       const h = location.hash.slice(1);
       if (h === "logout") { await DojoAPI.logout(); history.replaceState(null, "", "/login"); return setMode("phone"); }
       if (h === "onboard" || h === "family") return setMode("app");
-      const me = await DojoAPI.me(); if (me.ok) return setMode("app");
+      const me = await DojoAPI.me(); if (me.ok) { if (!me.onboarded) history.replaceState(null, "", "/login#onboard"); return setMode("app"); }
       const st = await DojoAPI.staffMe(); if (st.ok) { location.href = st.staff.role === "coach" ? "/coach-app" : "/admin"; return; }
       setMode("phone");
     };
