@@ -1,6 +1,6 @@
 import { T } from "./tables";
 import { istNow } from "./guard";
-import { addDays, discsOf, occursOn } from "@/lib/classes";
+import { addDays, discsOf, occursOn, planCovers } from "@/lib/classes";
 import type { Member } from "./types";
 
 type Row = Record<string, any>;
@@ -58,7 +58,7 @@ export async function bookSeat(member: Member, classId: string, date: string): P
   if (age >= 13 && cls.age_group === "Kids") return { error: "This is a kids’ class.", code: 422 };
 
   const discs = discsOf(cls), plans = await T.list("memberships", { eq: { member_id: member.id } });
-  if (!plans.some((p) => p.starts_on <= date && p.ends_on >= date && p.disciplines.some((d: string) => discs.includes(d)))) {
+  if (!plans.some((p) => p.starts_on <= date && p.ends_on >= date && planCovers(p.disciplines, discs))) {
     return { error: plans.some((p) => p.ends_on >= date) || plans.length ? "Your plan doesn’t cover this class on that date. Renew or add the discipline in My Plan." : "You need an active plan to book. Pick a plan in My Plan.", code: 402 };
   }
 

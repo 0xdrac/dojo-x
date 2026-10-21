@@ -34,3 +34,8 @@ export { addDays };
 
 /** Free trials can only be booked for these weekdays (0 = Monday ... 3 = Thursday). */
 export const TRIAL_WEEKDAYS = [0, 1, 2, 3];
+
+/** The four combat disciplines share one weekly timetable: a plan in any of them covers every class made up only of them. */
+export const COMBAT = ["mma", "boxing", "kickboxing", "muaythai"];
+export const planCovers = (planDiscs: string[], classDiscs: string[]) =>
+  classDiscs.some((d) => planDiscs.includes(d)) || (classDiscs.every((d) => COMBAT.includes(d)) && planDiscs.some((d) => COMBAT.includes(d)));

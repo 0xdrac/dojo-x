@@ -37,7 +37,8 @@ class Screen extends DCLogic {
     if (this.lastTot !== undefined && this.lastTot !== this.tot) M.pop(this.rTotRef.current);
     this.lastTot = this.tot;
   }
-  ok(m, c) { return c.discs.some(k => m.plan.disc.includes(k)) && (m.age < 13 ? c.age === 'Kids' : c.age !== 'Kids'); }
+  covers(m, c) { return c.discs.some(k => m.plan.disc.includes(k)) || (c.discs.every(k => ['mma', 'boxing', 'kickboxing', 'muaythai'].includes(k)) && m.plan.disc.some(k => ['mma', 'boxing', 'kickboxing', 'muaythai'].includes(k))); }
+  ok(m, c) { return (c.discs.some(k => m.plan.disc.includes(k)) || (c.discs.every(k => ['mma', 'boxing', 'kickboxing', 'muaythai'].includes(k)) && m.plan.disc.some(k => ['mma', 'boxing', 'kickboxing', 'muaythai'].includes(k)))) && (m.age < 13 ? c.age === 'Kids' : c.age !== 'Kids'); }
   /** Bookings and waitlist places for every member of the account, from the live schedule. */
   fromSchedule() {
     const S = DXP.schedule, b = {}, w = {};
@@ -108,7 +109,7 @@ class Screen extends DCLogic {
       const left = c.cap - taken;
       let label, act = () => {}, dis = false, bg = 'transparent', bd = '#2E2E2E', fg = '#F5F5F5';
       if (past) { label = booked ? 'ATTENDED' : 'ENDED'; dis = true; fg = '#9A9A9A'; }
-      else if (!ok) { label = c.discs.some(k => m.plan.disc.includes(k)) ? 'NOT FOR AGE' : 'ADD TO PLAN'; act = () => c.discs.some(k => m.plan.disc.includes(k)) ? null : (this.setState({ rSel: [...p0.disc, c.disc] }), this.go('plan')); fg = '#C9C9C9'; dis = c.discs.some(k => m.plan.disc.includes(k)); }
+      else if (!ok) { label = this.covers(m, c) ? 'NOT FOR AGE' : 'ADD TO PLAN'; act = () => this.covers(m, c) ? null : (this.setState({ rSel: [...p0.disc, c.disc] }), this.go('plan')); fg = '#C9C9C9'; dis = this.covers(m, c); }
       else if (frozen) { label = 'FROZEN'; dis = true; fg = '#9A9A9A'; }
       else if (booked) { label = 'BOOKED ✓'; bg = 'oklch(0.74 0.15 150 / .15)'; bd = 'oklch(0.74 0.15 150)'; act = () => this.setState({ sheet: 'cancel', cx: c.id }); }
       else if (full) { label = onWait ? 'ON WAITLIST · #' + s.wait[id][c.id] : 'JOIN WAITLIST'; bd = onWait ? 'oklch(0.82 0.14 75)' : '#2E2E2E'; act = () => onWait ? this.leaveWait(c) : this.book(c); }
