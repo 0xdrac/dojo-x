@@ -241,3 +241,23 @@ create table if not exists batch_prefs (
   batch     text not null default 'amateur'
 );
 alter table batch_prefs enable row level security;
+
+-- Mobile + 6-digit PIN sign-in. A WhatsApp code (sent through n8n) proves the number when a PIN is set or reset.
+create table if not exists credentials (
+  subject_id   text primary key,           -- account id or staff id
+  kind         text not null,              -- member / staff
+  pin_hash     text,
+  fails        int  not null default 0,
+  locked_until timestamptz
+);
+create table if not exists otp_codes (
+  phone        text primary key,
+  code_hash    text not null,
+  expires_at   timestamptz not null,
+  tries        int  not null default 0,
+  last_sent    timestamptz,
+  window_start timestamptz,
+  sends        int  not null default 0
+);
+alter table credentials enable row level security;
+alter table otp_codes   enable row level security;

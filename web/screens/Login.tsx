@@ -14,7 +14,7 @@ class Screen extends DCLogic {
   constructor(p) {
     super(p);
     const h = (location.hash || '').slice(1);
-    this.state = { w: window.innerWidth, step: h === 'family' ? 'family' : h === 'onboard' ? 'profile' : 'phone', fromPortal: h === 'family', phone: '', phTouched: false, phErr: '', otp: '', otpErr: '', busy: false, timer: 30, f: { name: '', dob: '', email: '', ename: '', ephone: '', mobile: '' }, gender: '', tried: false, read: false, sig: 'draw', drawn: false, typed: '', agree: false, fam: [], fName: '', fRel: 'Child', fDob: '', fTried: false };
+    this.state = { w: window.innerWidth, step: h === 'family' ? 'family' : h === 'onboard' ? 'profile' : 'phone', fromPortal: h === 'family', phone: '', phTouched: false, phErr: '', otp: '', otpErr: '', busy: false, timer: 30, f: { name: '', dob: '', email: '', ename: '', ephone: '' }, gender: '', tried: false, read: false, sig: 'draw', drawn: false, typed: '', agree: false, fam: [], fName: '', fRel: 'Child', fDob: '', fTried: false };
   }
   root = React.createRef(); stepRef = React.createRef(); otpRef = React.createRef(); canvasRef = React.createRef(); doneRef = React.createRef();
   componentDidMount() { this._rs = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._rs); DojoReady(() => DojoMotion.init(this.root.current)); this.bindCanvas(); this.boot(); }
@@ -25,7 +25,6 @@ class Screen extends DCLogic {
     if (h === 'logout') { await DojoAPI.logout(); history.replaceState(null, '', '/login'); return; }
     const r = await DojoAPI.me();
     if (!r.ok) { const st = await DojoAPI.staffMe(); if (st.ok && h !== 'onboard') DojoMotion.go(st.staff.role === 'coach' ? '/coach-app' : '/admin'); return; }
-    if (DojoAPI.realOtp && r.account && r.account.email) this.setState(st => ({ f: { ...st.f, email: st.f.email || r.account.email } }));
     if (h === 'family') { this.setState({ fam: r.members.filter(m => m.rel !== 'You').map(m => ({ id: m.id, name: m.name, rel: m.rel, dob: m.dob || '' })) }); return; }
     if (r.onboarded && h !== 'onboard') this.afterLogin();
   }
@@ -67,7 +66,7 @@ class Screen extends DCLogic {
     const s = this.state, w = s.w, desk = w >= 1024, mob = w < 768, ob = ['profile', 'waiver', 'family'].includes(s.step);
     const SIDE = { phone: ['MEMBERS', 'Step on', 'the mat.', 'Book classes, manage your plan and track your belt journey, for you and your family.'], otp: ['ONE MORE STEP', 'Almost', 'there.', 'Codes expire in 10 minutes. Never share yours, not even with us.'], profile: ['ONBOARDING · 1/3', 'Tell us', 'about you.', 'Two minutes now saves ten at the front desk.'], waiver: ['ONBOARDING · 2/3', 'Train', 'safe.', 'Every member signs once. Kids are signed for by a parent or guardian.'], family: ['ONBOARDING · 3/3', 'Bring the', 'family.', 'One account, one login. Switch between members any time.'], done: ['WELCOME', 'Welcome to', 'Dojo X.', 'Your first class is on the house.'] }[s.step];
     const f = s.f, set = k => e => this.setState({ f: { ...s.f, [k]: e.target.value } });
-    const errs = { name: f.name.trim().split(' ').filter(Boolean).length < 2 ? 'Enter your first and last name.' : '', dob: !f.dob ? 'Add your date of birth.' : '', email: f.email && !/^\S+@\S+\.\S+$/.test(f.email) ? 'That email looks incomplete.' : '', ename: !f.ename.trim() ? 'Add someone we can call in an emergency.' : '', ephone: f.ephone.replace(/\D/g, '').length !== 10 ? 'Enter a 10-digit mobile number.' : '', ...(DojoAPI.realOtp ? { mobile: !/^[6-9]\d{9}$/.test((f.mobile || '').replace(/\D/g, '')) ? 'Enter your 10-digit mobile number.' : '' } : {}) };
+    const errs = { name: f.name.trim().split(' ').filter(Boolean).length < 2 ? 'Enter your first and last name.' : '', dob: !f.dob ? 'Add your date of birth.' : '', email: f.email && !/^\S+@\S+\.\S+$/.test(f.email) ? 'That email looks incomplete.' : '', ename: !f.ename.trim() ? 'Add someone we can call in an emergency.' : '', ephone: f.ephone.replace(/\D/g, '').length !== 10 ? 'Enter a 10-digit mobile number.' : '' };
     const fld = (k, label, ph, type, im) => ({ label, ph, type, im, v: f[k], set: set(k), bad: s.tried && !!errs[k], err: errs[k], bd: s.tried && errs[k] ? 'oklch(0.70 0.19 45)' : '#2E2E2E' });
     const stepIdx = { profile: 0, waiver: 1, family: 2 }[s.step];
     const first = (f.name.trim().split(' ')[0]) || 'fighter';
@@ -88,10 +87,10 @@ class Screen extends DCLogic {
       boxes: Array.from({ length: 6 }, (_, i) => ({ v: s.otp[i] || '', bd: s.otpErr ? 'oklch(0.70 0.19 45)' : i === s.otp.length ? '#F5F5F5' : s.otp[i] ? '#9A9A9A' : '#2E2E2E' })),
       otpErr: !!s.otpErr, otpErrText: s.otpErr, verify: this.verify, verBg: s.otp.length === 6 ? '#C8102E' : '#333333', verLabel: s.busy ? 'VERIFYING' : 'VERIFY →',
       realOtp: DojoAPI.realOtp, cantResend: s.timer > 0, resendC: s.timer > 0 ? '#9A9A9A' : '#F5F5F5', resendLabel: s.timer > 0 ? `Resend code in 0:${String(s.timer).padStart(2, '0')}` : 'Resend code', resend: () => { this.setState({ busy: true }); DojoAPI.requestOtp(this.digits()).then(r => { this.setState({ busy: false }); if (!r.ok) return DojoMotion.toast(r.error); this.setState({ timer: 30, otp: '', otpErr: '' }); this.tick(); DojoMotion.toast('New code sent'); }); },
-      fields: [fld('name', 'FULL NAME', 'Aarav Sharma', 'text', 'text'), ...(DojoAPI.realOtp ? [fld('mobile', 'YOUR MOBILE · WHATSAPP', '98450 21734', 'tel', 'numeric')] : []), fld('dob', 'DATE OF BIRTH', '', 'date', 'text'), fld('email', DojoAPI.realOtp ? 'CONTACT EMAIL · FOR INVOICES' : 'EMAIL · OPTIONAL, FOR INVOICES', 'you@gmail.com', 'email', 'email')],
+      fields: [fld('name', 'FULL NAME', 'Aarav Sharma', 'text', 'text'), fld('dob', 'DATE OF BIRTH', '', 'date', 'text'), fld('email', 'EMAIL · OPTIONAL, FOR INVOICES', 'you@gmail.com', 'email', 'email')],
       efields: [fld('ename', 'NAME', 'Neha Sharma', 'text', 'text'), fld('ephone', 'MOBILE', '99107 33482', 'tel', 'numeric')],
       genders: ['Male', 'Female', 'Other'].map(g => ({ label: g, on: s.gender === g, bg: s.gender === g ? 'rgba(200,16,46,.14)' : '#141414', bd: s.gender === g ? '#C8102E' : '#2E2E2E', pick: () => this.setState({ gender: g }) })),
-      saveProfile: e => { e.preventDefault(); if (Object.values(errs).some(Boolean)) { this.setState({ tried: true }); return; } this.setState({ busy: true }); DojoAPI.saveProfile({ name: f.name, dob: f.dob, email: f.email, gender: s.gender, ename: f.ename, ephone: f.ephone, ...(DojoAPI.realOtp ? { mobile: f.mobile } : {}) }).then(r => { this.setState({ busy: false }); if (!r.ok) return DojoMotion.toast(r.error); this.setState({ step: 'waiver', code: r.member.memberCode }); }); },
+      saveProfile: e => { e.preventDefault(); if (Object.values(errs).some(Boolean)) { this.setState({ tried: true }); return; } this.setState({ busy: true }); DojoAPI.saveProfile({ name: f.name, dob: f.dob, email: f.email, gender: s.gender, ename: f.ename, ephone: f.ephone }).then(r => { this.setState({ busy: false }); if (!r.ok) return DojoMotion.toast(r.error); this.setState({ step: 'waiver', code: r.member.memberCode }); }); },
       onWScroll: e => { const el = e.currentTarget; if (!s.read && el.scrollTop + el.clientHeight >= el.scrollHeight - 8) this.setState({ read: true }); },
       notRead: !s.read, sigOp: s.read ? 1 : .4,
       sigTabs: [['draw', 'DRAW'], ['type', 'TYPE']].map(([k, label]) => ({ label, on: s.sig === k, bd: s.sig === k ? '#C8102E' : 'transparent', fg: s.sig === k ? '#F5F5F5' : '#9A9A9A', pick: () => this.setState({ sig: k }) })),

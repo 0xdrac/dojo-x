@@ -33,3 +33,16 @@ export async function setSession(s: Omit<Session, "exp">) {
   (await cookies()).set(NAME, encode(s), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: DAYS * 86400 });
 }
 export async function clearSession() { (await cookies()).delete(NAME); }
+
+/** Short-lived signed token for multi-step flows (e.g. "this phone just proved it owns the number, let it set a PIN"). */
+export function signShort(data: Record<string, any>, ttlMs: number): string {
+  const body = Buffer.from(JSON.stringify({ ...data, exp: Date.now() + ttlMs })).toString("base64url");
+  return `${body}.${sign(body)}`;
+}
+export function readShort(token: unknown): Record<string, any> | null {
+  const [body, sig] = String(token || "").split(".");
+  if (!body || !sig) return null;
+  const want = sign(body);
+  if (sig.length !== want.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return null;
+  try { const d = JSON.parse(Buffer.from(body, "base64url").toString()); return d.exp > Date.now() ? d : null; } catch { return null; }
+}

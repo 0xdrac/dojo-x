@@ -2,7 +2,6 @@
 // @ts-nocheck
 // Browser-side client for the /api routes. Exposed to the ported screens as window.DojoAPI (see bootstrap.ts).
 import DXP from "./portal";
-import { firebaseEnabled } from "./firebase";
 import DOJO from "./dojo";
 import { addDays, normalizeClasses, occursOn, weekdayOf } from "./classes";
 
@@ -67,10 +66,14 @@ export const DojoAPI = {
   bookClass: (memberId: string, classId: string, date: string) => call("POST", "/api/me/bookings", { memberId, classId, date }),
   cancelBooking: (id: string) => call("DELETE", `/api/me/bookings/${id}`),
   loadSchedule,
-  realOtp: firebaseEnabled(),
+  realOtp: process.env.NEXT_PUBLIC_AUTH_MODE === "pin",
   requestOtp: (phone: string) => call("POST", "/api/auth/request", { phone }),
   verify: (phone: string, code: string) => call("POST", "/api/auth/verify", { phone, code }),
-  verifyToken: (idToken: string) => call("POST", "/api/auth/verify", { idToken }),
+  pinStatus: (phone: string) => call("POST", "/api/auth/pin/status", { phone }),
+  pinSend: (phone: string) => call("POST", "/api/auth/pin/send", { phone }),
+  pinCheck: (phone: string, code: string) => call("POST", "/api/auth/pin/check", { phone, code }),
+  pinSet: (setupToken: string, pin: string) => call("POST", "/api/auth/pin/set", { setupToken, pin }),
+  pinLogin: (phone: string, pin: string) => call("POST", "/api/auth/pin/login", { phone, pin }),
   logout: () => call("POST", "/api/auth/logout"),
   me: () => call("GET", "/api/me"),
   saveProfile: (f: any) => call("PUT", "/api/me/profile", f),
