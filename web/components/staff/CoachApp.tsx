@@ -16,6 +16,7 @@ export default function CoachApp() {
     api.requireStaff().then((s) => { if (s) { setStaff(s); setCoach(s.coachKey || (s.role === "owner" ? "aman" : "")); } });
   }, []);
   const classes = useLoad(() => http("GET", "/api/staff/classes"), [staff?.id]);
+  const bk = useLoad(() => http("GET", `/api/staff/bookings?date=${date}`), [date, staff?.id]);
   const att = useLoad(() => http("GET", `/api/staff/attendance?date=${date}`), [date, staff?.id]);
 
   if (!staff) return <div className="st-main mono" style={{ color: "var(--dim)" }}>Loading…</div>;
@@ -23,6 +24,7 @@ export default function CoachApp() {
   const mine = (((classes.data as any)?.classes ?? []) as any[]).filter((c) => c.active && occursOn(c, date) && (!coach || coachesOf(c).includes(coach))).sort((a, b) => a.start_time.localeCompare(b.start_time));
   const rows = (((att.data as any)?.attendance ?? []) as any[]);
   const count = (id: string, st?: Status) => rows.filter((a) => a.class_id === id && (st ? a.status === st : a.status !== "absent")).length;
+  const booked = (id: string) => (((bk.data as any)?.bookings ?? []) as any[]).filter((b) => b.classId === id && b.status === "booked").length;
   const isToday = date === ymd();
 
   return (
@@ -63,7 +65,7 @@ export default function CoachApp() {
                     <div className="st-t" style={{ marginTop: 6, textDecoration: off ? "line-through" : "none" }}>{c.title}</div>
                     <div className="st-s">{discNames(c).toUpperCase()} · {c.level.toUpperCase()} · {c.age_group.toUpperCase()}</div>
                   </div>
-                  {off ? <span className="st-pill">CANCELLED</span> : <span className="st-pill">{count(c.id)} / {c.capacity} · OPEN →</span>}
+                  {off ? <span className="st-pill">CANCELLED</span> : <span className="st-pill">{booked(c.id)} BOOKED · {count(c.id)} IN →</span>}
                 </button>
               );
             })}
