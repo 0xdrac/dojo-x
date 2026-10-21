@@ -7,7 +7,7 @@ export type Member = {
 export type Account = { id: string; phone: string; email?: string | null; createdAt: string };
 export type Trial = {
   id: string; accountId?: string | null; name: string; phone: string; email?: string | null; discipline: string; ageGroup?: string | null;
-  experience?: string | null; slot?: { classId?: string; date?: string; title: string; day: string; time: string; coach?: string } | null; status: string; createdAt: string;
+  experience?: string | null; age?: number | null; parentName?: string | null; slot?: { classId?: string; date?: string; title: string; day: string; time: string; coach?: string } | null; status: string; createdAt: string;
 };
 export type Staff = { id: string; phone: string; email?: string | null; name: string; role: "owner" | "coach" | "frontdesk"; coachKey?: string | null };
 

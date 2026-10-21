@@ -593,7 +593,7 @@ function Trials() {
             <div style={{ flex: "1 1 220px", minWidth: 0 }}>
               <div className="st-t">{t.name}</div>
               <div className="st-s">{(D.disciplines[t.discipline]?.name ?? t.discipline).toUpperCase()} · {t.slot ? `${t.slot.title.toUpperCase()} · ${t.slot.day.toUpperCase()} ${t.slot.time.toUpperCase()}` : "NO SLOT"} · BOOKED {fmtDay(t.createdAt.slice(0, 10)).toUpperCase()}</div>
-              <div className="st-s">+91 {t.phone.slice(0, 5)} {t.phone.slice(5)}{t.ageGroup ? ` · ${t.ageGroup.toUpperCase()}` : ""}{t.experience ? ` · ${t.experience.toUpperCase()}` : ""}</div>
+              <div className="st-s">+91 {t.phone.slice(0, 5)} {t.phone.slice(5)}{t.age ? ` · AGE ${t.age}` : t.ageGroup ? ` · ${t.ageGroup.toUpperCase()}` : ""}{t.parentName ? ` · PARENT: ${t.parentName.toUpperCase()}` : ""}{t.experience ? ` · ${t.experience.toUpperCase()}` : ""}</div>
             </div>
             <a className="st-btn sm" href={`https://wa.me/91${t.phone}`} target="_blank" rel="noopener">WhatsApp</a>
             <select className="st-in" style={{ width: 130, height: 36, fontSize: 12 }} value={t.status} onChange={(e) => set(t.id, e.target.value)} aria-label="Trial status">
@@ -756,6 +756,7 @@ function MemberSheet({ id, onClose, onPay, onChanged, onOpen }: { id: string; on
   const [f, setF] = useState<any>(null);
   useEffect(() => { if (d?.member) { const m = d.member; setF({ name: m.name, phone: m.phone, dob: m.dob || "", email: m.email || "", gender: m.gender || "", rel: m.rel, ename: m.emergency?.name || "", ephone: m.emergency?.phone || "", waiver: !!m.waiver }); } }, [d?.member?.id, d?.member?.name]);
   const set = (k: string, v: any) => setF((x: any) => ({ ...x, [k]: v }));
+  const isMinor = !!f?.dob && Math.floor((Date.now() - +new Date(f.dob)) / 31557600000) < 18;
   const done = (m: string) => { toast(m); reload(); onChanged(); };
   const save = async () => {
     const m = d.member;
@@ -779,12 +780,12 @@ function MemberSheet({ id, onClose, onPay, onChanged, onOpen }: { id: string; on
             <>
               <Field label="FULL NAME"><input className="st-in" value={f.name} onChange={(e) => set("name", e.target.value)} /></Field>
               <Field label="MOBILE (WHOLE ACCOUNT LOGS IN WITH THIS)"><input className="st-in" inputMode="numeric" value={f.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
-              <Field label="DATE OF BIRTH"><input className="st-in" type="date" value={f.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
+              <Field label={f.dob ? `DATE OF BIRTH · AGE ${Math.floor((Date.now() - +new Date(f.dob)) / 31557600000)}` : "DATE OF BIRTH"}><input className="st-in" type="date" value={f.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
               <Field label="EMAIL"><input className="st-in" value={f.email} onChange={(e) => set("email", e.target.value)} /></Field>
               <Field label="GENDER"><Chips value={f.gender} options={[["Male", "Male"], ["Female", "Female"], ["Other", "Other"], ["", "—"]]} onChange={(v) => set("gender", v)} /></Field>
               <Field label="RELATIONSHIP TO ACCOUNT HOLDER"><Chips value={f.rel} options={RELS.map((r) => [r, r] as [string, string])} onChange={(v) => set("rel", v)} /></Field>
-              <Field label="EMERGENCY CONTACT NAME"><input className="st-in" value={f.ename} onChange={(e) => set("ename", e.target.value)} /></Field>
-              <Field label="EMERGENCY CONTACT PHONE"><input className="st-in" inputMode="numeric" value={f.ephone} onChange={(e) => set("ephone", e.target.value)} /></Field>
+              <Field label={isMinor ? "PARENT / GUARDIAN NAME" : "EMERGENCY CONTACT NAME"}><input className="st-in" value={f.ename} onChange={(e) => set("ename", e.target.value)} /></Field>
+              <Field label={isMinor ? "PARENT / GUARDIAN PHONE" : "EMERGENCY CONTACT PHONE"}><input className="st-in" inputMode="numeric" value={f.ephone} onChange={(e) => set("ephone", e.target.value)} /></Field>
               <Field label="WAIVER"><Chips value={f.waiver ? "yes" : "no"} options={[["yes", "Signed"], ["no", "Not signed"]]} onChange={(v) => set("waiver", v === "yes")} /></Field>
               {d.family.length > 0 && <><div className="st-sec" style={{ marginTop: 18 }}>SAME ACCOUNT</div>{d.family.map((x: any) => <button className="st-row" key={x.id} onClick={() => onOpen(x.id)} style={{ padding: "10px 0" }}><span className="st-av">{initials(x.name)}</span><div style={{ flex: 1 }}><div className="st-t">{x.name}</div><div className="st-s">{x.rel.toUpperCase()}</div></div></button>)}</>}
               <div style={{ display: "flex", gap: 8, marginTop: 22, flexWrap: "wrap" }}>

@@ -9,6 +9,10 @@ export async function PUT(req: Request) {
   if (name.split(" ").filter(Boolean).length < 2) return fail("Enter your first and last name.");
   const email = str(b.email, 160);
   if (email && !/^\S+@\S+\.\S+$/.test(email)) return fail("That email looks incomplete.");
+  const ageOf = (d: string) => { const b = new Date(d), n = new Date(); let a = n.getFullYear() - b.getFullYear(); if (n < new Date(n.getFullYear(), b.getMonth(), b.getDate())) a--; return a; };
+  const dobStr = str(b.dob, 10);
+  if (dobStr && !/^\d{4}-\d{2}-\d{2}$/.test(dobStr)) return fail("Enter a valid date of birth.");
+  if (dobStr && ageOf(dobStr) < 18 && (!str(b.ename) || digits(b.ephone).length !== 10)) return fail("Members under 18 need a parent or guardian’s name and 10-digit mobile number.");
   const patch = {
     name, dob: str(b.dob, 10) || null, email: email || null, gender: str(b.gender, 20) || null,
     emergency: b.ename || b.ephone ? { name: str(b.ename), phone: digits(b.ephone) } : null,

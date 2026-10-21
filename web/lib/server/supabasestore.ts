@@ -7,7 +7,7 @@ const must = (r: { data: any; error: { message: string } | null }): any => { if 
 
 const toAccount = (r: any): Account => ({ id: r.id, phone: r.phone ?? "", email: r.email ?? null, createdAt: r.created_at });
 const toMember = (r: any): Member => ({ id: r.id, accountId: r.account_id, rel: r.rel, name: r.name, dob: r.dob, email: r.email, gender: r.gender, memberCode: r.member_code, emergency: r.emergency, waiver: r.waiver, createdAt: r.created_at });
-const toTrial = (r: any): Trial => ({ id: r.id, accountId: r.account_id, name: r.name, phone: r.phone, email: r.email, discipline: r.discipline, ageGroup: r.age_group, experience: r.experience, slot: r.slot, status: r.status, createdAt: r.created_at });
+const toTrial = (r: any): Trial => ({ id: r.id, accountId: r.account_id, name: r.name, phone: r.phone, email: r.email, discipline: r.discipline, ageGroup: r.age_group, experience: r.experience, age: r.age ?? null, parentName: r.parent_name ?? null, slot: r.slot, status: r.status, createdAt: r.created_at });
 const toStaff = (r: any): Staff => ({ id: r.id, phone: r.phone, email: r.email ?? null, name: r.name, role: r.role, coachKey: r.coach_key });
 
 export const supabaseStore: Store = {
@@ -33,7 +33,7 @@ export const supabaseStore: Store = {
   },
   async deleteMember(accountId, id) { const r = await sb().from("members").delete().eq("id", id).eq("account_id", accountId).select("id"); return !!must(r).length; },
   async addTrial(t) {
-    return toTrial(must(await sb().from("trials").insert({ account_id: t.accountId ?? null, name: t.name, phone: t.phone, email: t.email ?? null, discipline: t.discipline, age_group: t.ageGroup ?? null, experience: t.experience ?? null, slot: t.slot ?? null }).select().single()));
+    return toTrial(must(await sb().from("trials").insert({ account_id: t.accountId ?? null, name: t.name, phone: t.phone, email: t.email ?? null, discipline: t.discipline, age_group: t.ageGroup ?? null, experience: t.experience ?? null, age: t.age ?? null, parent_name: t.parentName ?? null, slot: t.slot ?? null }).select().single()));
   },
   async trials() { return must(await sb().from("trials").select("*").order("created_at", { ascending: false }).limit(500)).map(toTrial); },
   async setTrialStatus(id, status) { const r = await sb().from("trials").update({ status }).eq("id", id).select().maybeSingle(); return r.data ? toTrial(must(r)) : null; },

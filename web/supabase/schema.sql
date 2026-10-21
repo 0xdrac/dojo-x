@@ -40,6 +40,8 @@ create table if not exists trials (
   created_at  timestamptz not null default now()
 );
 create index if not exists trials_created_idx on trials(created_at desc);
+alter table trials add column if not exists age         int;
+alter table trials add column if not exists parent_name text;
 
 create table if not exists staff (
   id          uuid primary key default gen_random_uuid(),
