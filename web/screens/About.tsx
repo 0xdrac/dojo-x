@@ -23,7 +23,7 @@ class Screen extends DCLogic {
       ['2013', 'The basement opens', '600 sq ft in Vasundhara. Four bags, one mat, eleven founding members.'],
       ['2015', 'First pro debut', 'Our first fighter steps into the ring. The fight team is born.'],
       ['2017', 'Move to Sai Complex', '6,000 sq ft, a full-size octagon and a raised ring. Karate and yoga join.'],
-      ['2019', 'National gold', 'Kavya Menon wins her first national Muay Thai title at 51 kg.'],
+      ['2019', 'National gold', 'A Dojo X fighter wins a national Muay Thai title.'],
       ['2021', 'Fight Night 01', 'Our first in-house fight card. 400 people in the car park, standing room only.'],
       ['2023', 'Little Warriors hits 200', 'The kids programme becomes the biggest in Ghaziabad, with a 1:8 coach ratio.'],
       ['2024', '500th belt', 'Five hundred gradings passed, from white belt to two new shodans.'],
