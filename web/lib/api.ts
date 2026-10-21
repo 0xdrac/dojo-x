@@ -2,6 +2,7 @@
 // @ts-nocheck
 // Browser-side client for the /api routes. Exposed to the ported screens as window.DojoAPI (see bootstrap.ts).
 import DXP from "./portal";
+import { firebaseEnabled } from "./firebase";
 import DOJO from "./dojo";
 import { addDays, normalizeClasses, occursOn, weekdayOf } from "./classes";
 
@@ -66,9 +67,11 @@ export const DojoAPI = {
   bookClass: (memberId: string, classId: string, date: string) => call("POST", "/api/me/bookings", { memberId, classId, date }),
   cancelBooking: (id: string) => call("DELETE", `/api/me/bookings/${id}`),
   loadSchedule,
-  realOtp: process.env.NEXT_PUBLIC_AUTH_MODE === "pin",
+  askMobile: process.env.NEXT_PUBLIC_AUTH_MODE !== "pin" && firebaseEnabled(),
+  realOtp: process.env.NEXT_PUBLIC_AUTH_MODE === "pin" || firebaseEnabled(),
   requestOtp: (phone: string) => call("POST", "/api/auth/request", { phone }),
   verify: (phone: string, code: string) => call("POST", "/api/auth/verify", { phone, code }),
+  verifyToken: (idToken: string) => call("POST", "/api/auth/verify", { idToken }),
   pinStatus: (phone: string) => call("POST", "/api/auth/pin/status", { phone }),
   pinSend: (phone: string) => call("POST", "/api/auth/pin/send", { phone }),
   pinCheck: (phone: string, code: string) => call("POST", "/api/auth/pin/check", { phone, code }),

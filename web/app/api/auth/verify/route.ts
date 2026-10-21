@@ -1,6 +1,7 @@
 import { store } from "@/lib/server/store";
 import { setSession } from "@/lib/server/session";
 import { body, checkOtp, digits, fail, json, validPhone } from "@/lib/server/util";
+import { firebaseMode, verifyFirebaseEmail } from "@/lib/server/firebase";
 import { T } from "@/lib/server/tables";
 import { today } from "@/lib/server/guard";
 import { addDays } from "@/lib/classes";
@@ -30,6 +31,21 @@ async function seedDemo(accountId: string) {
 export async function POST(req: Request) {
   const b = await body(req);
   if (process.env.NEXT_PUBLIC_AUTH_MODE === "pin") return fail("Not available", 404);
+  if (firebaseMode()) {
+    // Real sign-in (Google or emailed link): the address comes from Firebase's signed token, never from what the browser says.
+    const v = await verifyFirebaseEmail(b.idToken);
+    if (!v.email) return fail(v.error!, 401);
+    try {
+      const s = store(), staff = await s.staffByEmail(v.email);
+      if (staff) { await setSession({ sub: staff.id, kind: "staff" }); return json({ ok: true, staff: { name: staff.name, role: staff.role } }); }
+      const account = (await s.accountByEmail(v.email)) ?? (await s.createAccount("", v.email));
+      await setSession({ sub: account.id, kind: "member" });
+      return json({ ok: true, onboarded: (await s.members(account.id)).some((m) => m.rel === "You") });
+    } catch (e: any) {
+      console.error("[auth/verify]", e);
+      return fail(/email|column|null value/i.test(String(e?.message)) ? "Sign-in is almost ready: the database needs the email update. Run the email SQL in Supabase, then try again." : "We couldn’t finish signing you in. Please try again.", 500);
+    }
+  }
   const phone = digits(b.phone);
   if (!validPhone(phone)) return fail("Enter a valid 10-digit Indian mobile number.");
   const otp = checkOtp(b.code);
