@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { DojoAPI } from "@/lib/api";
-import { completeEmailLink, googleRedirectResult, isEmailLink, rememberedEmail, sendEmailLink, signInWithGoogle } from "@/lib/firebase";
+import { completeEmailLink, googleRedirectResult, isEmailLink, preloadFirebase, rememberedEmail, sendEmailLink, signInWithGoogle } from "@/lib/firebase";
 
 const Login = dynamic(() => import("@/screens/Login"), { ssr: false });
 const C = { bg: "#0D0D0D", card: "#141414", line: "#262626", fg: "#F5F5F5", mid: "#C9C9C9", dim: "#9A9A9A", red: "#C8102E", err: "oklch(0.78 0.16 40)" };
@@ -21,7 +21,7 @@ export default function EmailLogin() {
     history.replaceState(null, "", "/login");
     if (r.staff) return void (location.href = r.staff.role === "coach" ? "/coach-app" : "/admin");
     if (r.onboarded) { let n: string | null = null; try { n = sessionStorage.getItem("dx-next"); sessionStorage.removeItem("dx-next"); } catch {} return void (location.href = n && n.startsWith("/") && !n.startsWith("//") ? n : "/member-portal"); }
-    location.href = "/login#onboard";
+    history.replaceState(null, "", "/login#onboard"); setMode("app");   // straight into the form, no reload
   };
   const complete = async (addr: string) => {
     setMode("working"); setErr("");
@@ -31,6 +31,7 @@ export default function EmailLogin() {
   };
 
   useEffect(() => {
+    preloadFirebase(); import("@/screens/Login");   // get Google and the sign-up form ready while the page is still showing
     (async () => {
       const h = location.hash.slice(1);
       if (h === "logout") { await DojoAPI.logout(); history.replaceState(null, "", "/login"); return setMode("form"); }

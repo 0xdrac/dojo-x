@@ -4,7 +4,7 @@ import { createLocalJWKSet, createRemoteJWKSet, jwtVerify } from "jose";
 export const firebaseProject = () => process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "";
 export const firebaseMode = () => !!firebaseProject();
 
-const remote = createRemoteJWKSet(new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"));
+const remote = createRemoteJWKSet(new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"), { cacheMaxAge: 6 * 3600_000, cooldownDuration: 30_000 });
 
 /** Verifies a Firebase ID token (signature, issuer, audience, expiry) and returns the verified email address it proves. */
 export async function verifyFirebaseEmail(idToken: unknown): Promise<{ email?: string; error?: string }> {

@@ -9,15 +9,19 @@ export const firebaseEnabled = () => !!(process.env.NEXT_PUBLIC_FIREBASE_API_KEY
 let confirmation: ConfirmationResult | null = null;
 let verifier: any = null;
 
-async function getAuth() {
-  const { initializeApp, getApps } = await import("firebase/app");
-  const { getAuth } = await import("firebase/auth");
+let ready: Promise<{ auth: any; mod: typeof import("firebase/auth") }> | null = null;
+/** Loads and initialises Firebase. Called while the sign-in page is showing, so the Google popup opens the instant the button is tapped. */
+export function preloadFirebase() { if (!ready) ready = boot(); return ready; }
+async function getAuth() { return (await preloadFirebase()).auth; }
+async function boot() {
+  const [{ initializeApp, getApps }, mod] = await Promise.all([import("firebase/app"), import("firebase/auth")]);
+  const { getAuth } = mod;
   const app = getApps()[0] ?? initializeApp({
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY, authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID, appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   });
   const auth = getAuth(app); auth.languageCode = "en";
-  return auth;
+  return { auth, mod };
 }
 
 const friendly = (e: any) => {
@@ -68,7 +72,7 @@ export async function completeEmailLink(email: string): Promise<{ ok: boolean; i
 /** Google sign-in: a popup, or a full-page redirect where popups are blocked (some phone browsers). */
 export async function signInWithGoogle(): Promise<{ ok: boolean; idToken?: string; redirecting?: boolean; error?: string }> {
   try {
-    const auth = await getAuth(), { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import("firebase/auth");
+    const { auth, mod: { GoogleAuthProvider, signInWithPopup, signInWithRedirect } } = await preloadFirebase();   // already loaded, so the popup opens inside the tap
     const provider = new GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
     try {
       const cred = await signInWithPopup(auth, provider);

@@ -9,11 +9,11 @@ export async function POST(req: Request) {
   const v = await verifyFirebaseEmail(b.idToken);
   if (!v.email) return fail(v.error!, 401);
   try {
-    const s = store(), staff = await s.staffByEmail(v.email);
+    const s = store(), [staff, existing] = await Promise.all([s.staffByEmail(v.email), s.accountByEmail(v.email)]);
     if (staff) { await setSession({ sub: staff.id, kind: "staff" }); return json({ ok: true, staff: { name: staff.name, role: staff.role } }); }
-    const account = (await s.accountByEmail(v.email)) ?? (await s.createAccount("", v.email));
+    const account = existing ?? (await s.createAccount("", v.email));
     await setSession({ sub: account.id, kind: "member" });
-    return json({ ok: true, onboarded: (await s.members(account.id)).some((m) => m.rel === "You") });
+    return json({ ok: true, onboarded: existing ? (await s.members(account.id)).some((m) => m.rel === "You") : false });
   } catch (e: any) {
     console.error("[auth/verify]", e);
     return fail(/email|column|null value/i.test(String(e?.message)) ? "Sign-in is almost ready: the database needs the email update. Run the email SQL in Supabase, then try again." : "We couldn’t finish signing you in. Please try again.", 500);
