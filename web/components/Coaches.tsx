@@ -46,7 +46,7 @@ export default function Coaches() {
                   ))}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 18 }}>
-                  {c.tags.map((t) => <span className="tag" key={t}><i style={{ background: hue(hueOf(t)) }} />{t}</span>)}
+                  {c.tags.map((t) => <span className="tag" key={t}><i style={{ background: hueOf(t) === null ? "#9A9A9A" : hue(hueOf(t)!) }} />{t}</span>)}
                 </div>
               </div>
             </article>

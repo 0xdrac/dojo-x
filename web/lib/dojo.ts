@@ -16,7 +16,7 @@
       learn: [['Striking', 'Boxing and Muay Thai basics adapted for 4oz gloves and the cage.'], ['Wrestling', 'Takedowns, sprawls and cage work. Control where the fight happens.'], ['Ground game', 'BJJ positions, escapes and submissions, gi-free.'], ['Fight IQ', 'Transitions, ring craft, and game plans you can actually run.']],
       levels: [['Beginner', 'No experience needed. Fundamentals of stance, movement, basic takedowns and positions.', 'Just show up'], ['Intermediate', 'Live drilling, positional sparring and chain wrestling.', '6+ months · coach approval'], ['Advanced', 'Hard sparring, fight camps and amateur competition prep.', 'Fight team invite']],
       agegroups: [['Teens', '13–17', 'Technique-first, no head contact sparring'], ['Adults', '18+', 'All levels, morning and evening batches']],
-      coaches: ['aman', 'vishal'],
+      coaches: ['vishal', 'aman', 'aryaman'],
       faqs: [['Do I need to be fit to start?', 'No. Fundamentals classes scale to you. Most members start out of shape; fitness is a side effect.'], ['Will I have to spar?', 'Never in your first months. Sparring is opt-in and starts light, with headgear and coach supervision.'], ['What gear do I need?', 'Shorts, a rash guard or T-shirt, and a mouthguard. Gloves and shin guards can be borrowed for your trial.']]
     },
     boxing: {
@@ -27,7 +27,7 @@
       learn: [['Footwork', 'Angles, distance and balance. Where you stand decides everything.'], ['Combinations', 'Punch in sequences that flow, from the 1-2 to body-head setups.'], ['Defense', 'Slips, rolls, parries and the high guard. Get hit less.'], ['Conditioning', 'Rounds-based work that builds the gas tank for three-minute rounds.']],
       levels: [['Beginner', 'Stance, guard, the six basic punches and bag work.', 'Just show up'], ['Intermediate', 'Partner drills, defensive reads and controlled sparring.', '4+ months'], ['Advanced', 'Hard sparring and amateur bout preparation.', 'Coach invite']],
       agegroups: [['Teens', '13–17', 'Technique and fitness, light contact only'], ['Adults', '18+', 'Conditioning and skills batches daily']],
-      coaches: ['aman', 'vishal'],
+      coaches: ['vishal'],
       faqs: [['Is boxing good for weight loss?', 'Few workouts burn more. Expect 600–800 kcal per class, and you learn a skill while doing it.'], ['Do you provide gloves?', 'Trial gloves are provided. Members usually buy 12–16oz gloves and hand wraps, which the front desk can order.'], ['Can women join?', 'Yes. About 40% of our boxing members are women. Women-only batches run Tue and Thu at 11 AM.']]
     },
     kickboxing: {
@@ -38,7 +38,7 @@
       learn: [['Kicks', 'Roundhouse, teep, switch kick. Hip turn and balance.'], ['Hands', 'Boxing combinations that set up the kick.'], ['Rhythm', 'Flowing combos on pads with a partner.'], ['Engine', 'Interval rounds for cardio and leg strength.']],
       levels: [['Beginner', 'Stance, basic strikes, pad partner etiquette.', 'Just show up'], ['Intermediate', 'Longer combos, checks and counters, light sparring.', '4+ months'], ['Advanced', 'Technical sparring and inter-club bouts.', 'Coach invite']],
       agegroups: [['Teens', '13–17', 'Mon, Wed, Fri evenings'], ['Adults', '18+', 'Evening and weekend batches']],
-      coaches: ['aman', 'vishal'],
+      coaches: ['vishal'],
       faqs: [['Kickboxing or Muay Thai?', 'Kickboxing is punches and kicks above the waist-line rules; Muay Thai adds elbows, knees and the clinch. Start either way, as they share 70% of the basics.'], ['Is it safe for knees?', 'Coaches teach pivoting from day one. Tell us about old injuries and we will modify drills.'], ['What should I wear?', 'Shorts and a T-shirt. Training is barefoot on mats.']]
     },
     muaythai: {
@@ -49,7 +49,7 @@
       learn: [['Eight weapons', 'Fists, elbows, knees and shins, each with its own range.'], ['The clinch', 'Neck control, off-balancing and knees in close.'], ['Teeps & checks', 'Manage distance and defend low kicks.'], ['Wai Kru', 'Tradition and ring etiquette, for those who want it.']],
       levels: [['Beginner', 'Stance, teep, roundhouse, basic clinch entries.', 'Just show up'], ['Intermediate', 'Clinch lab, elbows, technical sparring.', '6+ months'], ['Advanced', 'Fight team and inter-club fight cards.', 'Kru invite']],
       agegroups: [['Teens', '13–17', 'No elbows in sparring until 16'], ['Adults', '18+', 'Daily evening batches']],
-      coaches: ['aman', 'vishal'],
+      coaches: ['aman', 'aryaman'],
       faqs: [['Do I need shin guards?', 'Only for partner drills and sparring. We lend them for trials.'], ['Is the clinch only for advanced members?', 'Basic clinch entries are taught from week one; live clinch work starts at intermediate level.'], ['Can I train for a fight?', 'Yes. The fight team runs 8-week camps before each card, by invite.']]
     },
     karate: {
@@ -60,7 +60,7 @@
       learn: [['Kihon', 'The basics: stances, blocks, punches and kicks, done thousands of times.'], ['Kata', 'Forms that build memory, balance and power.'], ['Kumite', 'Controlled sparring with respect and courage.'], ['Dojo kun', 'Courtesy, perseverance and self-control.']],
       levels: [['Beginner', 'White to orange belt. Etiquette, stances and the first kata.', 'Just show up'], ['Intermediate', 'Green to purple. Combinations, kata Pinan series, light kumite.', 'Orange belt'], ['Advanced', 'Brown and black belt candidates. Full kumite, teaching juniors.', 'Purple belt']],
       agegroups: [['Kids', '5–12', 'Little Warriors · Mon/Wed/Fri 4:30 PM'], ['Teens', '13–17', 'Mon/Wed/Fri 6:30 PM'], ['Adults', '18+', 'Mon/Wed/Fri 6:30 PM']],
-      coaches: ['aman', 'vishal'],
+      coaches: ['aman'],
       faqs: [['How often are gradings?', 'Every quarter: March, June, September and December. The next one is on 14 Dec 2026.'], ['What is the minimum age?', '5 years. Little Warriors classes are 45 minutes with a 1:8 coach ratio.'], ['Is the grading fee included?', 'Grading fees (₹1,200–₹2,500 by belt) are separate and include the certificate and new belt.']]
     },
     gymnastics: {
@@ -71,7 +71,7 @@
       learn: [['Foundations', 'Rolls, bridges, cartwheels, and how to fall safely.'], ['Strength', 'Holds and progressions on rings and parallettes.'], ['Mobility', 'Splits, pancakes and shoulder flexibility.'], ['Skills', 'Handstands, kip-ups and beginner tumbling.']],
       levels: [['Beginner', 'Body awareness, basic shapes and safe landings.', 'Just show up'], ['Intermediate', 'Handstand holds, rings, linked floor skills.', '6+ months'], ['Advanced', 'Tumbling passes and competition routines.', 'Coach invite']],
       agegroups: [['Kids', '5–12', 'Tue/Thu/Sat 4:30 PM'], ['Adults', '18+', 'Mobility & gymnastics, Tue/Fri 8:30 AM']],
-      coaches: ['aman', 'vishal'],
+      coaches: ['sharif'],
       faqs: [['Is it safe for small children?', 'Yes. Kids train on sprung floors with crash mats and a 1:8 coach ratio.'], ['Can adults really start gymnastics?', 'Absolutely. Our adult class focuses on mobility and strength progressions, not competition.'], ['What should kids wear?', 'Fitted T-shirt and shorts or leggings. Bare feet, hair tied back.']]
     },
     yoga: {
@@ -82,7 +82,7 @@
       learn: [['Asana', 'Postures that open hips, hamstrings and shoulders.'], ['Pranayama', 'Breathwork for calm, focus and better recovery.'], ['Mobility', 'Joint health that keeps you training for decades.'], ['Stillness', 'Guided relaxation and short meditation.']],
       levels: [['Beginner', 'Slow flow with props, every pose explained.', 'Just show up'], ['Intermediate', 'Longer holds, sun salutation flows, inversions prep.', '3+ months'], ['Advanced', 'Arm balances, inversions, extended pranayama.', 'Teacher guidance']],
       agegroups: [['Teens', '13–17', 'Weekend slow flow'], ['Adults', '18+', 'Daily sunrise and 8 PM batches']],
-      coaches: ['aman', 'vishal'],
+      coaches: ['pooja'],
       faqs: [['Do I need my own mat?', 'Studio mats, blocks and straps are provided and sanitised after every class.'], ['Is yoga included with fight memberships?', 'Add it to any combo at the combo discount. Most fighters do.'], ['I am not flexible. Can I join?', 'That is exactly why to join. Beginner classes use props for every pose.']]
     }
   };
@@ -90,10 +90,13 @@
   // The academy's coaches. Add details (full name, photo, experience) here as they are confirmed.
   const coachBase = { nick: '', last: '', rec: null, weight: '', stance: '', rank: '', years: '', bars: [], bio: '', creds: [] };
   D.coaches = {
-    aman: { ...coachBase, first: 'Aman', role: 'Coach', disc: ['mma', 'boxing', 'kickboxing', 'muaythai', 'karate', 'gymnastics', 'yoga'] },
-    vishal: { ...coachBase, first: 'Vishal', role: 'Coach · Evening batches', disc: ['mma', 'boxing', 'kickboxing', 'muaythai', 'karate', 'gymnastics', 'yoga'] }
+    vishal: { ...coachBase, first: 'Vishal', last: 'Kumar', role: 'Coach · Evening batches', disc: ['mma', 'kickboxing'], creds: ['MMA', 'Kickboxing'], bio: 'Vishal Kumar coaches MMA and kickboxing, and leads the evening batches at Dojo X.' },
+    aman: { ...coachBase, first: 'Aman', last: 'Singh', role: 'Coach', disc: ['karate', 'mma', 'muaythai'], creds: ['Karate', 'Brazilian jiu-jitsu (BJJ)', 'Muay Thai', 'Kung Fu', 'MMA'], bio: 'Aman Singh teaches karate, Brazilian jiu-jitsu, Muay Thai, kung fu and MMA.' },
+    aryaman: { ...coachBase, first: 'Aryaman', last: 'Shrivastav', role: 'Pro fighter · Coach', disc: ['muaythai', 'mma'], creds: ['Professional Muay Thai fighter', 'MMA'], bio: 'Aryaman Shrivastav is a professional Muay Thai fighter who coaches Muay Thai and MMA.' },
+    sharif: { ...coachBase, first: 'Sharif', role: 'Coach · Movement', disc: ['gymnastics'], creds: ['Gymnastics', 'Calisthenics', 'Zumba', 'Dance'], bio: 'Sharif coaches gymnastics, calisthenics, Zumba and dance.' },
+    pooja: { ...coachBase, first: 'Pooja', role: 'Yoga coach', disc: ['yoga'], creds: ['Yoga', '1000-hour yoga training'], bio: 'Pooja teaches yoga and holds a 1000-hour yoga qualification.' }
   };
-  D.coachOrder = ['aman', 'vishal'];
+  D.coachOrder = ['vishal', 'aman', 'aryaman', 'sharif', 'pooja'];
 
   D.days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   D.daysLong = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];

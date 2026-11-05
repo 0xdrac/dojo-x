@@ -39,7 +39,7 @@ export default function Reviews() {
             <figcaption>
               <span><span style={{ display: "block", font: "700 15px/1.2 var(--sans)", color: "var(--fg)" }}>{r.who}</span>
                 <span className="mono" style={{ display: "block", marginTop: 4, font: "500 11px/1 var(--mono)", color: "var(--dim)" }}>{r.meta}</span></span>
-              <span className="tag"><i style={{ background: hue(hueOf(r.tag)) }} />{r.tag}</span>
+              <span className="tag"><i style={{ background: hue(hueOf(r.tag) ?? 0) }} />{r.tag}</span>
             </figcaption>
           </figure>
         ))}

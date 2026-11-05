@@ -21,7 +21,8 @@ export const DISCIPLINES = [
 ] as const;
 
 export const hue = (h: number) => `oklch(0.74 0.12 ${h})`;
-export const hueOf = (name: string) => DISCIPLINES.find((d) => d.name === name)!.hue;
+/** Hue for a discipline name; skills that aren't a Dojo X discipline (BJJ, Kung Fu, Zumba, ...) get a neutral dot. */
+export const hueOf = (name: string) => DISCIPLINES.find((d) => d.name === name)?.hue ?? null;
 
 export const STATS = [
   { n: 12, plus: true, label: "YEARS ON THE MAT" },
@@ -31,8 +32,11 @@ export const STATS = [
 ];
 
 export const COACHES = [
-  { id: "aman", num: "01", first: "Aman", nick: "", last: "", role: "COACH", ph: "AMAN · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["MMA", "Boxing", "Kickboxing", "Muay Thai"] },
-  { id: "vishal", num: "02", first: "Vishal", nick: "", last: "", role: "COACH · EVENING BATCHES", ph: "VISHAL · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["MMA", "Boxing", "Kickboxing", "Muay Thai"] },
+  { id: "vishal", num: "01", first: "Vishal", nick: "", last: "Kumar", role: "COACH · EVENING BATCHES", ph: "VISHAL KUMAR · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["MMA", "Kickboxing"] },
+  { id: "aman", num: "02", first: "Aman", nick: "", last: "Singh", role: "COACH", ph: "AMAN SINGH · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["Karate", "BJJ", "Muay Thai", "Kung Fu", "MMA"] },
+  { id: "aryaman", num: "03", first: "Aryaman", nick: "", last: "Shrivastav", role: "PRO FIGHTER · COACH", ph: "ARYAMAN SHRIVASTAV · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["Muay Thai", "MMA"] },
+  { id: "sharif", num: "04", first: "Sharif", nick: "", last: "", role: "COACH · MOVEMENT", ph: "SHARIF · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["Gymnastics", "Calisthenics", "Zumba", "Dance"] },
+  { id: "pooja", num: "05", first: "Pooja", nick: "", last: "", role: "YOGA COACH", ph: "POOJA · portrait, soft light", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["Yoga", "1000-hour"] },
 ] as const;
 
 export const REVIEWS = [

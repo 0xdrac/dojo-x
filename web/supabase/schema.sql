@@ -48,7 +48,7 @@ create table if not exists staff (
   phone       text not null unique,
   name        text not null,
   role        text not null check (role in ('owner','coach','frontdesk')),
-  coach_key   text                              -- which coach profile this login is (aman or vishal)
+  coach_key   text                              -- which coach profile this login is (aman, vishal, aryaman, sharif or pooja)
 );
 alter table staff add column if not exists coach_key text;
 
@@ -227,11 +227,11 @@ on conflict (phone) do nothing;
 -- The academy's coaches are Aman and Vishal (Vishal takes the evening batches). Move anything that still points at the old sample coaches.
 update staff set name = 'Owner',  coach_key = 'aman'   where phone = '9000000001' and name = 'Arjun Rathore';
 update staff set name = 'Vishal', coach_key = 'vishal' where phone = '9000000002' and name = 'Rahul Sandhu';
-update staff set coach_key = null where coach_key is not null and coach_key not in ('aman', 'vishal');
+update staff set coach_key = null where coach_key is not null and coach_key not in ('aman', 'vishal', 'aryaman', 'sharif', 'pooja');
 update classes set
   coaches = case when start_time >= '16:00' then array['vishal'] else array['aman'] end,
   coach   = case when start_time >= '16:00' then 'vishal'        else 'aman'        end
-where not (coaches <@ array['aman', 'vishal']) or coach not in ('aman', 'vishal');
+where not (coaches <@ array['aman', 'vishal', 'aryaman', 'sharif', 'pooja']) or coach not in ('aman', 'vishal', 'aryaman', 'sharif', 'pooja');
 
 -- If you ran an earlier version of this file, widen the status check so refunds can be recorded:
 alter table orders drop constraint if exists orders_status_check;
