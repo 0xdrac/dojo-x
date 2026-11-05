@@ -289,7 +289,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <div ref={introS} className="s" />
             <div ref={introL} className="l">
               <div className="anton" style={{ fontSize: "clamp(64px,14vw,180px)", lineHeight: 0.9, letterSpacing: ".04em", color: "var(--fg)" }}>DOJO X</div>
-              <div className="mono" style={{ fontSize: 12, letterSpacing: ".5em", color: "var(--fg)" }}>FIGHT ACADEMY · EST. 2013</div>
+              <div className="mono" style={{ fontSize: 12, letterSpacing: ".5em", color: "var(--fg)" }}>FIGHT ACADEMY · EST. 2025</div>
             </div>
             <button className="skip" onClick={endIntro}>SKIP INTRO →</button>
           </div>

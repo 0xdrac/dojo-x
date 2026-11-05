@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { loadPublic } from "@/lib/api";
 import DOJO from "@/lib/dojo";
 
-const FALLBACK = "MUAY THAI FUNDAMENTALS · 6:30 PM · COACH KAVYA";
+const FALLBACK = "EVENING BATCHES · MON–FRI · 7 PM & 8 PM";
 
 /** Home hero ticker: the next class on the live weekly timetable. */
 export default function NextUp() {

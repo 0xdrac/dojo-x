@@ -25,11 +25,11 @@ export const hue = (h: number) => `oklch(0.74 0.12 ${h})`;
 export const hueOf = (name: string) => DISCIPLINES.find((d) => d.name === name)?.hue ?? null;
 
 export const STATS = [
-  { n: 12, plus: true, label: "YEARS ON THE MAT" },
-  { n: 40, plus: true, label: "PRO FIGHTERS" },
-  { n: 500, plus: true, label: "BELTS AWARDED" },
+  { n: 0, text: "2025", plus: false, label: "ESTABLISHED" },
+  { n: 15, plus: true, label: "PRO FIGHTERS" },
+  { n: 100, plus: true, label: "BELTS AWARDED" },
   { n: 7, plus: false, label: "DISCIPLINES, ONE ROOF" },
-];
+] as { n: number; text?: string; plus: boolean; label: string }[];
 
 export const COACHES = [
   { id: "vishal", num: "01", first: "Vishal", nick: "", last: "Kumar", role: "COACH · EVENING BATCHES", ph: "VISHAL KUMAR · portrait, side-lit", rec: null, info: [] as [string, string][], bars: [] as [string, number][], tags: ["MMA", "Kickboxing"] },
@@ -42,7 +42,7 @@ export const COACHES = [
 export const REVIEWS = [
   { q: "Walked in unable to do ten push-ups. Eight months later I had my first amateur bout. The coaches don't let you coast.", who: "Siddharth Rao", meta: "MEMBER SINCE 2024", tag: "MMA" },
   { q: "My daughter is nine. Strict, safe, and gradings are taken seriously. She's an orange belt now and twice as confident.", who: "Priya Nair", meta: "PARENT · KIDS BATCH", tag: "Karate" },
-  { q: "Kavya's evening Muay Thai is the hardest hour of my week, and the best one.", who: "Ishaan Kapoor", meta: "MEMBER SINCE 2023", tag: "Muay Thai" },
+  { q: "The evening Muay Thai batch is the hardest hour of my week, and the best one.", who: "Ishaan Kapoor", meta: "MEMBER SINCE 2023", tag: "Muay Thai" },
   { q: "Came for yoga, stayed for boxing. The space is spotless and the 6 AM yoga batch is genuinely calm.", who: "Neha Bhattacharya", meta: "YOGA + BOXING COMBO", tag: "Yoga" },
   { q: "Booking takes ten seconds, UPI Autopay just works, and the front desk actually remembers your name.", who: "Farhan Qureshi", meta: "MEMBER SINCE 2025", tag: "Kickboxing" },
 ];

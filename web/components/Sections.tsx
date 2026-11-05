@@ -19,7 +19,7 @@ export function Hero() {
       <div data-parallax="-0.12" aria-hidden="true" className="bgword" style={{ top: "12%", left: "-2vw", fontSize: "31vw", color: "transparent", WebkitTextStroke: "1px rgba(245,245,245,.07)" }}>DOJO X</div>
       <div style={{ position: "relative", maxWidth: 1440, width: "100%", margin: "0 auto", padding: "0 var(--pad) 24px", pointerEvents: "none" }}>
         <div data-hero-fade="" className="mono" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, font: "500 12px/1 var(--mono)", letterSpacing: ".24em", color: "var(--fg)", textTransform: "uppercase" }}>
-          <span style={{ width: 36, height: 2, background: "var(--red)" }} />Vasundhara, Ghaziabad · Est. 2013
+          <span style={{ width: 36, height: 2, background: "var(--red)" }} />Vasundhara, Ghaziabad · Est. 2025
         </div>
         <h1 data-shake="" className="anton">
           <span className="l"><span data-slam="" className="w">Forged</span> <span data-slam="" className="w outline">in</span></span>
@@ -108,7 +108,7 @@ export function Stats() {
       <div className="sgrid">
         {STATS.map((s) => (
           <div key={s.label} data-reveal="">
-            <div className="n"><span data-count={s.n}>{s.n}</span>{s.plus && <span className="red">+</span>}</div>
+            <div className="n">{s.text ? <span>{s.text}</span> : <span data-count={s.n}>{s.n}</span>}{s.plus && <span className="red">+</span>}</div>
             <div className="k">{s.label}</div>
           </div>
         ))}
@@ -197,7 +197,7 @@ export function Footer() {
         <div className="fgrid">
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             <TLink href="#top" className="logo"><i /><span className="anton" style={{ fontSize: 28, lineHeight: 1, letterSpacing: ".06em", color: "var(--fg)" }}>DOJO X</span></TLink>
-            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "var(--dim)", maxWidth: 260 }}>Elite multi-discipline fight academy. Ghaziabad, since 2013.</p>
+            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "var(--dim)", maxWidth: 260 }}>Elite multi-discipline fight academy. Ghaziabad, since 2025.</p>
             <div style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 10, padding: "8px 12px", border: "1px solid #2E2E2E" }}>
               <span style={{ font: "800 13px/1 var(--sans)", color: "var(--fg)" }}>Google</span>
               <span className="anton" style={{ fontSize: 20, color: "var(--fg)" }}>4.9</span>

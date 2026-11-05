@@ -15,7 +15,7 @@ class Screen extends DCLogic {
   root = React.createRef(); gridRef = React.createRef(); lbRef = React.createRef();
   ITEMS = [
     ['Events', 'FIGHT NIGHT 09 · WALKOUT', '3/4'], ['MMA', 'CAGE WORK · FIGHT TEAM', '4/3'], ['Boxing', 'WRAPS, 6:58 AM', '1/1'],
-    ['Karate', 'DECEMBER GRADING · ORANGE BELTS', '4/5'], ['Muay Thai', 'CLINCH LAB · KAVYA', '3/4'], ['Facility', 'THE FLOOR · 6,000 SQ FT', '16/9'],
+    ['Karate', 'DECEMBER GRADING · ORANGE BELTS', '4/5'], ['Muay Thai', 'CLINCH LAB', '3/4'], ['Facility', 'THE FLOOR · 6,000 SQ FT', '16/9'],
     ['Kids', 'LITTLE WARRIORS · KIHON', '4/3'], ['Events', 'CHAMPIONS’ WALL', '3/4'], ['Boxing', 'HEAVY BAG ROW', '1/1'],
     ['MMA', 'OPEN MAT SUNDAY', '4/5'], ['Kids', 'KIDS GYMNASTICS · RINGS', '1/1'], ['Facility', 'YOGA STUDIO AT DAWN', '4/3'],
     ['Muay Thai', 'PAD ROUNDS', '4/5'], ['Events', 'STATE CHAMPIONSHIP · 3 GOLDS', '4/3']
