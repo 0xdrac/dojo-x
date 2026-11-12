@@ -13,8 +13,9 @@ export async function verifyFirebaseEmail(idToken: unknown): Promise<{ email?: s
   try {
     const keys = process.env.FIREBASE_JWKS_JSON && (process.env.NODE_ENV !== "production" || process.env.DOJO_LOCAL_PROD === "1") ? createLocalJWKSet(JSON.parse(process.env.FIREBASE_JWKS_JSON)) : remote;
     const { payload } = await jwtVerify(idToken, keys, { issuer: `https://securetoken.google.com/${project}`, audience: project });
+    if ((payload as any).firebase?.sign_in_provider !== "google.com") return { error: "Please sign in with Google." };
     const email = String(payload.email || "").trim().toLowerCase();
     if (!email || payload.email_verified !== true) return { error: "That email isn’t verified." };
     return { email };
-  } catch { return { error: "That sign-in link didn’t work. Please request a new one." }; }
+  } catch { return { error: "That sign-in didn’t work. Please try again." }; }
 }

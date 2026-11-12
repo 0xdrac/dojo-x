@@ -263,3 +263,9 @@ create table if not exists otp_codes (
 );
 alter table credentials enable row level security;
 alter table otp_codes   enable row level security;
+
+-- Aman signs in with his Gmail as an admin (owner role), not as a coach login.
+insert into staff (phone, name, role, coach_key, email)
+values ('9000000004', 'Aman', 'owner', null, 'rjaman871@gmail.com')
+on conflict (phone) do update
+  set name = 'Aman', role = 'owner', coach_key = null, email = 'rjaman871@gmail.com';

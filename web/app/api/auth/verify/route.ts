@@ -3,7 +3,7 @@ import { setSession } from "@/lib/server/session";
 import { body, fail, json } from "@/lib/server/util";
 import { verifyFirebaseEmail } from "@/lib/server/firebase";
 
-/** Sign-in: the browser sends Firebase's ID token (Google or emailed link). The email comes from the verified token, never from the browser. */
+/** Sign-in: the browser sends Firebase's ID token (Google). The email comes from the verified token, never from the browser. */
 export async function POST(req: Request) {
   const b = await body(req);
   const v = await verifyFirebaseEmail(b.idToken);

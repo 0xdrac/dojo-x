@@ -7,7 +7,7 @@ const SCREENS: Record<string, () => Promise<unknown>> = {
   "/coaches": () => import("@/screens/Coaches"), "/about": () => import("@/screens/About"), "/free-trial": () => import("@/screens/FreeTrial"),
   "/discipline": () => import("@/screens/Discipline"), "/faqs": () => import("@/screens/FAQs"), "/blog": () => import("@/screens/Blog"),
   "/article": () => import("@/screens/Article"), "/gallery": () => import("@/screens/Gallery"), "/contact": () => import("@/screens/Contact"),
-  "/checkout": () => import("@/screens/Checkout"), "/member-portal": () => import("@/screens/MemberPortal"), "/login": () => import("@/components/EmailLogin"),
+  "/checkout": () => import("@/screens/Checkout"), "/member-portal": () => import("@/screens/MemberPortal"), "/login": () => import("@/components/GoogleLogin"),
 };
 const done = new Set<string>();
 export function warm(href: string, prefetch?: (p: string) => void) {
