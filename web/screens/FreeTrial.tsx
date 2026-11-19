@@ -5,7 +5,7 @@
 import React from 'react';
 import '@/lib/bootstrap';
 import { DCLogic } from '@/lib/dc';
-import { TRIAL_WEEKDAYS } from '@/lib/classes';
+import { COMBAT, TRIAL_WEEKDAYS } from '@/lib/classes';
 import { css, pc } from '@/lib/css';
 import Slot from '@/components/Slot';
 import SiteFooter from './SiteFooter';
@@ -32,7 +32,9 @@ class Screen extends DCLogic {
     const isoOf = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const win = Array.from({ length: 7 }, (_, i) => { const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i); return { i, dt, date: isoOf(dt), wd: (dt.getDay() + 6) % 7 }; }).filter(w => TRIAL_WEEKDAYS.includes(w.wd));
     const runs = (c, w) => c.d === w.wd && (!c.from || w.date >= c.from) && (!c.to || w.date <= c.to) && (w.i > 0 || tmin(c.t) >= nowMin + 60);
-    const avail = (k, w) => D.classes.filter(c => c.discs.includes(k) && ageOk(c) && c.level !== 'Advanced' && runs(c, w));
+    // MMA covers the whole combat week (boxing, kickboxing & Muay Thai, jiu-jitsu, MMA fundamentals), so an MMA trial can be any of those classes.
+    const forDisc = (c, k) => c.discs.includes(k) || (k === 'mma' && c.discs.every(d => COMBAT.includes(d)));
+    const avail = (k, w) => D.classes.filter(c => forDisc(c, k) && ageOk(c) && c.level !== 'Advanced' && runs(c, w));
     const availCount = k => win.reduce((n, w) => n + avail(k, w).length, 0);
     const coach = c => c.coachNames;
     const when = (c, w) => (w.i === 0 ? 'Today' : w.i === 1 ? 'Tomorrow' : D.daysLong[w.wd]) + ', ' + w.dt.getDate() + ' ' + w.dt.toLocaleDateString('en-GB', { month: 'short' }) + ' · ' + D.time12(c.t);
