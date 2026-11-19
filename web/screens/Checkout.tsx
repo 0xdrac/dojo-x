@@ -45,7 +45,7 @@ class Screen extends DCLogic {
     let Rzp; try { Rzp = await DojoAPI.loadRazorpay(); } catch (e) { this.setState({ busy: false }); return DojoMotion.toast('Couldn’t load the payment window. Check your connection and try again.'); }
     const fin = (patch) => { this._done = true; this.setState({ busy: false, step: 'done', covers: o.covers, ...patch }); };
     const rz = new Rzp({
-      key: o.key, amount: o.amount * 100, currency: 'INR', name: 'Dojo X Fight Academy', description: o.description, order_id: o.razorpayOrderId, prefill: o.prefill, theme: { color: '#C8102E' },
+      key: o.key, amount: o.amount * 100, currency: 'INR', name: 'Dojo X Academy', description: o.description, order_id: o.razorpayOrderId, prefill: o.prefill, theme: { color: '#C8102E' },
       handler: async resp => {
         this._done = true;
         const v = await DojoAPI.verifyPayment({ orderId: o.orderId, ...resp });

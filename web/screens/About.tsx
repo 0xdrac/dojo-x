@@ -20,7 +20,7 @@ class Screen extends DCLogic {
   componentWillUnmount() { window.removeEventListener('resize', this._rs); }
   renderVals() {
     const T = [
-      ['2025', 'Dojo X opens', 'Dojo X Fight Academy opens its doors in Vasundhara, Ghaziabad, with one rule: nobody gets left behind.'],
+      ['2025', 'Dojo X opens', 'Dojo X Academy opens its doors in Vasundhara, Ghaziabad, with one rule: nobody gets left behind.'],
       ['2025', 'Seven disciplines, one roof', 'MMA, boxing, kickboxing, Muay Thai, karate, gymnastics and yoga, all coached under the same roof.'],
       ['NOW', '15+ pro fighters', 'More than fifteen Dojo X fighters now compete as professionals.'],
       ['NOW', '100+ belts awarded', 'Over a hundred belts awarded, from first gradings to new black belts.']

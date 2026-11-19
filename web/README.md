@@ -1,6 +1,6 @@
 # Dojo X web
 
-Next.js app for the Dojo X Fight Academy site: public pages, member login + portal, free-trial booking, staff Admin and Coach App.
+Next.js app for the Dojo X Academy site: public pages, member login + portal, free-trial booking, staff Admin and Coach App.
 
 ```
 npm install

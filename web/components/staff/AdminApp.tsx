@@ -274,11 +274,15 @@ function Schedule({ owner }: { owner: boolean }) {
   };
   const isCancelled = (c: any) => { const n = nextRun(c); return !!n && cancels.some((x) => x.class_id === c.id && x.on_date === n); };
 
+  const addMissing = async () => {
+    const r = await http("POST", "/api/staff/classes/standard", { mode: "add" }); if (!r.ok) return toast(r.error!);
+    toast(r.created ? `${r.created} batch${r.created === 1 ? "" : "es"} added` : "All standard batches are already there"); reload();
+  };
   const setupStandard = async () => {
     const replace = classes.filter((c) => discsOf(c).every((d: string) => ["mma", "boxing", "kickboxing", "muaythai"].includes(d))).length;
-    if (!confirm(`Set up the standard Mon–Fri evening batches?\n\n7–8 PM Amateur and 8–9 PM Intermediate & Pro, teens and adults together:\nMon Boxing · Tue Kickboxing & Muay Thai · Wed Jiu-Jitsu · Thu MMA Fundamentals · Fri Sparring\n\nThis REPLACES your ${replace} existing boxing / kickboxing / Muay Thai / MMA class${replace === 1 ? "" : "es"} (and their bookings). Karate, gymnastics and yoga are not touched.`)) return;
+    if (!confirm(`Reset to the standard Mon–Fri batches?\n\n11 AM–12 PM Morning, 7–8 PM Amateur and 8–9 PM Intermediate & Pro, teens and adults together:\nMon Boxing · Tue Kickboxing & Muay Thai · Wed Jiu-Jitsu · Thu MMA Fundamentals · Fri Sparring\n\nThis REPLACES your ${replace} existing boxing / kickboxing / Muay Thai / MMA class${replace === 1 ? "" : "es"} (and their bookings). Karate, gymnastics and yoga are not touched.`)) return;
     const r = await http("POST", "/api/staff/classes/standard"); if (!r.ok) return toast(r.error!);
-    toast(`10 classes set up${r.removed ? ` · ${r.removed} replaced` : ""}`); reload();
+    toast(`${r.created} classes set up${r.removed ? ` · ${r.removed} replaced` : ""}`); reload();
   };
   const loadSample = async () => { const r = await http("POST", "/api/staff/classes/sample"); if (!r.ok) return toast(r.error!); toast("Sample timetable loaded"); reload(); };
 
@@ -292,6 +296,7 @@ function Schedule({ owner }: { owner: boolean }) {
   return (
     <>
       <Head title="Schedule">
+        {owner && <button className="st-btn" onClick={addMissing}>Add missing batches</button>}
         {owner && <button className="st-btn" onClick={setupStandard}>Reset to standard batches</button>}
         {owner && <button className="st-btn p" onClick={() => setForm(blankClass(day))}>+ Add class</button>}
       </Head>

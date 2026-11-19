@@ -35,7 +35,7 @@ export default function Header() {
             <i />
             <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               <span className="anton" style={{ fontSize: 24, lineHeight: 1, letterSpacing: ".06em", color: "var(--fg)" }}>DOJO X</span>
-              <span className="mono" style={{ fontSize: 8.5, lineHeight: 1, letterSpacing: ".34em", color: "var(--dim)" }}>FIGHT ACADEMY</span>
+              <span className="mono" style={{ fontSize: 8.5, lineHeight: 1, letterSpacing: ".34em", color: "var(--dim)" }}>ACADEMY</span>
             </span>
           </TLink>
           <nav className="nav" aria-label="Main">

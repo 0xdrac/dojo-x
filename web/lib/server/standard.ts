@@ -1,7 +1,8 @@
-/** The academy's standard Mon-Fri evening batches for boxing, kickboxing, Muay Thai and MMA (teens and adults together). */
+/** The academy's standard Mon-Fri batches for boxing, kickboxing, Muay Thai and MMA: 11-12 morning, 7-8 PM amateur, 8-9 PM intermediate & pro (teens and adults together). */
 export const STANDARD_DISCIPLINES = ["mma", "boxing", "kickboxing", "muaythai"];
 
-const BATCHES: { time: string; label: string; level: string }[] = [
+const BATCHES: { time: string; label: string; level: string; coaches?: string[] }[] = [
+  { time: "11:00", label: "Morning", level: "All levels", coaches: ["aman"] },
   { time: "19:00", label: "Amateur", level: "Beginner" },
   { time: "20:00", label: "Intermediate & Pro", level: "Intermediate" },
 ];
@@ -16,7 +17,7 @@ const DAYS: { day: number; name: string; disciplines: string[]; coaches: string[
 export const standardClasses = () =>
   DAYS.flatMap((d) => BATCHES.map((b) => ({
     day: d.day, start_time: b.time, duration_min: 60, title: `${d.name} · ${b.label}`,
-    discipline: d.disciplines[0], disciplines: d.disciplines, coach: d.coaches[0], coaches: d.coaches,
+    discipline: d.disciplines[0], disciplines: d.disciplines, coach: (b.coaches ?? d.coaches)[0], coaches: b.coaches ?? d.coaches,
     level: b.level, age_group: "Teens & Adults", capacity: 25, active: true,
   })));
 
@@ -26,3 +27,7 @@ export async function ensureSchedule() {
   if ((await T.list("classes", { limit: 1 })).length) return;
   for (const row of standardClasses()) await T.insert("classes", row);
 }
+
+/** The standard batches that aren't in the timetable yet (matched by day, time and title), so they can be added without touching anything else. */
+export const missingStandard = (existing: Record<string, any>[]) =>
+  standardClasses().filter((c) => !existing.some((e) => e.day === c.day && e.start_time === c.start_time && e.title === c.title));

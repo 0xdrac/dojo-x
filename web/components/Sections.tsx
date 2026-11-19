@@ -197,7 +197,7 @@ export function Footer() {
         <div className="fgrid">
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             <TLink href="#top" className="logo"><i /><span className="anton" style={{ fontSize: 28, lineHeight: 1, letterSpacing: ".06em", color: "var(--fg)" }}>DOJO X</span></TLink>
-            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "var(--dim)", maxWidth: 260 }}>Elite multi-discipline fight academy. Ghaziabad, since 2025.</p>
+            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "var(--dim)", maxWidth: 260 }}>Elite multi-discipline academy. Ghaziabad, since 2025.</p>
             <div style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 10, padding: "8px 12px", border: "1px solid #2E2E2E" }}>
               <span style={{ font: "800 13px/1 var(--sans)", color: "var(--fg)" }}>Google</span>
               <span className="anton" style={{ fontSize: 20, color: "var(--fg)" }}>4.9</span>
@@ -221,7 +221,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mono" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 12, marginTop: 48, paddingTop: 20, borderTop: "1px solid #262626", font: "500 11px/1.6 var(--mono)", color: "var(--dim)" }}>
-          <span>© 2026 DOJO X FIGHT ACADEMY PVT. LTD.</span><span>PRIVACY · TERMS · REFUND POLICY</span>
+          <span>© 2026 DOJO X ACADEMY PVT. LTD.</span><span>PRIVACY · TERMS · REFUND POLICY</span>
         </div>
       </div>
     </footer>
